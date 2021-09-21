@@ -13,11 +13,19 @@ namespace Malfoy
         private static string[] Hex = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
         private static readonly object _filelock = new object();
 
+        private static int PasswordLengthMax = 70;
+        private static int EmailPasswordCountMax = 40;
+
+
         public static void Process(string currentDirectory, string[] args)
         {
             var arg = args[0];
             var source = args[1];
             var prefix = "Passwords";
+
+            if (args.Length > 3) prefix = args[3];
+
+            Console.WriteLine($"Using prefix {prefix}.");
 
             //Get user hashes / json input path
             var fileEntries = Directory.GetFiles(currentDirectory, arg);
@@ -188,6 +196,13 @@ namespace Malfoy
                     var splits = line.Split(new char[] { ':' }, 2);
                     var email = splits[0].ToLower();
 
+                    //Validate the email
+                    var emailSplits = email.Split('@');
+                    if (emailSplits.Length != 2) continue;
+
+                    var domainSplits = emailSplits[1].Split('.');
+                    if (domainSplits.Length != 2) continue;
+
                     //We dont want to inject loads of combolists and bad data. This also seems to break attack mode 9
                     //So track the previous email record
                     if (lastEmail == email)
@@ -200,14 +215,15 @@ namespace Malfoy
                     }
                     lastEmail = email;
 
-                    if (lastEmailCount < 20 && splits.Length == 2 && !string.IsNullOrEmpty(splits[0]) && !string.IsNullOrEmpty(splits[1]) && splits[1].Length < 70)
+                    if (email.StartsWith("jandropisoalejandro")) lastEmail = email;
+
+                    if (lastEmailCount < EmailPasswordCountMax && splits.Length == 2 && !string.IsNullOrEmpty(splits[0]) && !string.IsNullOrEmpty(splits[1]) && splits[1].Length < PasswordLengthMax)
                     {
                         if (entries.ContainsKey(email))
                         {
                             hashes.Add(entries[email]);
                             dicts.Add(splits[1]);
                         }
-
                     }
                 }
             }
