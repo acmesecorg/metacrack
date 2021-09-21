@@ -119,5 +119,13 @@ namespace Malfoy
             var version = Convert.ToBase64String(numberBytes).Replace("=", "").Replace("/", "").Replace("+", "");
             return $"{prefix}{version.ToLower().Substring(version.Length - 3, 3)}";
         }
+
+        public static IEnumerable<List<T>> SplitList<T>(List<T> locations, int nSize = 256)
+        {
+            for (int i = 0; i < locations.Count; i += nSize)
+            {
+                yield return locations.GetRange(i, Math.Min(nSize, locations.Count - i));
+            }
+        }
     }
 }

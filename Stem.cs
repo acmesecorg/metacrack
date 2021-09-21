@@ -2,12 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Malfoy
 {
     public static class Stem
     {
-        public static void Process(string currentDirectory, string[] args)
+        private static string _outputHashPath = "";
+        private static string _outputDictPath = "";
+
+        private static readonly object _lock = new object();
+
+        private const int TaskCount = 16;
+
+        public static async Task Process(string currentDirectory, string[] args)
         {
             var arg = args[0];
             var source = args[1];
@@ -80,11 +88,11 @@ namespace Malfoy
 
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
-                    var outputHashPath = $"{filePathName}.{version}.hash";
-                    var outputDictPath = $"{filePathName}.{version}.dict";
+                    _outputHashPath = $"{filePathName}.{version}.hash";
+                    _outputDictPath = $"{filePathName}.{version}.dict";
 
                     //Check that there are no output files
-                    if (!Common.CheckForFiles(new string[] { outputHashPath,outputDictPath }))
+                    if (!Common.CheckForFiles(new string[] { _outputHashPath, _outputDictPath }))
                     {
                         progress.Pause();
 
@@ -100,8 +108,7 @@ namespace Malfoy
                         continue;
                     }
 
-                    var hashes = new List<string>();
-                    var dicts = new List<string>();
+                    var inputs = new List<string>();
 
                     //Loop through and check if each email contains items from the lookup, if so add them
                     using (var reader = new StreamReader(filePath))
@@ -110,62 +117,97 @@ namespace Malfoy
                         {
                             var line = reader.ReadLine();
 
+                            inputs.Add(line);
+
                             lineCount++;
                             progressTotal += line.Length;
-
-                            var splits = line.Split(':');
-
-                            if (splits.Length == 2 || splits.Length == 3)
-                            {
-                                var email = splits[0].ToLower();
-
-                                //Validate the email is valid
-                                var subsplits = email.Split('@');
-                                var name = subsplits[0].ToLower();
-
-                                //Remove any +
-                                name = name.Split('+')[0];
-
-                                if (subsplits.Length == 2)
-                                {
-                                    var finals = new HashSet<string>();
-
-                                    //Try split on .
-                                    var names = name.Split('.');
-                                    foreach (var subname in names)
-                                    {
-                                        //Rule out initials
-                                        if (subname.Length > 1 && subname.Length < 70) finals.Add(subname);
-                                    }
-
-                                    foreach(var entry in lookups)
-                                    {
-                                        if (name == entry || name.StartsWith(entry)) finals.Add(entry);
-                                    }
-
-                                    foreach (var final in finals)
-                                    {
-                                        hashes.Add(line);
-                                        dicts.Add(final);
-                                    }
-
-                                }
-                            }
 
                             //Update the percentage
                             progress.Report((double)progressTotal / size);
                         }
                     }
 
-                    if (hashes.Count > 0)
+                    var itemCount = (inputs.Count() / TaskCount) + 1;
+                    var splitLists = Common.SplitList<string>(inputs, itemCount);
+                    var tasks = new List<Task>();
+
+                    foreach (var splitList in splitLists)
                     {
-                        File.AppendAllLines(outputHashPath, hashes);
-                        File.AppendAllLines(outputDictPath, dicts);
+                        tasks.Add(Task.Run(() => DoStem(lookups, splitList)));
+                    }
+
+                    progressTotal = 0;
+
+                    //Wait for tasks to complate
+                    while (tasks.Count > 0)
+                    {
+                        var task = await Task.WhenAny(tasks);
+                        tasks.Remove(task);
+
+                        progress.Report(progressTotal / TaskCount);
                     }
                 }
 
                 progress.WriteLine($"Completed at {DateTime.Now.ToShortTimeString()}.");
             }
+        }
+
+        private static Task DoStem(HashSet<string> lookups, List<string> lines)
+        {
+            var hashes = new List<string>();
+            var dicts = new List<string>();
+
+            foreach (var line in lines)
+            {
+                var splits = line.Split(':');
+
+                if (splits.Length == 2 || splits.Length == 3)
+                {
+                    var email = splits[0].ToLower();
+
+                    //Validate the email is valid
+                    var subsplits = email.Split('@');
+                    var name = subsplits[0].ToLower();
+
+                    //Remove any +
+                    name = name.Split('+')[0];
+
+                    if (subsplits.Length == 2)
+                    {
+                        var finals = new HashSet<string>();
+
+                        //Try split on .
+                        var names = name.Split('.');
+                        foreach (var subname in names)
+                        {
+                            //Rule out initials
+                            if (subname.Length > 1 && subname.Length < 70) finals.Add(subname);
+                        }
+
+                        foreach (var entry in lookups)
+                        {
+                            if (name == entry || name.StartsWith(entry)) finals.Add(entry);
+                        }
+
+                        foreach (var final in finals)
+                        {
+                            hashes.Add(line);
+                            dicts.Add(final);
+                        }
+                    }
+                }
+            }
+
+            if (hashes.Count > 0)
+            {
+                lock (_lock)
+                {
+                    File.AppendAllLines(_outputHashPath, hashes);
+                    File.AppendAllLines(_outputDictPath, dicts);
+                }
+            }
+
+            return Task.CompletedTask;
         }
     }
 }
