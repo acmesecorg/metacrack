@@ -35,9 +35,17 @@ namespace Malfoy
                 return;
             }
 
+            if (args.Length > 3) Prefix = args[3];
+
             if (string.IsNullOrEmpty(Prefix)) Prefix = "Passwords";
 
             Console.WriteLine($"Using prefix {Prefix}.");
+
+            var optimize = Common.GetCommandLineArgument(args, -1, "-optimize") != null;
+            var tokenize = Common.GetCommandLineArgument(args, -1, "-tokens") != null;
+
+            if (optimize) Console.WriteLine($"Optimize enabled.");
+            if (tokenize) Console.WriteLine($"Tokens enabled.");
 
             //Get list of text file entries
             var fileEntries = Directory.GetFiles(args[0],"*.txt", SearchOption.AllDirectories);
@@ -77,7 +85,7 @@ namespace Malfoy
                             var splits = line.Split(':');
                             progressTotal += line.Length;
 
-                            if (splits.Length >= 2)
+                            if (splits.Length > 1 && !string.IsNullOrEmpty(splits[1]))
                             {
                                 validCount++;
 
@@ -86,13 +94,34 @@ namespace Malfoy
                                 var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(splits[0]));
                                 var key = hash[0].ToString("x2") + hash[1].ToString("x2").Substring(0, 1);
 
-                                buckets[key].Add($"{splits[0]}:{splits[1]}");                                
+                                for (var i = 1; i < splits.Length; i++)
+                                {
+                                    var split = splits[i];
+                                    if (tokenize)
+                                    {
+                                        var tokens = split.Split(' ');
+                                        foreach (var token in tokens)
+                                        {
+                                            var trimToken = token.Trim().ToLower();
+                                            if (trimToken.Length > 0) buckets[key].Add($"{splits[0]}:{trimToken}");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        buckets[key].Add($"{splits[0]}:{splits[i]}");
+                                    }
+                                }
                             }
 
                             //Update the percentage
                             progress.Report((double)progressTotal / fileEntriesSize);
                         }
                     }
+
+                    Console.WriteLine($"Saving data to files.");
+
+                    progressTotal = 0;
+                    var count = buckets.Count();
 
                     //For now we just write out after every file, although that may need to change in future
                     foreach (var hex1 in Hex)
@@ -102,11 +131,45 @@ namespace Malfoy
                             foreach (var hex3 in Hex)
                             {
                                 var key = $"{hex1}{hex2}{hex3}";
-                                
+
                                 File.AppendAllLines($"{outputPath}\\{Prefix}-{key}.txt", buckets[key]);
                                 buckets[key].Clear();
+
+                                progressTotal++;
+                                progress.Report((double)progressTotal / count);
                             }
                         }
+                    }
+                }
+
+                if (optimize)
+                {
+                    Console.WriteLine($"Optimising buckets.");
+
+                    progressTotal = 0;
+                    var count = buckets.Count();
+
+                    var sourceFiles = Directory.GetFiles(outputPath, $"{Prefix}-*");
+
+                    foreach (var sourceFile in sourceFiles)
+                    {
+                        var bucket = new List<string>();
+                        using (var reader = new StreamReader(sourceFile))
+                        {
+                            while (!reader.EndOfStream)
+                            {
+                                bucket.Add(reader.ReadLine());
+                            }
+                        }
+
+                        //Optimize this bucket by deduplicating and then sorting
+                        bucket = bucket.Distinct().OrderBy(q => q).ToList();
+
+                        File.Delete(sourceFile);
+                        File.AppendAllLines(sourceFile, bucket);
+
+                        progressTotal++;
+                        progress.Report((double)progressTotal / count);
                     }
                 }
             }
