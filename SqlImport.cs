@@ -16,6 +16,9 @@ namespace Malfoy
         {
             string arg = args[0];
             string columnsarg = args[2];
+            string metasarg = "";
+            
+            if (args.Length > 3) metasarg = args[3];
 
             //Get user hashes / json input path
             var sqlFileEntries = Directory.GetFiles(currentDirectory, arg);
@@ -33,11 +36,15 @@ namespace Malfoy
             var columnsplits = columnsarg.Split(',');
             var columns = Array.ConvertAll(columnsplits, int.Parse);
 
+            var metasplits = metasarg.Split(',');
+            var metas = Array.ConvertAll(metasplits, int.Parse);
+
             var size = Common.GetFileEntriesSize(sqlFileEntries);
             var progressTotal = 0L;
             var lineCount = 0L;
 
             var fileOutput = new List<string>();
+            var metaOutput = new List<string>();
 
             using (var progress = new ProgressBar(false))
             {
@@ -50,9 +57,10 @@ namespace Malfoy
                     var fileName = Path.GetFileNameWithoutExtension(sqlPath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
                     var outputPath = $"{filePathName}-output.txt";
+                    var metapath = $"{filePathName}-meta.txt";
 
                     //Check that there are no output files
-                    if (!Common.CheckForFiles(new string[] { outputPath }))
+                    if (!Common.CheckForFiles(new string[] { outputPath, metapath }))
                     {
                         progress.Pause();
 
@@ -70,6 +78,7 @@ namespace Malfoy
                     }
 
                     fileOutput.Clear();
+                    metaOutput.Clear();
                     lineCount = 0;
                     exampleCount = 0;
 
@@ -137,6 +146,7 @@ namespace Malfoy
                                                 foreach (var rowValues in valuesSource.RowValues)
                                                 {
                                                     var outputs = new List<string>();
+                                                    var metaoutputs = new List<string>();
 
                                                     foreach (var column in columns)
                                                     {
@@ -144,6 +154,14 @@ namespace Malfoy
 
                                                         //Convert NULL to empty string
                                                         outputs.Add((literal.Value == "NULL") ? "" : literal.Value);
+                                                    }
+
+                                                    foreach (var meta in metas)
+                                                    {
+                                                        var literal = rowValues.ColumnValues[meta] as Literal;
+
+                                                        //Convert NULL to empty string
+                                                        metaoutputs.Add((literal.Value == "NULL") ? "" : literal.Value);
                                                     }
 
                                                     //Ignore empty outputs and empty passwords
@@ -155,10 +173,23 @@ namespace Malfoy
                                                         var result = string.Join(":", outputs);
                                                         fileOutput.Add(result);
 
+                                                        var metaresult = string.Join(":", metaoutputs);
+
+                                                        //Put the email in front of the metas
+                                                        metaOutput.Add($"{outputs[0]}:{metaresult}");
+
+
                                                         if (exampleCount < 9)
                                                         {
                                                             exampleCount++;
-                                                            progress.WriteLine($"Example output: {result}");
+                                                            if (metaoutputs.Count > 0)
+                                                            {
+                                                                progress.WriteLine($"Example output: {result} [{metaresult}]");
+                                                            }
+                                                            else
+                                                            {
+                                                                progress.WriteLine($"Example output: {result}");
+                                                            }                                                           
                                                         }
                                                     }
 
@@ -166,7 +197,10 @@ namespace Malfoy
                                                     if (fileOutput.Count >= 1000000)
                                                     {
                                                         File.AppendAllLines(outputPath, fileOutput);
+                                                        File.AppendAllLines(metapath, metaOutput);
+
                                                         fileOutput.Clear();
+                                                        metaOutput.Clear();
                                                     }
                                                 }
                                             }
@@ -185,6 +219,7 @@ namespace Malfoy
                     //Write out file
                     progress.WriteLine($"Finished writing to {fileName}-output.txt at {DateTime.Now.ToShortTimeString()}.");
                     File.AppendAllLines(outputPath, fileOutput);
+                    File.AppendAllLines(metapath, metaOutput);
                 }
 
                 progress.WriteLine($"Completed at {DateTime.Now.ToShortTimeString()}.");

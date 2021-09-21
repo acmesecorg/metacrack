@@ -121,7 +121,7 @@ namespace Malfoy
                 Console.WriteLine($"Detected stem mode.");
                 Console.ResetColor();
 
-                Stem.Process(currentDirectory, args);
+                Stem.Process(currentDirectory, args).GetAwaiter().GetResult();
                 return;
             }
 
