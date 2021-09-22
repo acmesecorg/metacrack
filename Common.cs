@@ -175,5 +175,13 @@ namespace Malfoy
 
             return true;
         }
+
+        public static bool ValidateHash(string hash, string mode)
+        {
+            if (mode == "3200" && hash.Length != 60) return false;
+            if (mode == "10000" && hash.Length != 77) return false;
+
+            return true;
+        }
     }
 }

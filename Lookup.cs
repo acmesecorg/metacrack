@@ -38,9 +38,8 @@ namespace Malfoy
             if (!string.IsNullOrEmpty(hashtype))
             {
                 mode = hashtype;
-                Console.WriteLine($"Detected mode 3200 (bcrypt).");
+                Console.WriteLine($"Using mode {mode}.");
             }
-
 
             //Get user hashes / json input path
             var fileEntries = Directory.GetFiles(currentDirectory, arg);
@@ -132,7 +131,7 @@ namespace Malfoy
                                 var email = splits[0].ToLower();
                                 var inputHash = splits[1];
 
-                                if (mode == "3200" && inputHash.Length != 60) continue;                             
+                                if (!Common.ValidateHash(inputHash, mode)) continue;
 
                                 if (email.StartsWith("mail.adikukreja@gmail.com")) email = email.ToLower();
 
@@ -238,7 +237,8 @@ namespace Malfoy
                             //Check hash is fine
                             var hash = entries[email];
 
-                            if (!string.IsNullOrEmpty(hash))
+                            //Allow for instance where email has come into meta from username
+                            if (!string.IsNullOrEmpty(hash) && email != hash)
                             {
                                 if (tokenize)
                                 {

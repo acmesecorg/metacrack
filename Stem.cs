@@ -44,7 +44,7 @@ namespace Malfoy
             }
 
             var hashtype = Common.GetCommandLineArgument(args, -1, "-hash");
-            var mode = "999";
+            var mode = "";
 
             if (!string.IsNullOrEmpty(hashtype))
             {
@@ -131,7 +131,7 @@ namespace Malfoy
                             if (splits.Length == 2)
                             {
                                 if (!Common.ValidateEmail(splits[0])) continue;
-                                if (mode == "3200" && splits[1].Length != 60) continue;
+                                if (!Common.ValidateHash(splits[1], mode)) continue;
 
                                 inputs.Add(line);
                             }

@@ -33,6 +33,7 @@ namespace Malfoy
             var jsonMode = Common.GetCommandLineArgument(args, -1, "j") != null;
             var sqlMode = Common.GetCommandLineArgument(args, -1, "s") != null;
             var s2mode = Common.GetCommandLineArgument(args, -1, "s2") != null;
+            var s3mode = Common.GetCommandLineArgument(args, -1, "s3") != null;
             var hashMode = Common.GetCommandLineArgument(args, -1, "m") != null;
 
             var appendMode = Common.GetCommandLineArgument(args, -1, "a") != null;
@@ -63,13 +64,14 @@ namespace Malfoy
                 return;
             }
 
-            if (sqlMode || s2mode)
+            if (sqlMode || s2mode || s3mode)
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
                 Console.WriteLine($"Detected SQL import mode.");
                 Console.ResetColor();
 
                 SqlImport.S2Mode = s2mode;
+                SqlImport.S3Mode = s3mode;
                 SqlImport.Process(currentDirectory, args);
                 return;
             }

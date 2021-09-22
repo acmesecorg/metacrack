@@ -11,6 +11,7 @@ namespace Malfoy
     public static class SqlImport
     {
         public static bool S2Mode { get; set; }
+        public static bool S3Mode { get; set; }
 
         public static void Process(string currentDirectory, string[] args)
         {
@@ -29,6 +30,14 @@ namespace Malfoy
                 Console.WriteLine("No SQL input file(s) not found.");
                 Console.ResetColor();
                 return;
+            }
+
+            string table = "`users`";
+
+            if (args.Length > 4)
+            {
+                table = args[4];
+                Console.WriteLine($"Using table name {table}.");
             }
 
             Console.WriteLine($"Started at {DateTime.Now.ToShortTimeString()}.");
@@ -96,7 +105,7 @@ namespace Malfoy
                             if (line.StartsWith("INSERT") || (S2Mode && line.StartsWith("(")))
                             {
                                 //Try hack out the quoted identifier for table names
-                                if (!S2Mode) line = line.Replace("`users`", "users");
+                                if (!S2Mode) line = line.Replace(table, "users");
 
                                 if (S2Mode && !line.StartsWith("INSERT"))
                                 {
@@ -129,6 +138,7 @@ namespace Malfoy
                                     continue;
                                 }
 
+                                //TODO: put in a try catch so we dont loose the whole thing
                                 if (statements != null)
                                 {
                                     foreach (var statement in statements.Statements)
