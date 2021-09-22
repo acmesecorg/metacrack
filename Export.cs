@@ -267,7 +267,7 @@ namespace Malfoy
 
                     var perc = ((double)founds / fileUserHashCounts * 100).ToString("#.##");
 
-                    progress.WriteLine($"Found {founds} out of {fileUserHashCounts} ({perc}%) with {left.Count()} hashes left.");
+                    progress.WriteLine($"Found {founds} out of {fileUserHashCounts} ({perc}%) with {lefts} hashes left.");
 
                     //Write out file
                     if (found.Count > 0)

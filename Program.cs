@@ -112,6 +112,7 @@ namespace Malfoy
                 Console.ResetColor();
 
                 Lookup.Process(currentDirectory, args);
+                //Lookup.Process(currentDirectory, args).GetAwaiter().GetResult();
                 return;
             }
 

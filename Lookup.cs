@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Malfoy
@@ -26,6 +27,20 @@ namespace Malfoy
             if (args.Length > 3) prefix = args[3];
 
             Console.WriteLine($"Using prefix {prefix}.");
+
+            //Split lookups into lowercase, remove special characters etc
+            var tokenize = Common.GetCommandLineArgument(args, -1, "-tokens") != null;
+            if (tokenize) Console.WriteLine($"Using tokenize.");
+
+            var hashtype = Common.GetCommandLineArgument(args, -1, "-hash");
+            var mode = "999";
+
+            if (!string.IsNullOrEmpty(hashtype))
+            {
+                mode = hashtype;
+                Console.WriteLine($"Detected mode 3200 (bcrypt).");
+            }
+
 
             //Get user hashes / json input path
             var fileEntries = Directory.GetFiles(currentDirectory, arg);
@@ -110,21 +125,25 @@ namespace Malfoy
                             lineCount++;
                             progressTotal += line.Length;
 
-                            var splits = line.Split(':');
+                            var splits = line.Split(new char[] {':'}, StringSplitOptions.RemoveEmptyEntries);
 
-                            if (splits.Length == 2 || splits.Length == 3 || splits.Length == 5)
+                            if (splits.Length == 2) //|| splits.Length == 3 || splits.Length == 5 - override with a value otherwise corrupt data gets in
                             {
                                 var email = splits[0].ToLower();
+                                var inputHash = splits[1];
+
+                                if (mode == "3200" && inputHash.Length != 60) continue;                             
+
+                                if (email.StartsWith("mail.adikukreja@gmail.com")) email = email.ToLower();
 
                                 //Validate the email is valid
-                                var subsplits = email.Split('@');
-
-                                if (subsplits.Length == 2)
+                                if (Common.ValidateEmail(email))
                                 {
-                                    var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(email));
-                                    var key = hash[0].ToString("x2") + hash[1].ToString("x2").Substring(0, 1);
+                                    var emailHash = sha1.ComputeHash(Encoding.UTF8.GetBytes(email));
+                                    var key = emailHash[0].ToString("x2") + emailHash[1].ToString("x2").Substring(0, 1);
 
-                                    if (!buckets[key].ContainsKey(email)) buckets[key].Add(email, line);
+                                    //Rejoin the splits incase line contained ::
+                                    if (!buckets[key].ContainsKey(email)) buckets[key].Add(email, String.Join(":", splits));
                                 }
                             }
 
@@ -144,7 +163,7 @@ namespace Malfoy
                         foreach (var hex2 in Hex)
                         {
                             //Process up to 16 tasks at once
-                            //var tasks = new List<Task>();
+                            var tasks = new List<Task>();
 
                             foreach (var hex3 in Hex)
                             {
@@ -153,13 +172,12 @@ namespace Malfoy
                                 if (buckets[key].Count > 0)
                                 {
                                     var sourcePath = $"{source}\\{prefix}-{key}.txt";
-                                    //tasks.Add(Task.Run(() => DoLookup(sourcePath, buckets[key], outputHashPath, outputDictPath)));
-                                    DoLookup(sourcePath, buckets[key], outputHashPath, outputDictPath);
+                                    //tasks.Add(DoLookup(sourcePath, buckets[key], outputHashPath, outputDictPath, tokenize));
+                                    DoLookup(sourcePath, buckets[key], outputHashPath, outputDictPath, tokenize);
                                 }
 
                                 bucketCount++;
                                 progress.Report((double)bucketCount / 4096);
-
                             }
 
                             //Wait for tasks to complate
@@ -179,7 +197,7 @@ namespace Malfoy
             }
         }
 
-        private static void DoLookup(string sourcePath, Dictionary<string, string> entries, string outputHashPath, string outputDictPath)
+        private static void DoLookup(string sourcePath, Dictionary<string, string> entries, string outputHashPath, string outputDictPath, bool tokenize)
         {
             var hashes = new List<string>();
             var dicts = new List<string>();
@@ -196,12 +214,10 @@ namespace Malfoy
                     var splits = line.Split(new char[] { ':' }, 2);
                     var email = splits[0].ToLower();
 
-                    //Validate the email
-                    var emailSplits = email.Split('@');
-                    if (emailSplits.Length != 2) continue;
+                    if (email.StartsWith("mail.adikukreja@gmail.com")) lastEmail = email;
 
-                    var domainSplits = emailSplits[1].Split('.');
-                    if (domainSplits.Length != 2) continue;
+                    //Validate the email
+                    if (!Common.ValidateEmail(email)) continue;
 
                     //We dont want to inject loads of combolists and bad data. This also seems to break attack mode 9
                     //So track the previous email record
@@ -215,14 +231,30 @@ namespace Malfoy
                     }
                     lastEmail = email;
 
-                    if (email.StartsWith("jandropisoalejandro")) lastEmail = email;
-
                     if (lastEmailCount < EmailPasswordCountMax && splits.Length == 2 && !string.IsNullOrEmpty(splits[0]) && !string.IsNullOrEmpty(splits[1]) && splits[1].Length < PasswordLengthMax)
                     {
                         if (entries.ContainsKey(email))
                         {
-                            hashes.Add(entries[email]);
-                            dicts.Add(splits[1]);
+                            //Check hash is fine
+                            var hash = entries[email];
+
+                            if (!string.IsNullOrEmpty(hash))
+                            {
+                                if (tokenize)
+                                {
+                                    var tokens = Common.GetTokens(splits[1]);
+                                    foreach (var token in tokens)
+                                    {
+                                        hashes.Add(hash);
+                                        dicts.Add(token);
+                                    }
+                                }
+                                else
+                                {
+                                    hashes.Add(hash);
+                                    dicts.Add(splits[1]);
+                                }
+                            }
                         }
                     }
                 }
@@ -231,6 +263,8 @@ namespace Malfoy
             //Dump into the output files
             lock (_filelock)
             {
+                if (hashes.Count != dicts.Count) throw new ApplicationException("This should not happen");
+
                 File.AppendAllLines(outputHashPath, hashes);
                 File.AppendAllLines(outputDictPath, dicts);
             }

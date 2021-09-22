@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Malfoy
@@ -42,6 +43,15 @@ namespace Malfoy
                 return;
             }
 
+            var hashtype = Common.GetCommandLineArgument(args, -1, "-hash");
+            var mode = "999";
+
+            if (!string.IsNullOrEmpty(hashtype))
+            {
+                mode = hashtype;
+                Console.WriteLine($"Detected mode 3200 (bcrypt).");
+            }
+
             Console.WriteLine($"Started at {DateTime.Now.ToShortTimeString()}.");
 
             //Load the firstnames or other items used for stemming into a hashset
@@ -63,7 +73,7 @@ namespace Malfoy
 
                             var line = reader.ReadLine();
 
-                            if (line.Length >= 4) lookups.Add(line.ToLower());
+                            if (line.Length >= 4 && line.Length < 70) lookups.Add(line.ToLower());
 
                             //Update the percentage
                             progress.Report((double)progressTotal / size);
@@ -116,8 +126,15 @@ namespace Malfoy
                         while (!reader.EndOfStream)
                         {
                             var line = reader.ReadLine();
+                            var splits = line.Split(':');
 
-                            inputs.Add(line);
+                            if (splits.Length == 2)
+                            {
+                                if (!Common.ValidateEmail(splits[0])) continue;
+                                if (mode == "3200" && splits[1].Length != 60) continue;
+
+                                inputs.Add(line);
+                            }
 
                             lineCount++;
                             progressTotal += line.Length;
@@ -159,34 +176,53 @@ namespace Malfoy
 
             foreach (var line in lines)
             {
-                var splits = line.Split(':');
+                var splits = line.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
 
-                if (splits.Length == 2 || splits.Length == 3)
+                if (splits.Length == 2) //Will have to do some other option for more splits here
                 {
                     var email = splits[0].ToLower();
 
                     //Validate the email is valid
-                    var subsplits = email.Split('@');
-                    var name = subsplits[0].ToLower();
-
-                    //Remove any +
-                    name = name.Split('+')[0];
-
-                    if (subsplits.Length == 2)
+                    if (Common.ValidateEmail(email))
                     {
+                        var subsplits = email.Split('@');
+                        var name = subsplits[0];
+
+                        //Remove any +
+                        name = name.Split('+')[0];
+
                         var finals = new HashSet<string>();
 
-                        //Try split on .
-                        var names = name.Split('.');
+                        //Try split on . etc
+                        var names = name.Split(new char[] {'.', '_', '-'}, StringSplitOptions.RemoveEmptyEntries);
+
+                        //Add splits by token 
                         foreach (var subname in names)
                         {
                             //Rule out initials
-                            if (subname.Length > 1 && subname.Length < 70) finals.Add(subname);
+                            if (subname.Length > 1 && subname.Length < 70)
+                            {
+                                finals.Add(subname);
+                                finals.Add(subname.ToLower());
+                            }
                         }
 
+                        //Remove any special characters and numbers at the end
+                        var match = Regex.Match(name, "^([a-z]*)", RegexOptions.IgnoreCase);
+                        if (match.Success) name = match.Groups[1].Value;
+                          
+                        //Add more splits by lookup
                         foreach (var entry in lookups)
                         {
-                            if (name == entry || name.StartsWith(entry)) finals.Add(entry);
+                            if (name.StartsWith(entry))
+                            {
+                                finals.Add(entry);
+                                finals.Add(entry.ToLower());
+
+                                var sub = name.Substring(entry.Length);
+                                finals.Add(sub);
+                                finals.Add(sub.ToLower());
+                            }
                         }
 
                         foreach (var final in finals)
