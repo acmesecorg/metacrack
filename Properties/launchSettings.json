@@ -1,0 +1,26 @@
+{
+  "profiles": {
+    "WSL": {
+      "commandName": "WSL2",
+      "environmentVariables": {},
+      "distributionName": ""
+    },
+    "Catalog": {
+      "commandName": "Project",
+      "commandLineArgs": "catalog c:\\input c:\\output --optimize"
+    },
+    "Catalog Help": {
+      "commandName": "Project",
+      "commandLineArgs": "catalog --help"
+    },
+    "Sql S3": {
+      "commandName": "Project",
+      "commandLineArgs": "sql \"f:\\wishbone users\" --s3 --columns 2 16"
+    },
+    "Export": {
+      "commandName": "Project",
+      "commandLineArgs": "wishbone-users-output.txt hashcat.potfile",
+      "workingDirectory": "d:\\"
+    }
+  }
+}
