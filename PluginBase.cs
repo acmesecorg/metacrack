@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Malfoy
@@ -33,6 +34,48 @@ namespace Malfoy
             emailStem = $"{nameSplits[0]}@{emailSplits[1]}";
 
             return true;
+        }
+
+        public static bool ValidateHash(string hash, int mode)
+        {
+            if (mode == 3200 && hash.Length != 60) return false;
+            if (mode == 10000 && hash.Length != 77) return false;
+
+            return true;
+        }
+
+        public static HashSet<String> GetTokens(string value)
+        {
+            var result = new HashSet<string>();
+
+            //Add the value
+            result.Add(value);
+
+            //Add the lowercase of the value
+            result.Add(value.ToLower());
+
+            //Split on space, - etc
+            var splits = value.Split(new char[] { ' ', '-', '.' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var split in splits)
+            {
+                result.Add(split);
+                result.Add(split.ToLower());
+
+                //Remove any special characters and numbers at the end
+                var match = Regex.Match(split, "^([a-z]*)", RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    var matchValue = match.Groups[1].Value;
+                    if (matchValue.Length > 2)
+                    {
+                        result.Add(match.Groups[1].Value);
+                        result.Add(match.Groups[1].Value.ToLower());
+                    }
+                }
+            }
+
+            return result;
         }
 
         public static string GetIdentifier(string email)

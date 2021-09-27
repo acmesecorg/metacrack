@@ -1,4 +1,8 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Malfoy
@@ -12,7 +16,7 @@ namespace Malfoy
 
             if (fileEntries.Length == 0)
             {
-                WriteError($"No .txt files found for {options.InputFolder}.");
+                WriteError($"No .txt files found for {options.InputFolder}");
                 return;
             }
 
@@ -22,15 +26,15 @@ namespace Malfoy
                 return;
             }
 
-            WriteMessage($"Using prefix {options.Prefix} .");
+            WriteMessage($"Using prefix {options.Prefix}");
 
-            if (options.Optimize) WriteMessage("Optimize enabled.");
-            if (options.Tokenize) WriteMessage("Tokenize enabled.");
+            if (options.Optimize) WriteMessage("Optimize enabled");
+            if (options.Tokenize) WriteMessage("Tokenize enabled");
 
             //Determine columns;
             int[] columns = (options.Columns.Count() == 0) ? new int[] {1} : Array.ConvertAll(options.Columns.ToArray(), s => int.Parse(s));
 
-            WriteMessage($"Using columns {String.Join(',', columns)}.");
+            WriteMessage($"Using columns {String.Join(',', columns)}");
 
             //Get files
             var fileEntriesSize = GetSizeOfEntries(fileEntries);
@@ -40,6 +44,7 @@ namespace Malfoy
             var progressTotal = 0L;
             var lineCount = 0L;
             var validCount = 0L;
+            var fileCount = 0;
 
             WriteMessage($"Started adding values at {DateTime.Now.ToShortTimeString()}.");
 
@@ -59,6 +64,8 @@ namespace Malfoy
                 //Process a file
                 foreach (var lookupPath in fileEntries)
                 {
+                    fileCount++;
+
                     using (var reader = new StreamReader(lookupPath))
                     {
                         while (!reader.EndOfStream)
@@ -109,7 +116,7 @@ namespace Malfoy
                             }
 
                             //Update the percentage
-                            WriteProgress("Reading files", progressTotal, fileEntriesSize);
+                            WriteProgress($"Processing file {fileCount} of {fileEntries.Count()}", progressTotal, fileEntriesSize);
                         }
                     }
 

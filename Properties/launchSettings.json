@@ -21,6 +21,11 @@
       "commandName": "Project",
       "commandLineArgs": "wishbone-users-output.txt hashcat.potfile",
       "workingDirectory": "d:\\"
+    },
+    "Lookup": {
+      "commandName": "Project",
+      "commandLineArgs": "lookup *.txt d:\\output",
+      "workingDirectory": "d:"
     }
   }
 }

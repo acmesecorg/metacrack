@@ -51,6 +51,8 @@ namespace Malfoy
 
                 //Write new text
                 Console.Write(text);
+
+                _lastProgressPercent = "";
             }
 
             //Check if progress text has changed

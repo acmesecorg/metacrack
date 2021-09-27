@@ -1,5 +1,11 @@
 ﻿using Microsoft.SqlServer.TransactSql.ScriptDom;
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+
 namespace Malfoy
 {
     [Plugin("sql")]
