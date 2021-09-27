@@ -5,7 +5,17 @@
       "ProjectGuid": "e20ae70c-dad3-42a5-8975-4bc4a3dc81af",
       "DisplayName": "Malfoy",
       "ColorIndex": 0
+    },
+    "af5eb382-90ca-40bc-9601-88e490b3c8d0": {
+      "ProjectGuid": "af5eb382-90ca-40bc-9601-88e490b3c8d0",
+      "DisplayName": "Malfoy",
+      "ColorIndex": 1
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
     }
   },
-  "NextColorIndex": 1
+  "NextColorIndex": 2
 }
