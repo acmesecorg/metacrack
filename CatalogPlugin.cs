@@ -7,8 +7,6 @@ namespace Malfoy
     {
         public static void Process(CatalogOptions options)
         {
-            WriteHighlight("Using catalog plugin");
-
             //Validate and display arguments
             var fileEntries = Directory.GetFiles(options.InputFolder, "*.txt", SearchOption.AllDirectories);
 
