@@ -27,6 +27,29 @@ namespace Malfoy
                 return;
             }
 
+            var removeHashes = new List<string>();
+            var removeWords = new List<string>();
+
+            if (options.RemoveHashesPath.Length > 0)
+            {
+                WriteMessage($"Removing hashes for {options.RemoveHashesPath}.");
+                removeHashes.AddRange(File.ReadAllLines(options.RemoveHashesPath));
+            }
+
+            if (options.RemoveWordsPath.Length > 0)
+            {
+                WriteMessage($"Removing associated words for {options.RemoveWordsPath}.");
+                removeWords.AddRange(File.ReadAllLines(options.RemoveWordsPath));
+
+                //Ensure that the row counts are the same, otherwise cancel both remove operations
+                if (removeHashes.Count() != removeWords.Count())
+                {
+                    WriteError($"Hash list count does not match associated word list count. Removal is disabled.");
+                    removeHashes.Clear();
+                    removeWords.Clear();
+                }
+            }
+
             //Load lookups into memory
             var lookups = new Dictionary<string, string>();
             var lineCount = 0;
@@ -83,7 +106,6 @@ namespace Malfoy
             var output = new List<string>();
             var found = new List<string>();
             var left = new List<string>();
-            var lefthash = new List<string>();
 
             size = GetSizeOfEntries(hashFileEntries);
 
@@ -99,13 +121,12 @@ namespace Malfoy
                 var fileName = Path.GetFileNameWithoutExtension(hashesPath);
                 var filePathName = $"{currentDirectory}\\{fileName}";
 
-                var plainsPath = $"{filePathName}-plains.txt";
-                var foundPath = $"{filePathName}-found.txt";
-                var leftPath = $"{filePathName}-left.txt";
-                var hashPath = $"{filePathName}-hash.txt";
+                var plainsPath = $"{filePathName}-plains.txt"; //email:plain
+                var foundPath = $"{filePathName}-found.txt"; //hash:plain
+                var leftPath = $"{filePathName}-left.txt"; //hash
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { plainsPath, foundPath, leftPath, hashPath }))
+                if (!CheckForFiles(new string[] { plainsPath, foundPath, leftPath}))
                 {
                     WriteHighlight($"Skipping {hashesPath}.");
                     continue;
@@ -114,7 +135,6 @@ namespace Malfoy
                 output.Clear();
                 found.Clear();
                 left.Clear();
-                lefthash.Clear();
 
                 var counter = 0;
 
@@ -158,7 +178,6 @@ namespace Malfoy
                                 else
                                 {
                                     lefts++;
-                                    lefthash.Add(originalHash);
                                 }
 
                             }
@@ -197,17 +216,28 @@ namespace Malfoy
 
                                 //Write out the founds on a per file basis
                                 found.Add($"{originalHash}:{plain}");
+
+                                //Sort out any removals
+                                if (removeHashes.Count > 0)
+                                {
+                                    var index = removeHashes.IndexOf(originalHash);
+                                    
+                                    if (index > -1)
+                                    {
+                                        removeHashes.RemoveAt(index);
+                                        if (removeWords.Count > 0) removeWords.RemoveAt(index);
+                                    }
+                                }
                             }
                             else
                             {
                                 lefts++;
                                 left.Add(line);
-                                lefthash.Add(originalHash);
                             }
                         }
 
                         //Update the percentage
-                        WriteProgress("Processing hashes.", progressTotal, size);
+                        WriteProgress("Processing hashes", progressTotal, size);
 
                         //Check if we need to write out 
                         if (counter > 1000000 && found.Count > 0)
@@ -216,12 +246,10 @@ namespace Malfoy
                             File.AppendAllLines(plainsPath, output);
                             File.AppendAllLines(foundPath, found);
                             File.AppendAllLines(leftPath, left);
-                            File.AppendAllLines(hashPath, lefthash);
 
                             output.Clear();
                             found.Clear();
                             left.Clear();
-                            lefthash.Clear();
                         }
                     }
                 }
@@ -236,7 +264,19 @@ namespace Malfoy
                     File.AppendAllLines(plainsPath, output);
                     File.AppendAllLines(foundPath, found);
                     File.AppendAllLines(leftPath, left);
-                    File.AppendAllLines(hashPath, lefthash);
+
+                    //Write out the removed hashes and words
+                    if (removeHashes.Count > 0)
+                    {
+                        File.Delete(options.RemoveHashesPath);
+                        File.AppendAllLines(options.RemoveHashesPath, removeHashes);
+
+                        if (removeWords.Count > 0)
+                        {
+                            File.Delete(options.RemoveWordsPath);
+                            File.AppendAllLines(options.RemoveWordsPath, removeWords);
+                        }
+                    }
                 }
             }
 

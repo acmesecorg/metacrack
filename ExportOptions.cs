@@ -24,6 +24,10 @@ namespace Malfoy
         [Option]
         public bool Base64 { get; set; }
 
+        [Option("remove")]
+        public string RemoveHashesPath { get; set; }
 
+        [Option("remove-associated")]
+        public string RemoveWordsPath { get; set; }
     }
 }
