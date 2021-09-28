@@ -7,7 +7,7 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog c:\\input c:\\output --optimize"
+      "commandLineArgs": "catalog d:\\swvl-input d:\\swvl-output --optimize"
     },
     "Catalog Help": {
       "commandName": "Project",
@@ -19,13 +19,23 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "wishbone-users-output.txt hashcat.potfile",
+      "commandLineArgs": "swvl-hashes.txt swvl-hashes.espvtg.output.txt --remove swvl-hashes.espvtg.hash --remove-associated swvl-hashes.espvtg.word",
       "workingDirectory": "d:\\"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup *.txt d:\\output",
+      "commandLineArgs": "lookup swvl-hashes-left.txt d:\\swvl-output",
       "workingDirectory": "d:"
+    },
+    "Stem": {
+      "commandName": "Project",
+      "commandLineArgs": "stem swvl-hashes-left.txt --names names.dict --hash 3200",
+      "workingDirectory": "d:\\"
+    },
+    "Blank": {
+      "commandName": "Project",
+      "commandLineArgs": "blank swvl-hashes.txt --hash 3200",
+      "workingDirectory": "d:\\"
     }
   }
 }
