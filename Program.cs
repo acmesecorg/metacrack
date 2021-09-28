@@ -38,9 +38,23 @@ namespace Malfoy
                         {
                             ConsoleUtil.WriteMessage($"Using {name} plugin", ConsoleColor.DarkYellow);
 
-                            type2.GetMethod("Process", BindingFlags.Public | BindingFlags.Static).Invoke(null, new object[] { obj });
+                            //Try regular synchronous invoke
+                            var method = type2.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);
 
-                            return;
+                            if (method != null)
+                            {
+                                method.Invoke(null, new object[] { obj });
+                                return;
+                            }
+
+                            //Try async method
+                            method = type2.GetMethod("ProcessAsync", BindingFlags.Public | BindingFlags.Static);
+                            if (method != null)
+                            {
+                                var task = (Task) method.Invoke(null, new object[] { obj });
+                                task.GetAwaiter().GetResult();
+                                return;
+                            }
                         }
                     }
 
