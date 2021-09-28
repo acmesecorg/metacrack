@@ -54,6 +54,7 @@ namespace Malfoy
             }
 
             if (options.Tokenize) WriteMessage("Tokenize enabled.");
+            if (options.Hash > 0) WriteMessage($"Validating hash mode {options.Hash}.");
 
             Console.WriteLine($"Started at {DateTime.Now.ToShortTimeString()}.");
 
@@ -69,7 +70,7 @@ namespace Malfoy
                 {
                     //Create a version based on the file size, so that the hash and dict are bound together
                     var fileInfo = new FileInfo(filePath);
-                    var version = Common.GetSerial(fileInfo);
+                    var version = GetSerial(fileInfo);
 
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
@@ -128,7 +129,7 @@ namespace Malfoy
                                     var key = emailHash[0].ToString("x2");
                                     var identifier = GetIdentifier(emailHash).Substring(2);
 
-                                    //We will jsut add the hash(+salt?) into the output now
+                                    //We will just add the hash(+salt?) into the output now
                                     if (!lookup.Buckets[key].ContainsKey(identifier)) lookup.Buckets[key].Add(identifier, inputHash);
                                 }
                             }

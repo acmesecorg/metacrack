@@ -20,6 +20,5 @@ namespace Malfoy
 
         [Option("tokenize", HelpText = "Attempts to turn each value into further sub values.")]
         public bool Tokenize { get; set; }
-
     }
 }
