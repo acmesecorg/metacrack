@@ -75,7 +75,7 @@ namespace Malfoy
 
         public static void CancelProgress()
         {
-            Console.Write(new string('\b', _lastProgressText.Length + _lastProgressPercent.Length));
+            Console.Write(new string('\b',Console.CursorLeft));
             Console.SetCursorPosition(0, Console.CursorTop);
 
             _lastProgressText = "";
