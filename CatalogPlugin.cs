@@ -59,7 +59,9 @@ namespace Malfoy
                 }
             }
 
-            using (var sha1 = SHA1.Create())
+            #pragma warning disable SYSLIB0021
+            //We keep using Sha1Managed for performance reasons
+            using (var sha1 = new SHA1Managed())
             {
                 //Process a file
                 foreach (var lookupPath in fileEntries)
