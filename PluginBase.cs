@@ -15,6 +15,7 @@ namespace Malfoy
         //Cache this for better performance. Since it is static, we dont worry so much about disposal
         private static SHA1 _sha1;
         private static long _sharedProgressTotal;
+        private static long _sharedProgress;
 
         public static bool ValidateEmail(string email, out string emailStem)
         {
@@ -95,6 +96,29 @@ namespace Malfoy
             return builder.ToString();
         }
 
+        public static string GetSerial(FileInfo fileInfo, string prefix = "")
+        {
+            var numberBytes = BitConverter.GetBytes(fileInfo.Length);
+            if (BitConverter.IsLittleEndian) Array.Reverse(numberBytes);
+
+            //Remove any leading zeros (this is a bit clunky)
+            var foos = new List<byte>(numberBytes);
+            while (foos[0] == 0x00) foos.RemoveAt(0);
+
+            numberBytes = foos.ToArray();
+
+            var version = Convert.ToBase64String(numberBytes).Replace("=", "").Replace("/", "").Replace("+", "");
+            return (version.Length > 6) ? $"{prefix}{version.ToLower().Substring(version.Length - 3, 3)}" : $"{prefix}{version.ToLower()}";
+        }
+
+        public static IEnumerable<List<T>> SplitList<T>(List<T> locations, int nSize = 256)
+        {
+            for (int i = 0; i < locations.Count; i += nSize)
+            {
+                yield return locations.GetRange(i, Math.Min(nSize, locations.Count - i));
+            }
+        }
+
         public static bool CheckForFiles(string[] paths)
         {
             return Common.CheckForFiles(paths);
@@ -130,10 +154,12 @@ namespace Malfoy
             _sharedProgressTotal = total;
         }
 
-        public static void WriteProgress(string text, long progress)
+        public static void AddToProgress(string text, long progress)
         {
             if (_sharedProgressTotal == 0) throw new ApplicationException("StartProgress total has not been set.");
-            ConsoleUtil.WriteProgress(text, progress, _sharedProgressTotal);
+            _sharedProgress += progress;
+
+            ConsoleUtil.WriteProgress(text, _sharedProgress, _sharedProgressTotal);
         }
 
         public static void WriteProgress(string text, long progress, long total)

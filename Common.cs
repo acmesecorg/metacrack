@@ -49,20 +49,5 @@ namespace Malfoy
 
             return true;
         }
-
-        public static string GetSerial(FileInfo fileInfo, string prefix = "")
-        {
-            var numberBytes = BitConverter.GetBytes(fileInfo.Length);
-            if (BitConverter.IsLittleEndian) Array.Reverse(numberBytes);
-
-            //Remove any leading zeros (this is a bit clunky)
-            var foos = new List<byte>(numberBytes);
-            while (foos[0] == 0x00) foos.RemoveAt(0);
-
-            numberBytes = foos.ToArray();
-
-            var version = Convert.ToBase64String(numberBytes).Replace("=", "").Replace("/", "").Replace("+", "");
-            return (version.Length > 6) ? $"{prefix}{version.ToLower().Substring(version.Length - 3, 3)}" : $"{prefix}{version.ToLower()}";
-        }
     }
 }
