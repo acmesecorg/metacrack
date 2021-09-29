@@ -14,11 +14,11 @@ namespace Malfoy
         public static void Process(SqlOptions options)
         {
             //Validate and display arguments
-            var sqlFileEntries = Directory.GetFiles(options.InputFolder, "*.sql", SearchOption.AllDirectories);
+            var sqlFileEntries = Directory.GetFiles(Directory.GetCurrentDirectory(), options.InputPath);
 
             if (sqlFileEntries.Length == 0)
             {
-                WriteError($"No .sql files found for {options.InputFolder}.");
+                WriteError($"No .sql files found for {options.InputPath}.");
                 return;
             }
 
