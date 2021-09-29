@@ -7,7 +7,7 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog d:\\swvl-input d:\\swvl-output --optimize"
+      "commandLineArgs": "catalog D:\\Input\\DailyMotion D:\\Output\\DailyMotion --optimize --prefix Meta"
     },
     "Catalog Help": {
       "commandName": "Project",
@@ -19,12 +19,12 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "swvl-hashes.txt swvl-hashes.espvtg.output.txt --remove swvl-hashes.espvtg.hash --remove-associated swvl-hashes.espvtg.word",
+      "commandLineArgs": "nitro-hashes.txt nitro.hm.3200.found",
       "workingDirectory": "d:\\"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup swvl-hashes-left.txt d:\\swvl-output",
+      "commandLineArgs": "lookup dailymotion-hashes-left.txt D:\\output\\DailyMotion --prefix Meta --hash 3200",
       "workingDirectory": "d:"
     },
     "Stem": {
@@ -32,10 +32,25 @@
       "commandLineArgs": "stem swvl-hashes-left.txt --names names.dict --hash 3200",
       "workingDirectory": "d:\\"
     },
-    "Blank": {
+    "Map": {
       "commandName": "Project",
-      "commandLineArgs": "blank swvl-hashes.txt --hash 3200",
+      "commandLineArgs": "map dailymotion-hashes.txt",
       "workingDirectory": "d:\\"
+    },
+    "Validate": {
+      "commandName": "Project",
+      "commandLineArgs": "validate yotapresto-hashes.txt --hash 3200 --iterations 12",
+      "workingDirectory": "d:\\"
+    },
+    "Export with Remove": {
+      "commandName": "Project",
+      "commandLineArgs": "swvl-hashes.txt swvl-hashes.espvtg.output.txt --remove swvl-hashes.espvtg.hash --remove-associated swvl-hashes.espvtg.word",
+      "workingDirectory": "d:\\"
+    },
+    "Sql S2": {
+      "commandName": "Project",
+      "commandLineArgs": "sql trickcoindb.sql --s2 --columns 2 3 --table `user_login`",
+      "workingDirectory": "d:"
     }
   }
 }
