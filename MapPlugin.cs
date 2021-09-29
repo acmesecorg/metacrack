@@ -1,15 +1,11 @@
 ﻿namespace Malfoy
 {
-    public class BlankPlugin : PluginBase
+    public class MapPlugin : PluginBase
     {
         private static string _outputHashPath = "";
         private static string _outputWordPath = "";
 
-        private static readonly object _lock = new object();
-
-        private const int TaskCount = 16;
-
-        public static void Process(BlankOptions options)
+        public static void Process(MapOptions options)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
             var fileEntries = Directory.GetFiles(currentDirectory, options.InputPath);
