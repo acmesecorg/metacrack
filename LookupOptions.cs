@@ -15,7 +15,7 @@ namespace Malfoy
         [Option("prefix", Default = "Password")]
         public string Prefix { get; set;}
 
-        [Option("hash")]
+        [Option("hash", Default = -1)]
         public int Hash { get; set; }
 
         [Option("tokenize", HelpText = "Attempts to turn each value into further sub values.")]

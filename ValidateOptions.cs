@@ -11,8 +11,8 @@ namespace Malfoy
         [Option("hash", Required = true)]
         public int Hash { get; set; }
 
-        [Option("iteration")]
-        public int Iteration { get; set; }
+        [Option("iterations")]
+        public int Iterations { get; set; }
 
         [Option("Column", Default = 1)]
         public int Column { get; set; }

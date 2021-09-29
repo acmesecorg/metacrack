@@ -56,7 +56,7 @@
 
                         if (splits.Length > options.Column)
                         {
-                            if (ValidateHash(splits[options.Column], options.Hash))
+                            if (ValidateHash(splits[options.Column], options.Hash, options.Iterations))
                             {
                                 valid.Add(line);
                             }

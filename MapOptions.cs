@@ -11,7 +11,7 @@ namespace Malfoy
         [Value(1, Required = false, Default ="", HelpText = "The path to the file(s) containing the items to map. Leave empty for a blank wordlist.")]
         public string MapPath { get; set; }
 
-        [Option("hash")]
+        [Option("hash", Default = -1)]
         public int Hash { get; set; }
     }
 }

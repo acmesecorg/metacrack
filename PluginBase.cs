@@ -40,6 +40,8 @@ namespace Malfoy
 
         public static bool ValidateHash(string hash, int mode, int iteration)
         {
+            if (mode == -1) return true;
+
             //Validate length
             if (mode == 0 && hash.Length != 32) return false;
             if (mode == 100 && hash.Length != 40) return false;
@@ -57,7 +59,7 @@ namespace Malfoy
             {
                 if (mode == 3200)
                 {
-                    var splits = hash.Split('$');
+                    var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
                     if (splits[1] != iteration.ToString()) return false;
                 }
             }
