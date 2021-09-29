@@ -12,15 +12,45 @@
 
             if (fileEntries.Length == 0)
             {
-                WriteMessage($"Lookup file(s) {options.InputPath} was not found.");
+                WriteMessage($"Lookup file(s) {options.InputPath} not found.");
                 return;
+            }
+
+            var mapEntries = new string[] { };
+
+            if (options.MapPath == "")
+            {
+                WriteMessage("No map path specified. Creating blank worldlist.");
+            }
+            else
+            {
+                mapEntries = Directory.GetFiles(currentDirectory, options.MapPath);
+
+                if (mapEntries.Length == 0)
+                {
+                    WriteMessage($"Map file(s) {options.MapPath} was not found.");
+                    return;
+                }
             }
 
             if (options.Hash > 0) WriteMessage($"Validating hash mode {options.Hash}.");
 
             WriteMessage($"Started at {DateTime.Now.ToShortTimeString()}.");
 
-            var size = Common.GetFileEntriesSize(fileEntries);
+            //Load map file entries
+            var map = new List<string>();
+
+            WriteMessage("Loading map files.");
+
+            foreach (var mapEntry in mapEntries)
+            {
+                map.AddRange(File.ReadAllLines(mapEntry));
+            }
+
+            //Cater for blank scenario ie no map entries
+            if (map.Count == 0) map.Add("");
+
+            var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
             var lineCount = 0;
 
@@ -32,11 +62,11 @@
 
                 var fileName = Path.GetFileNameWithoutExtension(filePath);
                 var filePathName = $"{currentDirectory}\\{fileName}";
-                _outputHashPath = $"{filePathName}.{version}.hash";
-                _outputWordPath = $"{filePathName}.{version}.word";
+                _outputHashPath = $"{filePathName}.map.hash";
+                _outputWordPath = $"{filePathName}.map.word";
 
                 //Check that there are no output files
-                if (!Common.CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))
+                if (!CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 
@@ -44,8 +74,8 @@
                     continue;
                 }
 
-                var inputs = new List<string>();
-                var blanks = new List<string>();
+                var hashes = new List<string>();
+                var words = new List<string>();
 
                 //Loop through and check if each email contains items from the lookup, if so add them
                 using (var reader = new StreamReader(filePath))
@@ -60,8 +90,12 @@
                             if (!ValidateEmail(splits[0], out var emailStem)) continue;
                             if (!ValidateHash(splits[1], options.Hash)) continue;
 
-                            inputs.Add(splits[1]);
-                            blanks.Add("");
+                            //Loop through the map and add hash and word pair
+                            foreach (var word in map)
+                            {
+                                hashes.Add(splits[1]);
+                                words.Add(word);
+                            }
                         }
 
                         lineCount++;
@@ -72,8 +106,8 @@
                     }
                 }
 
-                File.AppendAllLines(_outputHashPath, inputs);
-                File.AppendAllLines(_outputWordPath, blanks);
+                File.AppendAllLines(_outputHashPath, hashes);
+                File.AppendAllLines(_outputWordPath, words);
             }
 
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");            
