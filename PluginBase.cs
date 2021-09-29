@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Malfoy
 {
@@ -39,9 +35,44 @@ namespace Malfoy
 
         public static bool ValidateHash(string hash, int mode)
         {
+            return ValidateHash(hash, mode, 0);
+        }
+
+        public static bool ValidateHash(string hash, int mode, int iteration)
+        {
+            //Validate length
+            if (mode == 0 && hash.Length != 32) return false;
+            if (mode == 100 && hash.Length != 40) return false;
             if (mode == 3200 && hash.Length != 60) return false;
             if (mode == 10000 && hash.Length != 77) return false;
 
+            //Validate hex
+            if (mode == 0 || mode == 100)
+            {
+                if (!IsHex(hash)) return false;
+            }
+
+            //Validate iterations
+            if (iteration > 0)
+            {
+                if (mode == 3200)
+                {
+                    var splits = hash.Split('$');
+                    if (splits[1] != iteration.ToString()) return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static bool IsHex(IEnumerable<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                var isHex = ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+
+                if (!isHex) return false;
+            }
             return true;
         }
 
@@ -121,17 +152,41 @@ namespace Malfoy
 
         public static bool CheckForFiles(string[] paths)
         {
-            return Common.CheckForFiles(paths);
+            foreach (var path in paths)
+            {
+                if (File.Exists(path))
+                {
+                    var fileInfo = new FileInfo(path);
+
+                    WriteHighlight($"Existing file {fileInfo.Name} would be overwritten.");
+
+                    return false;
+                }
+            }
+
+            return true;
         }
 
-        public static long GetSizeOfEntries(string[] fileEntries)
+        public static long GetFileEntriesSize(string[] fileEntries)
         {
-            return Common.GetFileEntriesSize(fileEntries);
+            var size = 0L;
+
+            foreach (var lookupPath in fileEntries)
+            {
+                var fileInfo = new FileInfo(lookupPath);
+                size += fileInfo.Length;
+            }
+
+            return size;
         }
 
         public static string FormatSize(long bytes)
         {
-            return Common.FormatFileSize(bytes);
+            var unit = 1024;
+            if (bytes < unit) { return $"{bytes} B"; }
+
+            var exp = (int)(Math.Log(bytes) / Math.Log(unit));
+            return $"{bytes / Math.Pow(unit, exp):F2} {("KMGTPE")[exp - 1]}B";
         }
 
         public static void WriteError(string value)

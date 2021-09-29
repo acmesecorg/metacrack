@@ -45,7 +45,7 @@ namespace Malfoy
             var lookups = new HashSet<string>();
             var lineCount = 0;
 
-            var size = Common.GetFileEntriesSize(sourceFiles);
+            var size = GetFileEntriesSize(sourceFiles);
             var progressTotal = 0L;
 
             foreach (var lookupPath in sourceFiles)
@@ -68,7 +68,7 @@ namespace Malfoy
             }
 
 
-            size = Common.GetFileEntriesSize(fileEntries);
+            size = GetFileEntriesSize(fileEntries);
             progressTotal = 0L;
             lineCount = 0;
 
@@ -84,7 +84,7 @@ namespace Malfoy
                 _outputWordPath = $"{filePathName}.{version}.word";
 
                 //Check that there are no output files
-                if (!Common.CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))
+                if (!CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 

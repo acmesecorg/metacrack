@@ -30,7 +30,7 @@ namespace Malfoy
             var columns = Array.ConvertAll(options.Columns.ToArray(), int.Parse);
             var metas = (options.MetaColumns.Count() == 0) ? new int[0] : Array.ConvertAll(options.MetaColumns.ToArray(), int.Parse);
 
-            var size = GetSizeOfEntries(sqlFileEntries);
+            var size = GetFileEntriesSize(sqlFileEntries);
             var progressTotal = 0L;
             var lineCount = 0L;
 

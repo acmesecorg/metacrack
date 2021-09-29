@@ -37,7 +37,7 @@ namespace Malfoy
             WriteMessage($"Using columns {String.Join(',', columns)}");
 
             //Get files
-            var fileEntriesSize = GetSizeOfEntries(fileEntries);
+            var fileEntriesSize = GetFileEntriesSize(fileEntries);
 
             WriteMessage($"Found {fileEntries.Count()} text file entries ({FormatSize(fileEntriesSize)}) in all folders.");
 

@@ -54,7 +54,7 @@ namespace Malfoy
             var lookups = new Dictionary<string, string>();
             var lineCount = 0;
 
-            var size = GetSizeOfEntries(lookupFileEntries);
+            var size = GetFileEntriesSize(lookupFileEntries);
             var progressTotal = 0L;
 
             foreach (var lookupPath in lookupFileEntries)
@@ -107,7 +107,7 @@ namespace Malfoy
             var found = new List<string>();
             var left = new List<string>();
 
-            size = GetSizeOfEntries(hashFileEntries);
+            size = GetFileEntriesSize(hashFileEntries);
 
             var userHashCounts = 0;
             var fileUserHashCounts = 0;
