@@ -14,18 +14,16 @@ namespace Malfoy
 
         private struct FileLookup
         {
-            public FileLookup(string filename, string version)
+            public FileLookup(string filename)
             {
                 Buckets = new Dictionary<string, Dictionary<string, string>>(256);
                 Filename = filename;
-                Version = version;
                 Hashes = new List<string>();
                 Words = new List<string>();
             }
 
             public Dictionary<string, Dictionary<string, string>> Buckets;
             public string Filename;
-            public string Version;
             public List<string> Hashes;
             public List<string> Words;
         }
@@ -58,7 +56,7 @@ namespace Malfoy
 
             Console.WriteLine($"Started at {DateTime.Now.ToShortTimeString()}.");
 
-            var size = Common.GetFileEntriesSize(fileEntries);
+            var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
 
             //We only want to iterate through a file once, so we have lists of files and lists of their contents in buckets by hex key
@@ -70,12 +68,10 @@ namespace Malfoy
                 {
                     //Create a version based on the file size, so that the hash and dict are bound together
                     var fileInfo = new FileInfo(filePath);
-                    var version = GetSerial(fileInfo);
-
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
-                    var outputHashPath = $"{filePathName}.{version}.hash";
-                    var outputWordPath = $"{filePathName}.{version}.word";
+                    var outputHashPath = $"{filePathName}.hash";
+                    var outputWordPath = $"{filePathName}.word";
 
                     //Check that there are no output files
                     if (!CheckForFiles(new string[] { outputHashPath, outputWordPath }))
@@ -87,7 +83,7 @@ namespace Malfoy
                     }
 
                     //Add the files to the list of filenames
-                    var lookup = new FileLookup(fileName, version);
+                    var lookup = new FileLookup(fileName);
                     
                     long lineCount = 0;
 
@@ -241,8 +237,8 @@ namespace Malfoy
 
                 var filePathName = $"{currentDirectory}\\{lookup.Filename}";
 
-                File.AppendAllLines($"{filePathName}.{lookup.Version}.hash", lookup.Hashes);
-                File.AppendAllLines($"{filePathName}.{lookup.Version}.word", lookup.Words);
+                File.AppendAllLines($"{filePathName}.hash", lookup.Hashes);
+                File.AppendAllLines($"{filePathName}.word", lookup.Words);
             }
         }
     }
