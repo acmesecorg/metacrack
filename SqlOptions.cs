@@ -16,7 +16,7 @@ namespace Malfoy
         [Option]
         public IEnumerable<string> Columns { get; set; }
 
-        [Option]
+        [Option("meta")]
         public IEnumerable<string> MetaColumns { get; set; }
 
         [Option("s2", HelpText = "Parses SQL using mode 2")]

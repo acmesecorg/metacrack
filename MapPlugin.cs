@@ -58,10 +58,9 @@
             {
                 //Create a version based on the file size, so that the hash and dict are bound together
                 var fileInfo = new FileInfo(filePath);
-                var version = GetSerial(fileInfo, "b");
-
                 var fileName = Path.GetFileNameWithoutExtension(filePath);
                 var filePathName = $"{currentDirectory}\\{fileName}";
+
                 _outputHashPath = $"{filePathName}.map.hash";
                 _outputWordPath = $"{filePathName}.map.word";
 
