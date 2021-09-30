@@ -45,6 +45,7 @@ namespace Malfoy
             //Validate length
             if (mode == 0 && hash.Length != 32) return false;
             if (mode == 100 && hash.Length != 40) return false;
+            if (mode == 400 && hash.Length != 34) return false;
             if (mode == 3200 && hash.Length != 60) return false;
             if (mode == 10000 && hash.Length != 77) return false;
 
@@ -52,6 +53,12 @@ namespace Malfoy
             if (mode == 0 || mode == 100)
             {
                 if (!IsHex(hash)) return false;
+            }
+
+            //Validate prefix
+            if (mode == 400)
+            {
+                if (!hash.StartsWith("$P$B")) return false;
             }
 
             //Validate iterations

@@ -67,8 +67,6 @@
                     WriteMessage($"{pair.Key}{new string(' ', longest - pair.Key.Length + longestValue - pair.Value.ToString().Length)}{pair.Value} ({percent}%)");
                 }
             }
-
-            WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");            
         }
     }
 }

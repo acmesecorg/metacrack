@@ -76,12 +76,10 @@ namespace Malfoy
             {
                 //Create a version based on the file size, so that the hash and dict are bound together
                 var fileInfo = new FileInfo(filePath);
-                var version = GetSerial(fileInfo, "s");
-
                 var fileName = Path.GetFileNameWithoutExtension(filePath);
                 var filePathName = $"{currentDirectory}\\{fileName}";
-                _outputHashPath = $"{filePathName}.{version}.hash";
-                _outputWordPath = $"{filePathName}.{version}.word";
+                _outputHashPath = $"{filePathName}.stem.hash";
+                _outputWordPath = $"{filePathName}.stem.word";
 
                 //Check that there are no output files
                 if (!CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))

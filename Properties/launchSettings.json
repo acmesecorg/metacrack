@@ -9,10 +9,6 @@
       "commandName": "Project",
       "commandLineArgs": "catalog D:\\Input\\DailyMotion D:\\Output\\DailyMotion --optimize --prefix Meta"
     },
-    "Catalog Help": {
-      "commandName": "Project",
-      "commandLineArgs": "catalog --help"
-    },
     "Sql S3": {
       "commandName": "Project",
       "commandLineArgs": "sql \"f:\\wishbone users\" --s3 --columns 2 16"
@@ -29,7 +25,7 @@
     },
     "Stem": {
       "commandName": "Project",
-      "commandLineArgs": "stem swvl-hashes-left.txt --names names.dict --hash 3200",
+      "commandLineArgs": "stem gunexchange-users-output-l4 --names names.dict --hash 400",
       "workingDirectory": "d:\\"
     },
     "Map": {
@@ -44,7 +40,7 @@
     },
     "Export with Remove": {
       "commandName": "Project",
-      "commandLineArgs": "swvl-hashes.txt swvl-hashes.espvtg.output.txt --remove swvl-hashes.espvtg.hash --remove-associated swvl-hashes.espvtg.word",
+      "commandLineArgs": "dailymotion-hashes-left.txt dailymotion-hashes-left.output.txt --remove dailymotion-hashes-left.hash --remove-associated dailymotion-hashes-left.word",
       "workingDirectory": "d:\\"
     },
     "Sql S2": {
