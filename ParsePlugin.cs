@@ -82,15 +82,7 @@
                 }
 
                 //Check if we must deduplicate
-                if (options.Deduplicate)
-                {
-                    File.AppendAllLines(outputPath, output.Distinct());
-                }
-                else
-                {
-                    File.AppendAllLines(outputPath, output);
-                }
-
+                File.AppendAllLines(outputPath, options.Deduplicate ? output.Distinct() : output);
                 File.AppendAllLines(outputNotParsedPath, notparsed);
             }
         }
