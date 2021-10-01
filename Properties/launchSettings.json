@@ -57,6 +57,11 @@
       "commandName": "Project",
       "commandLineArgs": "rank dailymotion-hashes-left.temp.txt",
       "workingDirectory": "d:\\"
+    },
+    "Parse": {
+      "commandName": "Project",
+      "commandLineArgs": "parse passwords-new.txt --deduplicate",
+      "workingDirectory": "d:\\"
     }
   }
 }

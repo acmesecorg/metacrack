@@ -67,7 +67,6 @@ namespace Malfoy
                 }
             }
 
-
             size = GetFileEntriesSize(fileEntries);
             progressTotal = 0L;
             lineCount = 0;
@@ -131,7 +130,7 @@ namespace Malfoy
 
                 WriteProgress("Running stem tasks", progressTotal, TaskCount);
 
-                //Wait for tasks to complate
+                //Wait for tasks to complete
                 while (tasks.Count > 0)
                 {
                     var task = await Task.WhenAny(tasks);

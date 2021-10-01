@@ -182,8 +182,6 @@ namespace Malfoy
                     var splits = line.Split(new char[] { ':' }, 2);
                     var identifier = splits[0].ToLower();
 
-                    //if (email.StartsWith("mail.adikukreja@gmail.com")) lastEmail = email;
-
                     //We dont want to inject loads of combolists and bad data. This also seems to break attack mode 9
                     //So track the previous email record
                     if (lastIdentifier == identifier)

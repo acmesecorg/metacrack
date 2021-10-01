@@ -36,7 +36,7 @@ namespace Malfoy
 
                         if (attr.Name == name)
                         {
-                            ConsoleUtil.WriteMessage($"Using {name} plugin", ConsoleColor.DarkYellow);
+                            ConsoleUtil.WriteMessage($"Using {name}", ConsoleColor.DarkYellow);
 
                             //Try regular synchronous invoke
                             var method = type2.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);
@@ -57,15 +57,17 @@ namespace Malfoy
                             }
                         }
                     }
-
-                    //Display exception message here
                 }
             }
+
+            //Display exception message here
+            ConsoleUtil.WriteMessage($"Could not find plugin or options.", ConsoleColor.DarkRed);
         }
 
         private static void HandleErrors(IEnumerable<Error> obj)
         {
-            //throw new NotImplementedException();
+            //Display exception message here
+            foreach (var error in obj) ConsoleUtil.WriteMessage($"{error}", ConsoleColor.DarkRed);
         }
 
         //load all types using Reflection
