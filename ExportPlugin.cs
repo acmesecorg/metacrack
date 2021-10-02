@@ -119,11 +119,11 @@ namespace Malfoy
             foreach (var hashesPath in hashFileEntries)
             {
                 var fileName = Path.GetFileNameWithoutExtension(hashesPath);
-                var filePathName = $"{currentDirectory}\\{fileName}";
+                
 
-                var plainsPath = $"{filePathName}-plains.txt"; //email:plain
-                var foundPath = $"{filePathName}-found.txt"; //hash:plain
-                var leftPath = $"{filePathName}-left.txt"; //hash
+                var plainsPath = $"{currentDirectory}\\{fileName}.plains.txt"; //email:plain
+                var foundPath = $"{currentDirectory}\\{fileName}.found.txt"; //hash:plain
+                var leftPath = $"{currentDirectory}\\{IncrementFilename(fileName, "left")}.txt"; //hash
 
                 //Check that there are no output files
                 if (!CheckForFiles(new string[] { plainsPath, foundPath, leftPath}))

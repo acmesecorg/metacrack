@@ -13,6 +13,43 @@ namespace Malfoy
         private static long _sharedProgressTotal;
         private static long _sharedProgress;
 
+        public static string IncrementFilename(string filenameNoExtension, string type)
+        {
+            var dottype = $".{type}";
+
+            //Check if the type is already in the filename
+            if (!filenameNoExtension.Contains(dottype)) return $"{filenameNoExtension}{dottype}";
+
+            //Find the type and increment it by one
+            var splits = filenameNoExtension.Split('.');
+            var result = new List<string>();
+
+            foreach (var split in splits)
+            {
+                //First instance
+                if (split == type)
+                {
+                    result.Add($"{type}2");
+                    continue;
+                }
+
+                if (split.StartsWith(type))
+                {
+                    var valueString = split.Substring(type.Length);
+                    if (int.TryParse(valueString, out var value))
+                    {
+                        value++;
+                        result.Add($"{type}{value}");
+                        continue;
+                    }
+                }
+
+                result.Add(split);
+            }
+
+            return string.Join(".", result);
+        }
+
         public static bool ValidateEmail(string email, out string emailStem)
         {
             emailStem = null;
