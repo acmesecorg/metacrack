@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Malfoy
 {
@@ -53,6 +54,15 @@ namespace Malfoy
 
             if (options.Tokenize) WriteMessage("Tokenize enabled.");
             if (options.Hash > 0) WriteMessage($"Validating hash mode {options.Hash}.");
+
+            if (options.Stem && options.StemOnly)
+            {
+                WriteError("Options stem and stem-only cannot both be specified.");
+                return;
+            }
+
+            if (options.Stem) WriteMessage($"Using stem option.");
+            if (options.StemOnly) WriteMessage($"Using stem-only option.");
 
             Console.WriteLine($"Started at {DateTime.Now.ToShortTimeString()}.");
 
@@ -150,7 +160,7 @@ namespace Malfoy
                     {
                         var key = $"{hex1}{hex2}";
                         var sourcePath = $"{options.SourceFolder}\\{options.Prefix}-{key}.txt";
-                        DoLookup(key, currentDirectory, sourcePath, lookups, options.Tokenize);
+                        DoLookup(key, currentDirectory, sourcePath, lookups, options);
 
                         bucketCount++;
                         WriteProgress($"Looking up key {key}", bucketCount, 256);
@@ -161,7 +171,7 @@ namespace Malfoy
             }
         }
 
-        private static void DoLookup(string key, string currentDirectory, string sourcePath, List<FileLookup> lookups, bool tokenize)
+        private static void DoLookup(string key, string currentDirectory, string sourcePath, List<FileLookup> lookups, LookupOptions options)
         {
             //Clear each lookup outputs
             foreach (var lookup in lookups)
@@ -175,6 +185,7 @@ namespace Malfoy
             {
                 var lastIdentifier = "";
                 var lastIdentifierCount = 0;
+                var stems = new List<string>();
 
                 while (!reader.EndOfStream)
                 {
@@ -191,7 +202,9 @@ namespace Malfoy
                     else
                     {
                         lastIdentifierCount = 0;
+                        stems.Clear();
                     }
+
                     lastIdentifier = identifier;
 
                     if (lastIdentifierCount < IdentifierCountMax && splits.Length == 2 && !string.IsNullOrEmpty(splits[0]) && !string.IsNullOrEmpty(splits[1]) && splits[1].Length < LookupValueLengthMax)
@@ -207,19 +220,17 @@ namespace Malfoy
 
                                 if (!string.IsNullOrEmpty(hash))
                                 {
-                                    if (tokenize)
+                                    if (options.Tokenize)
                                     {
                                         var tokens = GetTokens(splits[1]);
                                         foreach (var token in tokens)
                                         {
-                                            lookup.Hashes.Add(hash);
-                                            lookup.Words.Add(token);
+                                            AddToLookup(hash,token, lookup, options, stems);
                                         }
                                     }
                                     else
                                     {
-                                        lookup.Hashes.Add(hash);
-                                        lookup.Words.Add(splits[1]);
+                                        AddToLookup(hash, splits[1], lookup, options, stems);
                                     }
                                 }
                             }
@@ -237,6 +248,40 @@ namespace Malfoy
 
                 File.AppendAllLines($"{filePathName}.hash", lookup.Hashes);
                 File.AppendAllLines($"{filePathName}.word", lookup.Words);
+            }
+        }
+
+        private static void AddToLookup(string hash, string password, FileLookup lookup, LookupOptions options, List<String> stems)
+        {
+            if (!options.Stem && !options.StemOnly)
+            {
+                lookup.Hashes.Add(hash);
+                lookup.Words.Add(password);
+                return;
+            }
+
+            //Remove any special characters and numbers at the end
+            //Regex expression is cached
+            var match = Regex.Match(password, "^([a-z]*)", RegexOptions.IgnoreCase);
+
+            if (match.Success && match.Value.Length > 3)
+            {
+                //We stem lower always
+                var stem = match.Value.ToLower();
+
+                //Stem only adds if the words are different. and if we havent already added it for this identifier
+                if (!string.Equals(stem, password) && !stems.Contains(stem))
+                {
+                    lookup.Hashes.Add(hash);
+                    lookup.Words.Add(stem);
+                    stems.Add(stem);
+                }
+            }
+
+            if (!options.StemOnly)
+            {
+                lookup.Hashes.Add(hash);
+                lookup.Words.Add(password);
             }
         }
     }

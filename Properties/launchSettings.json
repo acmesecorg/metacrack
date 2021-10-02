@@ -15,13 +15,13 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "gunexchange-users-output.txt gunexchange.400.found",
-      "workingDirectory": "D:\\UtahGunExchange (400)"
+      "commandLineArgs": "dailymotion.left.txt dailymotion-hashes-temp.output.txt",
+      "workingDirectory": "d:"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup *.txt d:\\output --hash 3200",
-      "workingDirectory": "D:\\Malfoy"
+      "commandLineArgs": "lookup dailymotion-hashes-left3.txt d:\\output --hash 3200 --stem-only",
+      "workingDirectory": "d:\\"
     },
     "Stem": {
       "commandName": "Project",

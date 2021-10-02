@@ -20,5 +20,12 @@ namespace Malfoy
 
         [Option("tokenize", HelpText = "Attempts to turn each value into further sub values.")]
         public bool Tokenize { get; set; }
+
+        [Option("stem", HelpText = "Adds a stemmed version of the password to the output.")]
+        public bool Stem { get; set; }
+
+        [Option("stem-only", HelpText = "Outputs a stemmed version of the password only.")]
+        public bool StemOnly { get; set; }
+
     }
 }
