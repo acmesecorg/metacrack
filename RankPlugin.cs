@@ -45,7 +45,7 @@
                 var sorted = dict.OrderByDescending(x => x.Value).Take(options.Count);
                 var total = dict.Keys.Count();
 
-                WriteMessage($"Results for: {fileInfo.Name}{fileInfo.Extension} ({total} entries)");
+                WriteMessage($"Results for: {fileInfo.Name} ({total} entries)");
 
                 //Loop through and count longest word
                 var longest = 0;

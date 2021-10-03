@@ -31,6 +31,7 @@ namespace Malfoy
         public static void WriteProgress(string text, int percent)
         {
             if (text == null) throw new ArgumentNullException("text");
+            if (percent > 100) percent = 100;
 
             Console.CursorVisible = false;
 

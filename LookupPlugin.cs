@@ -69,8 +69,15 @@ namespace Malfoy
             var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
 
+            var updateMod = 1000;
+            if (size > 100000000) updateMod = 10000;
+
             //We only want to iterate through a file once, so we have lists of files and lists of their contents in buckets by hex key
             var lookups = new List<FileLookup>();
+            var variation = "";
+
+            if (options.Stem) variation = "stem";
+            if (options.StemOnly) variation = "stemonly";
 
             using (var sha1 = SHA1.Create())
             {
@@ -80,8 +87,8 @@ namespace Malfoy
                     var fileInfo = new FileInfo(filePath);
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
-                    var outputHashPath = $"{filePathName}.hash";
-                    var outputWordPath = $"{filePathName}.word";
+                    var outputHashPath = $"{filePathName}{variation}.hash";
+                    var outputWordPath = $"{filePathName}{variation}.word";
 
                     //Check that there are no output files
                     if (!CheckForFiles(new string[] { outputHashPath, outputWordPath }))
@@ -141,7 +148,7 @@ namespace Malfoy
                             }
 
                             //Update the percentage
-                            WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
+                            if (lineCount % updateMod == 0) WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
                         }
                     }
 

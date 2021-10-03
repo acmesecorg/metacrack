@@ -62,7 +62,7 @@ namespace Malfoy
                         if (line.Length >= 3 && line.Length < 70) lookups.Add(line.ToLower());
 
                         //Update the percentage
-                        WriteProgress("Loading names", progressTotal, size);
+                        if (lineCount % 1000 == 0) WriteProgress("Loading names", progressTotal, size);
                     }
                 }
             }
@@ -111,7 +111,7 @@ namespace Malfoy
                         progressTotal += line.Length;
 
                         //Update the percentage
-                        WriteProgress("Processing files", progressTotal, size);
+                        WriteProgress($"Processing {fileName}", progressTotal, size);
                     }
                 }
 

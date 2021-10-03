@@ -39,6 +39,8 @@
                     continue;
                 }
 
+                var lineCount = 0;
+
                 //Loop through and check if each email contains items from the lookup, if so add them
                 using (var reader = new StreamReader(filePath))
                 {
@@ -48,6 +50,7 @@
                     {
                         var line = reader.ReadLine();
 
+                        lineCount++;
                         progressTotal += line.Length + 1;
 
                         //Password must follow line after email, or everythign is reset
@@ -77,7 +80,7 @@
                         }
 
                         //Update the percentage
-                        WriteProgress("Parsing files", progressTotal, size);
+                        if (lineCount == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
                     }
                 }
 

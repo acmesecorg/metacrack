@@ -96,7 +96,7 @@ namespace Malfoy
                         }
 
                         //Update the percentage
-                        WriteProgress("Loading lookups", progressTotal, size);
+                        if (lineCount % 1000 == 0) WriteProgress("Loading lookups", progressTotal, size);
                     }
                 }
             }
@@ -119,8 +119,6 @@ namespace Malfoy
             foreach (var hashesPath in hashFileEntries)
             {
                 var fileName = Path.GetFileNameWithoutExtension(hashesPath);
-                
-
                 var plainsPath = $"{currentDirectory}\\{fileName}.plains.txt"; //email:plain
                 var foundPath = $"{currentDirectory}\\{fileName}.found.txt"; //hash:plain
                 var leftPath = $"{currentDirectory}\\{IncrementFilename(fileName, "left")}.txt"; //hash

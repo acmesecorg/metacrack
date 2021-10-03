@@ -74,7 +74,7 @@
                         progressTotal += line.Length;
 
                         //Update the percentage
-                        WriteProgress("Processing files", progressTotal, size);
+                        if (lineCount % 1000 == 0) WriteProgress($"Processing {fileName}", progressTotal, size);
                     }
                 }
 

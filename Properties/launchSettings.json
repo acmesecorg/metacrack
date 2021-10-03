@@ -7,7 +7,7 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog D:\\Input\\DailyMotion D:\\Output\\DailyMotion --optimize --prefix Meta"
+      "commandLineArgs": "catalog D:\\Input\\DailyMotion D:\\Output\\DailyMotion --prefix Meta"
     },
     "Sql S3": {
       "commandName": "Project",
@@ -50,8 +50,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql quikipay2.sql --columns 2 4 --meta 1 --table `users`",
-      "workingDirectory": "D:\\Quickipay (3200)"
+      "commandLineArgs": "sql Zynga.com.sql --columns 1 8 7 --meta 2 --table `users`",
+      "workingDirectory": "D:\\Zynga (27200)"
     },
     "Rank": {
       "commandName": "Project",
@@ -62,6 +62,11 @@
       "commandName": "Project",
       "commandLineArgs": "parse passwords-new.txt --deduplicate",
       "workingDirectory": "d:\\"
+    },
+    "Split": {
+      "commandName": "Project",
+      "commandLineArgs": "split badoo.txt 32kk",
+      "workingDirectory": "D:\\Badoo (0)"
     }
   }
 }
