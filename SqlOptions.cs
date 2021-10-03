@@ -25,6 +25,10 @@ namespace Malfoy
         [Option("s3", HelpText = "Parses SQL using mode 3")]
         public bool S3Mode { get; set; }
 
+
+        [Option("debug", HelpText = "Helps debug sql inputs")]
+        public bool Debug { get; set; }
+
         [Value(0, Required = true, HelpText = "The input path to the .sql file(s).")]
         public string InputPath { get; set; }
     }

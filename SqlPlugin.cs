@@ -37,6 +37,7 @@ namespace Malfoy
             var fileOutput = new List<string>();
             var metaOutput = new List<string>();
             var exampleCount = 0;
+            var debugCount = 0;
 
             var currentDirectory = Directory.GetCurrentDirectory();
 
@@ -125,6 +126,30 @@ namespace Malfoy
                                                     var outputs = new List<string>();
                                                     var metaoutputs = new List<string>();
 
+                                                    //Do a line of debug
+                                                    if (debugCount < 9 && options.Debug)
+                                                    {
+                                                        var debugColumn = 0;
+
+                                                        WriteMessage("-- Row --");
+
+                                                        foreach (var columnValue in rowValues.ColumnValues)
+                                                        {
+                                                            var literal = columnValue as Literal;
+                                                            var literalValue = (literal.Value == "NULL") ? "" : literal.Value;
+
+                                                            WriteMessage($"column {debugColumn}:{literalValue}");
+
+                                                            debugColumn++;
+                                                        }
+
+                                                        
+                                                        debugCount++;
+
+                                                        //Just quit
+                                                        if (debugCount > 8) return;                                                        
+                                                    }
+
                                                     foreach (var column in columns)
                                                     {
                                                         var literal = rowValues.ColumnValues[column] as Literal;
@@ -196,7 +221,7 @@ namespace Malfoy
                         }
 
                         //Update the percentage
-                        WriteProgress("Parsing Sql", progressTotal, size);
+                        if (lineCount % 1000 == 0) WriteProgress("Parsing Sql", progressTotal, size);
                     }
                 }
 
