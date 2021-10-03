@@ -96,7 +96,7 @@ namespace Malfoy
                         }
 
                         //Update the percentage
-                        if (lineCount % 1000 == 0) WriteProgress("Loading lookups", progressTotal, size);
+                        if (lineCount % 1000 == 0) WriteProgress("Loading founds", progressTotal, size);
                     }
                 }
             }
@@ -235,7 +235,7 @@ namespace Malfoy
                         }
 
                         //Update the percentage
-                        WriteProgress("Processing hashes", progressTotal, size);
+                        if (counter % 1000 == 0) WriteProgress("Processing hashes", progressTotal, size);
 
                         //Check if we need to write out 
                         if (counter > 1000000 && found.Count > 0)
