@@ -28,7 +28,7 @@ namespace Malfoy
 
             WriteMessage($"Using prefix {options.Prefix}");
 
-            if (options.Optimize) WriteMessage("Optimize enabled");
+            if (!options.NoOptimize) WriteMessage("Optimize enabled");
             if (options.Tokenize) WriteMessage("Tokenize enabled");
 
             //Determine columns;
@@ -116,11 +116,11 @@ namespace Malfoy
                                     }
                                 }
                             }
-
-                            //Update the percentage
-                            WriteProgress($"Processing file {fileCount} of {fileEntries.Count()}", progressTotal, fileEntriesSize);
                         }
                     }
+
+                    //Update the percentage
+                    WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
 
                     //For now we just write out after every file, although that may need to change in future
                     foreach (var hex1 in Hex)
@@ -135,7 +135,7 @@ namespace Malfoy
                     }
                 }
 
-                if (options.Optimize)
+                if (!options.NoOptimize)
                 {
                     WriteMessage($"Optimising buckets.");
 
