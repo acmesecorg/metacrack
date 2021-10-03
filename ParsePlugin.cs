@@ -15,11 +15,16 @@
 
             var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
-            var output = new List<string>();
-            var notparsed = new List<string>();
+
+            //Determine columns;
+            int[] columns = (options.Columns.Count() == 0) ? new int[] { 1 } : Array.ConvertAll(options.Columns.ToArray(), s => int.Parse(s));
+            int maxColumn = columns.Max();
 
             foreach (var filePath in fileEntries)
             {
+                var output = new List<string>();
+                var notparsed = new List<string>();
+
                 var fileInfo = new FileInfo(filePath);
                 var dict = new Dictionary<string, int>();
 
@@ -28,7 +33,7 @@
                 var filePathName = $"{currentDirectory}\\{fileName}";
 
                 var outputPath = $"{filePathName}.parse.txt";
-                var outputNotParsedPath = $"{filePathName}.notparsed.txt";
+                var outputNotParsedPath = $"{filePathName}.noparse.txt";
 
                 //Check that there are no output files
                 if (!CheckForFiles(new string[] { outputPath, outputNotParsedPath }))
@@ -51,36 +56,58 @@
                         var line = reader.ReadLine();
 
                         lineCount++;
-                        progressTotal += line.Length + 1;
+                        progressTotal += line.Length + 2;
 
-                        //Password must follow line after email, or everythign is reset
-                        if (line.StartsWith("Username:"))
+                        if (options.ParseType == 0)
                         {
-                            var token = line.Split("Username:", StringSplitOptions.TrimEntries)[1];
-                            if (ValidateEmail(token, out var emailSteam))
+                            //Password must follow line after email, or everythign is reset
+                            if (line.StartsWith("Username:"))
                             {
-                                email = emailSteam;
+                                var token = line.Split("Username:", StringSplitOptions.TrimEntries)[1];
+                                if (ValidateEmail(token, out var emailSteam))
+                                {
+                                    email = emailSteam;
+                                }
+                                else
+                                {
+                                    notparsed.Add(line);
+                                }
+                            }
+                            else if (line.StartsWith("Password:") && email != "")
+                            {
+                                var password = line.Split("Password:", StringSplitOptions.TrimEntries)[1];
+
+                                output.Add($"{email}:{password}");
+                                email = "";
+                            }
+                            else
+                            {
+                                email = "";
+                                notparsed.Add(line);
+                            }
+                        }
+                        //Split by delimiter
+                        else if (options.ParseType == 1)
+                        {
+                            var splits = line.Split(options.Delimiter, StringSplitOptions.TrimEntries);
+                            var values = new List<string>();
+
+                            if (splits.Length > maxColumn)
+                            {
+                                foreach (var column in columns)
+                                {
+                                    values.Add(splits[column]);
+                                }
+                                output.Add(String.Join(":", values));
                             }
                             else
                             {
                                 notparsed.Add(line);
                             }
                         }
-                        else if (line.StartsWith("Password:") && email != "")
-                        {
-                            var password = line.Split("Password:", StringSplitOptions.TrimEntries)[1];
-
-                            output.Add($"{email}:{password}");
-                            email = "";
-                        }
-                        else
-                        {
-                            email = "";
-                            notparsed.Add(line);
-                        }
 
                         //Update the percentage
-                        if (lineCount == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
+                        if (lineCount % 1000 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
                     }
                 }
 
