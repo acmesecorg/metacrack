@@ -19,8 +19,8 @@ namespace Malfoy
         [Option("prefix", Default = "Password")]
         public string Prefix { get; set;}
 
-        [Option("optimize", HelpText = "Removes duplicates and sorts each data file after data is added.")]
-        public bool Optimize { get; set; }
+        [Option("no-optimize", HelpText = "Prevents optimisation from running after data is added.")]
+        public bool NoOptimize { get; set; }
 
         [Option("tokenize", HelpText = "Attempts to turn each value into further sub values.")]
         public bool Tokenize { get; set; }
