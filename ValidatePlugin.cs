@@ -16,7 +16,22 @@
                 return;
             }
 
+            if (options.Hash == -1 && !options.ValidateEmailOnly)
+            {
+                WriteMessage("Specify a hash mode using the --hash option.");
+                return;
+            }
+
             WriteMessage($"Validating hash mode {options.Hash}.");
+
+            if (options.ValidateEmail && options.ValidateEmailOnly)
+            {
+                WriteMessage("Options--email and --email-only cannot both be specified.");
+                return;
+            }
+
+            if (options.ValidateEmail) WriteMessage("Validating email.");
+            if (options.ValidateEmailOnly) WriteMessage("Validating email only.");
 
             WriteMessage($"Started at {DateTime.Now.ToShortTimeString()}.");
 
@@ -53,10 +68,13 @@
                     {
                         var line = reader.ReadLine();
                         var splits = line.Split(':');
+                        var emailValid = true;
 
-                        if (splits.Length > options.Column)
+                        if (options.ValidateEmail || options.ValidateEmailOnly) emailValid = ValidateEmail(splits[0], out var emailStem);
+
+                        if (options.ValidateEmailOnly)
                         {
-                            if (ValidateHash(splits[options.Column], options.Hash, options.Iterations))
+                            if (emailValid)
                             {
                                 valid.Add(line);
                             }
@@ -67,7 +85,21 @@
                         }
                         else
                         {
-                            invalid.Add(line);
+                            if (emailValid && splits.Length > options.Column)
+                            {
+                                if (ValidateHash(splits[options.Column], options.Hash, options.Iterations))
+                                {
+                                    valid.Add(line);
+                                }
+                                else
+                                {
+                                    invalid.Add(line);
+                                }
+                            }
+                            else
+                            {
+                                invalid.Add(line);
+                            }
                         }
 
                         lineCount++;
@@ -75,11 +107,21 @@
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Processing {fileName}", progressTotal, size);
+
+                        //Dump the output every 1kk lines
+                        if (lineCount % 1000000 == 0)
+                        {
+                            if (valid.Count > 0) File.AppendAllLines(_outputValidPath, valid);
+                            if (invalid.Count > 0) File.AppendAllLines(_outputInvalidPath, invalid);
+
+                            valid.Clear();
+                            invalid.Clear();
+                        }
                     }
                 }
 
-                File.AppendAllLines(_outputValidPath, valid);
-                File.AppendAllLines(_outputInvalidPath, invalid);
+                if (valid.Count > 0) File.AppendAllLines(_outputValidPath, valid);
+                if (invalid.Count > 0) File.AppendAllLines(_outputInvalidPath, invalid);
             }
 
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");            
