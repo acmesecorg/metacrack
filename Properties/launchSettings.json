@@ -15,8 +15,8 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "Zynga.com-output.txt 740.27200.found ",
-      "workingDirectory": "d:"
+      "commandLineArgs": "zynga.com-output.valid.txt 740.27200.found",
+      "workingDirectory": "D:\\Zynga (27200)"
     },
     "Lookup": {
       "commandName": "Project",
@@ -50,7 +50,7 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql Zynga.com.sql --columns 1 8 7 --meta 2 --table `users`",
+      "commandLineArgs": "sql zynga.com.sql --columns 1 9 7 --table `users`",
       "workingDirectory": "D:\\Zynga (27200)"
     },
     "Rank": {

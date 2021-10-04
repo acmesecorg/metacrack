@@ -54,10 +54,9 @@ namespace Malfoy
                 if (!CheckForFiles(new string[] { outputPath, metapath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
-                    var fileInfo = new FileInfo(filePathName);
+                    var fileInfo = new FileInfo(sqlPath);
                     progressTotal += fileInfo.Length;
 
-                    WriteProgress("Parsing sql", progressTotal, size);
                     continue;
                 }
 
@@ -203,11 +202,14 @@ namespace Malfoy
                                                     if (fileOutput.Count >= 100000)
                                                     {
                                                         File.AppendAllLines(outputPath, fileOutput);
-                                                        File.AppendAllLines(metapath, metaOutput);
+                                                        if (metaOutput.Count > 0) File.AppendAllLines(metapath, metaOutput);
 
                                                         fileOutput.Clear();
                                                         metaOutput.Clear();
                                                     }
+
+                                                    //Update the percentage
+                                                    if (fileOutput.Count % 10000 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
                                                 }
                                             }
                                         }
@@ -218,17 +220,19 @@ namespace Malfoy
                                     WriteMessage($"Error line {lineCount}: {ex.Message}");
                                 }
                             }
+                            else
+                            {
+                                //Update the percentage
+                                if (lineCount % 1000 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
+                            }
                         }
-
-                        //Update the percentage
-                        if (lineCount % 1000 == 0) WriteProgress("Parsing Sql", progressTotal, size);
                     }
                 }
 
                 //Write out file
                 WriteMessage($"Finished writing to {fileName}-output.txt at {DateTime.Now.ToShortTimeString()}.");
                 File.AppendAllLines(outputPath, fileOutput);
-                File.AppendAllLines(metapath, metaOutput);
+                if (metaOutput.Count > 0) File.AppendAllLines(metapath, metaOutput);
             }
 
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
