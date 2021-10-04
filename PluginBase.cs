@@ -85,9 +85,10 @@ namespace Malfoy
             if (mode == 400 && hash.Length != 34) return false;
             if (mode == 3200 && hash.Length != 60) return false;
             if (mode == 10000 && hash.Length != 77) return false;
+            if (mode == 27200 && hash.Length != 40) return false;
 
             //Validate hex
-            if (mode == 0 || mode == 100)
+            if (mode == 0 || mode == 100 || mode == 27200)
             {
                 if (!IsHex(hash)) return false;
             }
