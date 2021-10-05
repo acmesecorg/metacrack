@@ -79,6 +79,8 @@ namespace Malfoy
             if (options.Stem) variation = "stem";
             if (options.StemOnly) variation = "stemonly";
 
+            var hashInfo = GetHashInfo(options.Hash);
+
             using (var sha1 = SHA1.Create())
             {
                 foreach (var filePath in fileEntries)
@@ -126,12 +128,12 @@ namespace Malfoy
 
                             var splits = line.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
 
-                            if (splits.Length == 2) //|| splits.Length == 3 || splits.Length == 5 - override with a value otherwise corrupt data gets in
+                            if (splits.Length == hashInfo.Columns + 1)
                             {
                                 var email = splits[0].ToLower();
-                                var inputHash = splits[1];
+                                var inputHash = (hashInfo.Columns == 1) ? splits[1]: $"{splits[1]}:{splits[2]}";
 
-                                if (!ValidateHash(inputHash, options.Hash)) continue;
+                                if (!ValidateHash(splits[1], hashInfo)) continue;
 
                                 //if (email.StartsWith("mail.adikukreja@gmail.com")) email = email.ToLower();
 

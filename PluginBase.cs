@@ -4,6 +4,24 @@ using System.Text.RegularExpressions;
 
 namespace Malfoy
 {
+    public struct HashInfo
+    {
+        public int Mode;
+        public int Columns;
+        public int Length;
+        public bool IsHex;
+        public string Prefix;
+
+        public HashInfo(int mode, int columns, int length, bool isHex, string prefix = null)
+        {
+            Mode = mode;
+            Columns = columns;
+            Length = length;    
+            IsHex = isHex;  
+            Prefix = prefix;    
+        }
+    }
+
     public abstract class PluginBase
     {
         public static string[] Hex = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
@@ -70,39 +88,35 @@ namespace Malfoy
             return true;
         }
 
-        public static bool ValidateHash(string hash, int mode)
+        public static bool ValidateHash(string hash, HashInfo info)
         {
-            return ValidateHash(hash, mode, 0);
+            return ValidateHash(hash, info, 0);
         }
 
-        public static bool ValidateHash(string hash, int mode, int iteration)
+        public static bool ValidateHash(string hash, HashInfo info, int iteration)
         {
-            if (mode == -1) return true;
+            //Unknown hash
+            if (info.Length == 0) return true;
 
             //Validate length
-            if (mode == 0 && hash.Length != 32) return false;
-            if (mode == 100 && hash.Length != 40) return false;
-            if (mode == 400 && hash.Length != 34) return false;
-            if (mode == 3200 && hash.Length != 60) return false;
-            if (mode == 10000 && hash.Length != 77) return false;
-            if (mode == 27200 && hash.Length != 40) return false;
+            if (info.Length != hash.Length) return false;
 
             //Validate hex
-            if (mode == 0 || mode == 100 || mode == 27200)
+            if (info.IsHex)
             {
                 if (!IsHex(hash)) return false;
             }
 
             //Validate prefix
-            if (mode == 400)
+            if (info.Prefix != null && info.Prefix.Length > 0)
             {
-                if (!hash.StartsWith("$P$B")) return false;
+                if (!hash.StartsWith(info.Prefix)) return false;
             }
 
             //Validate iterations
             if (iteration > 0)
             {
-                if (mode == 3200)
+                if (info.Mode == 3200)
                 {
                     var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
                     if (splits[1] != iteration.ToString()) return false;
@@ -110,6 +124,30 @@ namespace Malfoy
             }
 
             return true;
+        }
+
+        public static HashInfo GetHashInfo(int mode)
+        {
+            //8743b52063cd84097a65d1633f5c74f5
+            if (mode == 0) return new HashInfo(mode, 1, 32, true);
+
+            //b89eaac7e61417341b710b727768294d0e6a277b
+            if (mode == 100) return new HashInfo(mode, 2, 40, true);
+
+            //$P$984478476IagS59wHZvyQMArzfx58u.
+            if (mode == 400) return new HashInfo(mode, 1, 34, false, "$P$B");
+            
+            //$2a$05$LhayLxezLhK1LhWvKxCyLOj0j1u.Kj0jZ0pEmm134uzrQlFvQJLF6
+            if (mode == 3200) return new HashInfo(mode, 1, 60, false);
+
+            //pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=
+            if (mode == 10000) return new HashInfo(mode, 1, 77, false);
+
+            //01d5d2e592c80ac251f44e68fe2195ec99d6eaa1:a373f69ba94f38e5fe2da2bb2bb49c88b8682a6a
+            if (mode == 27200) return new HashInfo(mode, 2, 40, true);
+
+            //Return a default setting with zero length
+            return new HashInfo(mode, 1, 0, false);
         }
 
         public static bool IsHex(IEnumerable<char> chars)

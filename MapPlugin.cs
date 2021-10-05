@@ -53,6 +53,7 @@
             var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
             var lineCount = 0;
+            var hashInfo = GetHashInfo(options.Hash);
 
             foreach (var filePath in fileEntries)
             {
@@ -87,7 +88,7 @@
                         if (splits.Length == 2)
                         {
                             if (!ValidateEmail(splits[0], out var emailStem)) continue;
-                            if (!ValidateHash(splits[1], options.Hash)) continue;
+                            if (!ValidateHash(splits[1], hashInfo)) continue;
 
                             //Loop through the map and add hash and word pair
                             foreach (var word in map)

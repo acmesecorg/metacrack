@@ -70,6 +70,7 @@ namespace Malfoy
             size = GetFileEntriesSize(fileEntries);
             progressTotal = 0L;
             lineCount = 0;
+            var hashInfo = GetHashInfo(options.Hash);
 
             foreach (var filePath in fileEntries)
             {
@@ -102,7 +103,7 @@ namespace Malfoy
                         if (splits.Length == 2)
                         {
                             if (!ValidateEmail(splits[0], out var emailStem)) continue;
-                            if (!ValidateHash(splits[1], options.Hash)) continue;
+                            if (!ValidateHash(splits[1], hashInfo)) continue;
 
                             inputs.Add($"{emailStem}:{splits[1]}");
                         }

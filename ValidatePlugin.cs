@@ -38,6 +38,7 @@
             var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
             var lineCount = 0;
+            var hashInfo = GetHashInfo(options.Hash);
 
             foreach (var filePath in fileEntries)
             {
@@ -87,7 +88,7 @@
                         {
                             if (emailValid && splits.Length > options.Column)
                             {
-                                if (ValidateHash(splits[options.Column], options.Hash, options.Iterations))
+                                if (ValidateHash(splits[options.Column], hashInfo, options.Iterations))
                                 {
                                     valid.Add(line);
                                 }

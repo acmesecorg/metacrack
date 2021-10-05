@@ -20,7 +20,7 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup dailymotion-hashes-left3.txt d:\\output --hash 3200 --stem-only",
+      "commandLineArgs": "lookup zynga.com-output.valid.left.txt d:\\output --hash 27200",
       "workingDirectory": "d:\\"
     },
     "Stem": {
@@ -61,7 +61,7 @@
     "Parse": {
       "commandName": "Project",
       "commandLineArgs": "parse temp.txt  --type log  --names USER PASS",
-      "workingDirectory": "d:\\temp"
+      "workingDirectory": "d:"
     },
     "Split": {
       "commandName": "Project",
