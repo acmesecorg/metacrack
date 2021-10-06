@@ -265,6 +265,126 @@ namespace Malfoy
             return size;
         }
 
+        public static void OptimizeFolder(string folder, string prefix)
+        {
+            WriteMessage($"Optimising buckets.");
+
+            var progressTotal = 0;
+            var files = Directory.GetFiles(folder, $"{prefix}-*");
+            var count = files.Length;
+
+            //TODO: use multiple tasks here to improve performance
+            foreach (var sourceFile in files)
+            {
+                var fileInfo = new FileInfo(sourceFile);
+                var fileName = Path.GetFileNameWithoutExtension(sourceFile);
+
+                WriteProgress($"Optimizing {fileName}", progressTotal, count);
+
+                var bucket = new List<string>();
+                using (var reader = new StreamReader(sourceFile))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        bucket.Add(reader.ReadLine());
+                    }
+                }
+
+                //Optimize this bucket by deduplicating and then sorting
+                bucket = bucket.Distinct().OrderBy(q => q).ToList();
+
+                File.Delete(sourceFile);
+                File.AppendAllLines(sourceFile, bucket);
+
+                progressTotal++;
+            }
+        }
+
+        public static HashSet<string> StemEmail(string email, HashSet<string> lookups )
+        {
+            var subsplits = email.Split('@');
+            var name = subsplits[0];
+            var finals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            //Add the whole name
+            finals.Add(name);
+
+            //Remove special characters, giving us alpha and numerics
+            //Regex expression is cached
+            var matches = Regex.Matches(name, "[a-z]+|[0-9]+", RegexOptions.IgnoreCase);
+
+            //Split any text by list of lookup names
+            //Using a hashset means we dont get repeats
+            foreach (var match in matches)
+            {
+                var value = ((Match)match).Value;
+
+                //We will let rules take care of single digit numbers
+                //We are really more interested in special numbers and dates of birth etc here
+                if (int.TryParse(value, out var number))
+                {
+                    if (number > 9) finals.Add(value);
+                }
+                else
+                {
+                    finals.Add(value);
+
+                    //Split names now, because the email will be anonimised after this
+                    //Try split single name eg bobjenkins into bob and jenkins
+                    foreach (var entry in lookups)
+                    {
+                        //For comparison only, we use lower case. 
+                        //Entries have already been lowered
+                        if (value.ToLower().StartsWith(entry))
+                        {
+                            finals.Add(entry);
+                            finals.Add(entry.ToLower());
+
+                            var other = value.Replace(entry, "");
+
+                            if (other.Length > 1)
+                            {
+                                finals.Add(other);
+                                finals.Add(other.ToLower());
+                            }
+                        }
+                    }
+                }
+
+                //WE DO THIS IN THE LOOKUP SO THAT BETTER LOOKUPS CAN BE USED
+
+                //Check if we have number or text
+                //if (int.TryParse(value, out var number))
+                //{
+                //    //Grab two year digit from 4 year
+                //    if (number >= 1930 && number < 2001) finals.Add((number - 1900).ToString());
+                //    if (number >= 2001 && number < 2030) finals.Add((number - 2000).ToString());
+                //}
+                //else
+                //{
+                //    //Try split single name eg bobjenkins into bob and jenkins
+                //    foreach (var entry in lookups)
+                //    {
+                //        if (value.StartsWith(entry))
+                //        {
+                //            finals.Add(entry);
+                //            finals.Add(entry.ToLower());
+
+                //            var other = value.Replace(entry, "");
+
+                //            if (other.Length > 1)
+                //            {
+                //                finals.Add(other);
+                //                finals.Add(other.ToLower());
+                //            }
+                //        }
+                //    }
+                //}
+            }
+
+            return finals;
+        }
+
         public static string FormatSize(long bytes)
         {
             var unit = 1024;
@@ -316,8 +436,5 @@ namespace Malfoy
         {
             ConsoleUtil.CancelProgress();
         }
-
-
-
     }
 }
