@@ -21,12 +21,24 @@ namespace Malfoy
                 Filename = filename;
                 Hashes = new List<string>();
                 Words = new List<string>();
+
+                //This will only ever contain one hash at a time, but needs to be modified in a loop
+                CurrentHash = new List<string>();
+
+                Numerics = new List<string>();
+                Alphas = new List<string>();
+                Singles = new List<string>();   
             }
 
             public Dictionary<string, Dictionary<string, string>> Buckets;
             public string Filename;
             public List<string> Hashes;
             public List<string> Words;
+            
+            public List<string> CurrentHash;
+            public List<string> Numerics;
+            public List<string> Alphas;
+            public List<string> Singles;
         }
 
         public static void Process(LookupOptions options)
@@ -180,13 +192,13 @@ namespace Malfoy
             }
         }
 
-        private static void DoLookup(string key, string currentDirectory, string sourcePath, List<FileLookup> lookups, LookupOptions options)
+        private static void DoLookup(string key, string currentDirectory, string sourcePath, List<FileLookup> fileLookups, LookupOptions options)
         {
             //Clear each lookup outputs
-            foreach (var lookup in lookups)
+            foreach (var fileLookup in fileLookups)
             {
-                lookup.Hashes.Clear();
-                lookup.Words.Clear();
+                fileLookup.Hashes.Clear();
+                fileLookup.Words.Clear();
             }
 
             //Load the file
@@ -194,8 +206,8 @@ namespace Malfoy
             {
                 var lastIdentifier = "";
                 var lastIdentifierCount = 0;
-                var stems = new List<string>();
 
+                //Read through the database
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
@@ -211,35 +223,70 @@ namespace Malfoy
                     else
                     {
                         lastIdentifierCount = 0;
-                        stems.Clear();
+
+                        //Add the alphas and singles, and multiply out the alphas by the numerics
+                        foreach (var fileLookup in fileLookups)
+                        {
+                            if (fileLookup.CurrentHash.Count > 0)
+                            {
+                                var currentHash = fileLookup.CurrentHash[0];
+
+                                foreach (var single in fileLookup.Singles)
+                                {
+                                    fileLookup.Hashes.Add(currentHash);
+                                    fileLookup.Words.Add(single);
+                                }
+
+                                foreach (var alpha in fileLookup.Alphas)
+                                {
+                                    fileLookup.Hashes.Add(currentHash);
+                                    fileLookup.Words.Add(alpha);
+
+                                    foreach (var numeric in fileLookup.Numerics)
+                                    {
+                                        fileLookup.Hashes.Add(currentHash);
+                                        fileLookup.Words.Add($"{alpha}{numeric}");
+                                    }
+                                }
+
+                                fileLookup.CurrentHash.Clear();
+                                fileLookup.Alphas.Clear();
+                                fileLookup.Numerics.Clear();
+                                fileLookup.Singles.Clear();
+                            }
+                        }
                     }
 
                     lastIdentifier = identifier;
 
                     if (lastIdentifierCount < IdentifierCountMax && splits.Length == 2 && !string.IsNullOrEmpty(splits[0]) && !string.IsNullOrEmpty(splits[1]) && splits[1].Length < LookupValueLengthMax)
                     {
-                        foreach (var lookup in lookups)
+                        foreach (var fileLookup in fileLookups)
                         {
-                            var entries = lookup.Buckets[key];
+                            var bucketEntries = fileLookup.Buckets[key];
 
-                            if (entries.ContainsKey(identifier))
+                            if (bucketEntries.ContainsKey(identifier))
                             {
-                                //Check hash is fine
-                                var hash = entries[identifier];
+                                //Lookup the hash in the bucket entries for this identifier
+                                //It wont change between identifiers
+                                var hash = bucketEntries[identifier];
 
                                 if (!string.IsNullOrEmpty(hash))
                                 {
+                                    //We cant modify a struct in a loop, so we just add into the collection once
+                                    if (fileLookup.CurrentHash.Count == 0) fileLookup.CurrentHash.Add(hash);
+
                                     if (options.Tokenize)
                                     {
                                         var tokens = GetTokens(splits[1]);
                                         foreach (var token in tokens)
                                         {
-                                            AddToLookup(hash,token, lookup, options, stems);
+                                            AddToLookup(hash, token, fileLookup, options);
                                         }
                                     }
                                     else
                                     {
-                                        AddToLookup(hash, splits[1], lookup, options, stems);
+                                        AddToLookup(hash, splits[1], fileLookup, options);
                                     }
                                 }
                             }
@@ -249,7 +296,7 @@ namespace Malfoy
             }
 
             //Dump into the output files
-            foreach (var lookup in lookups)
+            foreach (var lookup in fileLookups)
             {
                 if (lookup.Hashes.Count != lookup.Words.Count) throw new ApplicationException("Hashes count does not match wordlist count.");
 
@@ -260,37 +307,44 @@ namespace Malfoy
             }
         }
 
-        private static void AddToLookup(string hash, string password, FileLookup lookup, LookupOptions options, List<String> stems)
+        private static void AddToLookup(string hash, string password, FileLookup lookup, LookupOptions options)
         {
-            if (!options.Stem && !options.StemOnly)
+            //Add a number or text
+            if (int.TryParse(password, out var number))
             {
-                lookup.Hashes.Add(hash);
-                lookup.Words.Add(password);
-                return;
-            }
-
-            //Remove any special characters and numbers at the end
-            //Regex expression is cached
-            var match = Regex.Match(password, "^([a-z]*)", RegexOptions.IgnoreCase);
-
-            if (match.Success && match.Value.Length > 3)
-            {
-                //We stem lower always
-                var stem = match.Value.ToLower();
-
-                //Stem only adds if the words are different. and if we havent already added it for this identifier
-                if (!string.Equals(stem, password) && !stems.Contains(stem))
+                if (!options.StemOnly)
                 {
-                    lookup.Hashes.Add(hash);
-                    lookup.Words.Add(stem);
-                    stems.Add(stem);
+                    if (number > 9 && number < 100000)
+                    {
+                        lookup.Numerics.Add(password);
+
+                        if (number >= 1930 && number < 2001) lookup.Numerics.Add((number - 1900).ToString());
+                        if (number >= 2001 && number < 2030) lookup.Numerics.Add((number - 2000).ToString());
+                    }
+                    else
+                    {
+                        lookup.Singles.Add(password);
+                    }
                 }
             }
-
-            if (!options.StemOnly)
+            else
             {
-                lookup.Hashes.Add(hash);
-                lookup.Words.Add(password);
+                if (!options.StemOnly) lookup.Alphas.Add(password);
+
+                //Check if we should try stem the alpha
+                if (options.Stem || options.StemOnly)
+                {
+                    var match = Regex.Match(password, "^([a-z]*)", RegexOptions.IgnoreCase);
+
+                    if (match.Success && match.Value.Length > 3)
+                    {
+                        //We dont stem lower in case there are multiple capitals we wouldnt pick up with a rule
+                        var stem = match.Value;
+
+                        //Stem only adds if the words are different. and if we havent already added it for this identifier
+                        if (!string.Equals(stem, password)) lookup.Alphas.Add(stem);
+                    }
+                }
             }
         }
     }

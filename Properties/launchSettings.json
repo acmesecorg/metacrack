@@ -20,12 +20,7 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup zynga.com-output.valid.left.txt d:\\output --hash 27200",
-      "workingDirectory": "d:\\"
-    },
-    "Stem": {
-      "commandName": "Project",
-      "commandLineArgs": "stem gunexchange-users-output-l4 --names names.dict --hash 400",
+      "commandLineArgs": "lookup mindful-hashes.left2.txt d:\\test --hash 3200 --prefix meta",
       "workingDirectory": "d:\\"
     },
     "Map": {
@@ -67,6 +62,11 @@
       "commandName": "Project",
       "commandLineArgs": "split badoo.txt 32kk",
       "workingDirectory": "D:\\Badoo (0)"
+    },
+    "Catalog Stem": {
+      "commandName": "Project",
+      "commandLineArgs": "catalog  mindful-meta.txt d:\\test --prefix meta --columns 1 2 3 4 5",
+      "workingDirectory": "D:\\Input"
     }
   }
 }
