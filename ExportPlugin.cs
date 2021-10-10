@@ -238,7 +238,7 @@ namespace Malfoy
                         if (counter % 1000 == 0) WriteProgress("Processing hashes", progressTotal, size);
 
                         //Check if we need to write out 
-                        if (counter > 1000000 && found.Count > 0)
+                        if (counter > 1000000)
                         {
                             counter = 0;
                             File.AppendAllLines(plainsPath, output);

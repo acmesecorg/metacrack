@@ -17,10 +17,12 @@
             }
 
             var mapEntries = new string[] { };
+            var version = "map";
 
             if (options.MapPath == "")
             {
                 WriteMessage("No map path specified. Creating blank worldlist.");
+                version = "blank";
             }
             else
             {
@@ -62,8 +64,8 @@
                 var fileName = Path.GetFileNameWithoutExtension(filePath);
                 var filePathName = $"{currentDirectory}\\{fileName}";
 
-                _outputHashPath = $"{filePathName}.map.hash";
-                _outputWordPath = $"{filePathName}.map.word";
+                _outputHashPath = $"{filePathName}.{version}.hash";
+                _outputWordPath = $"{filePathName}.{version}.word";
 
                 //Check that there are no output files
                 if (!CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))
@@ -85,15 +87,17 @@
                         var line = reader.ReadLine();
                         var splits = line.Split(':');
 
-                        if (splits.Length == 2)
+                        if (splits.Length == 2 || splits.Length == 3)
                         {
                             if (!ValidateEmail(splits[0], out var emailStem)) continue;
                             if (!ValidateHash(splits[1], hashInfo)) continue;
 
+                            var hash = (splits.Length == 2) ? splits[1] : $"{splits[1]}:{splits[2]}";
+
                             //Loop through the map and add hash and word pair
                             foreach (var word in map)
                             {
-                                hashes.Add(splits[1]);
+                                hashes.Add(hash);
                                 words.Add(word);
                             }
                         }

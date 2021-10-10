@@ -126,6 +126,12 @@ namespace Malfoy
             return true;
         }
 
+        public static bool ValidateSalt(string salt, HashInfo info)
+        {
+            if (info.Mode == 27200) return salt.Length == 40;
+            return true;
+        }
+
         public static HashInfo GetHashInfo(int mode)
         {
             //8743b52063cd84097a65d1633f5c74f5
@@ -148,7 +154,7 @@ namespace Malfoy
 
             //Return a default setting with zero length
             return new HashInfo(mode, 1, 0, false);
-        }
+        }        
 
         public static bool IsHex(IEnumerable<char> chars)
         {
@@ -300,11 +306,10 @@ namespace Malfoy
             }
         }
 
-        public static HashSet<string> StemEmail(string email, HashSet<string> lookups )
+        public static void StemEmail(string email, HashSet<string> lookups, HashSet<string> finals)
         {
             var subsplits = email.Split('@');
             var name = subsplits[0];
-            var finals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             //Add the whole name
             finals.Add(name);
@@ -338,51 +343,17 @@ namespace Malfoy
                         if (value.ToLower().StartsWith(entry))
                         {
                             finals.Add(entry);
-                            finals.Add(entry.ToLower());
 
                             var other = value.Replace(entry, "");
 
                             if (other.Length > 1)
                             {
                                 finals.Add(other);
-                                finals.Add(other.ToLower());
                             }
                         }
                     }
                 }
-
-                //WE DO THIS IN THE LOOKUP SO THAT BETTER LOOKUPS CAN BE USED
-
-                //Check if we have number or text
-                //if (int.TryParse(value, out var number))
-                //{
-                //    //Grab two year digit from 4 year
-                //    if (number >= 1930 && number < 2001) finals.Add((number - 1900).ToString());
-                //    if (number >= 2001 && number < 2030) finals.Add((number - 2000).ToString());
-                //}
-                //else
-                //{
-                //    //Try split single name eg bobjenkins into bob and jenkins
-                //    foreach (var entry in lookups)
-                //    {
-                //        if (value.StartsWith(entry))
-                //        {
-                //            finals.Add(entry);
-                //            finals.Add(entry.ToLower());
-
-                //            var other = value.Replace(entry, "");
-
-                //            if (other.Length > 1)
-                //            {
-                //                finals.Add(other);
-                //                finals.Add(other.ToLower());
-                //            }
-                //        }
-                //    }
-                //}
             }
-
-            return finals;
         }
 
         public static string FormatSize(long bytes)

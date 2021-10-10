@@ -173,13 +173,6 @@ namespace Malfoy
 
                                                     //Add the original value
                                                     if (!options.Tokenize && !options.StemEmailOnly) finals.Add(split);
-
-                                                    //Stem email if required
-                                                    if (options.StemEmail || options.StemEmailOnly)
-                                                    {
-                                                        var stems = StemEmail(emailStem, lookups);
-                                                        finals.UnionWith(stems);
-                                                    }
                                                 }
                                                 else
                                                 {
@@ -188,6 +181,9 @@ namespace Malfoy
                                             }
                                         }
                                     }
+
+                                    //Stem email if required
+                                    if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, finals);
 
                                     //Add lines
                                     foreach (var final in finals)
