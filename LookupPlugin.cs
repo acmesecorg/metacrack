@@ -69,12 +69,19 @@ namespace Malfoy
 
             if (options.Stem && options.StemOnly)
             {
-                WriteError("Options stem and stem-only cannot both be specified.");
+                WriteError("Options --stem and --stem-only cannot both be specified.");
+                return;
+            }
+
+            if (options.Export && (options.Stem || options.StemOnly))
+            {
+                WriteError("Options --stem and --stem-only cannot be used with option --export.");
                 return;
             }
 
             if (options.Stem) WriteMessage($"Using stem option.");
             if (options.StemOnly) WriteMessage($"Using stem-only option.");
+            if (options.Export) WriteMessage($"Using export option.");
 
             Console.WriteLine($"Started at {DateTime.Now.ToShortTimeString()}.");
 
@@ -101,8 +108,9 @@ namespace Malfoy
                     var fileInfo = new FileInfo(filePath);
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
-                    var outputHashPath = $"{filePathName}{variation}.hash";
-                    var outputWordPath = $"{filePathName}{variation}.word";
+
+                    var outputHashPath = $"{filePathName}.{variation}.hash";
+                    var outputWordPath = $"{filePathName}.{variation}.word";
 
                     //Check that there are no output files
                     if (!CheckForFiles(new string[] { outputHashPath, outputWordPath }))
@@ -145,7 +153,12 @@ namespace Malfoy
                                 var email = splits[0].ToLower();
                                 var inputHash = (hashInfo.Columns == 1) ? splits[1]: $"{splits[1]}:{splits[2]}";
 
-                                if (!ValidateHash(splits[1], hashInfo)) continue;
+                                //Validate the hash
+                                if (!options.Export)
+                                {
+                                    if (!ValidateHash(splits[1], hashInfo)) continue;
+                                    if (hashInfo.Columns == 2 && !ValidateSalt(splits[2], hashInfo)) continue;
+                                }
 
                                 //if (email.StartsWith("mail.adikukreja@gmail.com")) email = email.ToLower();
 
@@ -157,7 +170,7 @@ namespace Malfoy
                                     var identifier = GetIdentifier(emailHash).Substring(2);
 
                                     //We will just add the hash(+salt?) into the output now
-                                    if (!lookup.Buckets[key].ContainsKey(identifier)) lookup.Buckets[key].Add(identifier, inputHash);
+                                    if (!lookup.Buckets[key].ContainsKey(identifier)) lookup.Buckets[key].Add(identifier, options.Export ? emailStem: inputHash);
                                 }
                             }
 
@@ -181,7 +194,7 @@ namespace Malfoy
                     {
                         var key = $"{hex1}{hex2}";
                         var sourcePath = $"{options.SourceFolder}\\{options.Prefix}-{key}.txt";
-                        DoLookup(key, currentDirectory, sourcePath, lookups, options);
+                        DoLookup(key, currentDirectory, variation, sourcePath, lookups, options);
 
                         bucketCount++;
                         WriteProgress($"Looking up key {key}", bucketCount, 256);
@@ -192,14 +205,21 @@ namespace Malfoy
             }
         }
 
-        private static void DoLookup(string key, string currentDirectory, string sourcePath, List<FileLookup> fileLookups, LookupOptions options)
+        private static void DoLookup(string key, string currentDirectory, string variation, string sourcePath, List<FileLookup> fileLookups, LookupOptions options)
         {
+            //See if we can shortcut this key
+            var novalues = true;
+
             //Clear each lookup outputs
             foreach (var fileLookup in fileLookups)
             {
+                if (fileLookup.Buckets[key].Count > 0) novalues = false;
+
                 fileLookup.Hashes.Clear();
-                fileLookup.Words.Clear();
+                fileLookup.Words.Clear();                
             }
+
+            if (novalues) return;
 
             //Load the file
             using (var reader = new StreamReader(sourcePath))
@@ -302,13 +322,30 @@ namespace Malfoy
 
                 var filePathName = $"{currentDirectory}\\{lookup.Filename}";
 
-                File.AppendAllLines($"{filePathName}.hash", lookup.Hashes);
-                File.AppendAllLines($"{filePathName}.word", lookup.Words);
+                if (options.Export)
+                {
+                    var output = new List<string>();
+
+                    for (var i = 0; i < lookup.Hashes.Count; i++) output.Add($"{lookup.Hashes[i]}:{lookup.Words[i]}");
+
+                    File.AppendAllLines($"{filePathName}.export.txt", output);
+                }
+                else
+                {
+                    File.AppendAllLines($"{filePathName}.{variation}.hash", lookup.Hashes);
+                    File.AppendAllLines($"{filePathName}.{variation}.word", lookup.Words);
+                }
             }
         }
 
         private static void AddToLookup(string hash, string password, FileLookup lookup, LookupOptions options)
         {
+            if (options.Export)
+            {
+                lookup.Singles.Add(password);
+                return;
+            }
+
             //Add a number or text
             if (int.TryParse(password, out var number))
             {
@@ -329,7 +366,18 @@ namespace Malfoy
             }
             else
             {
-                if (!options.StemOnly) lookup.Alphas.Add(password);
+                //Only add the word to alphas if it ands in a ltter
+                if (!options.StemOnly)
+                {
+                    if (char.IsLetter(password[password.Length - 1]))
+                    {
+                        lookup.Alphas.Add(password);
+                    }
+                    else
+                    {
+                        lookup.Singles.Add(password);
+                    }
+                }
 
                 //Check if we should try stem the alpha
                 if (options.Stem || options.StemOnly)

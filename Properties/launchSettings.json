@@ -15,17 +15,17 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "zynga.com-output.valid.txt 740.27200.found",
-      "workingDirectory": "D:\\Zynga (27200)"
+      "commandLineArgs": "homechef.left2.txt 8082_homechef-com_found_hash_algorithm_plain.txt",
+      "workingDirectory": "D:\\"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup mindful-hashes.left2.txt d:\\test --hash 3200 --prefix meta",
+      "commandLineArgs": "lookup homechef.left2.txt d:\\output --hash 3200 --export",
       "workingDirectory": "d:\\"
     },
     "Map": {
       "commandName": "Project",
-      "commandLineArgs": "map dailymotion-hashes.txt",
+      "commandLineArgs": "map zynga.com-output.valid.left3.txt --hash 27200",
       "workingDirectory": "d:\\"
     },
     "Validate": {
@@ -65,7 +65,7 @@
     },
     "Catalog Stem": {
       "commandName": "Project",
-      "commandLineArgs": "catalog  mindful-meta.txt d:\\test --prefix meta --columns 1 2 3 4 5",
+      "commandLineArgs": "catalog homechef-meta.txt d:\\meta --prefix meta --columns 1 --stem-email --stem-names names.dict --tokenize",
       "workingDirectory": "D:\\Input"
     }
   }

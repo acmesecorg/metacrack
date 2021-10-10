@@ -27,5 +27,7 @@ namespace Malfoy
         [Option("stem-only", HelpText = "Outputs a stemmed version of the password only.")]
         public bool StemOnly { get; set; }
 
+        [Option("export", HelpText = "Creates an  email:data file for export instead or a word and hash list.")]
+        public bool Export { get; set; }
     }
 }
