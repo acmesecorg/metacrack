@@ -148,6 +148,9 @@ namespace Malfoy
                                     var finals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
                                     //Write out each split, so we need to choose columns here
+                                    
+                                    //TODO: just use all columns
+                                    //Set a flag at the start, and keep increasing the columns collection by the size of the splits
                                     foreach (var i in columns)
                                     {
                                         if (splits.Length > i)

@@ -47,8 +47,8 @@ namespace Malfoy
 
                 var fileName = Path.GetFileNameWithoutExtension(sqlPath);
                 var filePathName = $"{currentDirectory}\\{fileName}";
-                var outputPath = $"{filePathName}-output.txt";
-                var metapath = $"{filePathName}-meta.txt";
+                var outputPath = $"{filePathName}.dump.txt";
+                var metapath = $"{filePathName}.meta.txt";
 
                 //Check that there are no output files
                 if (!CheckForFiles(new string[] { outputPath, metapath }))
@@ -241,7 +241,7 @@ namespace Malfoy
                 }
 
                 //Write out file
-                WriteMessage($"Finished writing to {fileName}-output.txt at {DateTime.Now.ToShortTimeString()}.");
+                WriteMessage($"Finished writing to {fileName}.dump.txt at {DateTime.Now.ToShortTimeString()}.");
                 if (fileOutput.Count > 0) File.AppendAllLines(outputPath, fileOutput);
                 if (metaOutput.Count > 0) File.AppendAllLines(metapath, metaOutput);
             }
