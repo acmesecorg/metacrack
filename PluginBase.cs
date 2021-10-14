@@ -142,7 +142,13 @@ namespace Malfoy
 
             //$P$984478476IagS59wHZvyQMArzfx58u.
             if (mode == 400) return new HashInfo(mode, 1, 34, false, "$P$B");
-            
+
+            //b2771af9d6e8395c72254bbc379dd092:NqPyawIn
+            if (mode == 1800) return new HashInfo(mode, 1, 106, false);
+
+            //b2771af9d6e8395c72254bbc379dd092:NqPyawIn
+            if (mode == 2811) return new HashInfo(mode, 2, 32, true);
+
             //$2a$05$LhayLxezLhK1LhWvKxCyLOj0j1u.Kj0jZ0pEmm134uzrQlFvQJLF6
             if (mode == 3200) return new HashInfo(mode, 1, 60, false);
 
