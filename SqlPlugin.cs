@@ -134,12 +134,23 @@ namespace Malfoy
 
                                                         foreach (var columnValue in rowValues.ColumnValues)
                                                         {
-                                                            var literal = columnValue as Literal;
-                                                            var literalValue = (literal.Value == "NULL") ? "" : literal.Value;
+                                                            if (columnValue is UnaryExpression)
+                                                            {
+                                                                var unary = columnValue as UnaryExpression;
 
-                                                            WriteMessage($"column {debugColumn}:{literalValue}");
+                                                                WriteMessage($"column {debugColumn}:(unary expression)");
 
-                                                            debugColumn++;
+                                                                debugColumn++;
+                                                            }
+                                                            else
+                                                            {
+                                                                var literal = columnValue as Literal;
+                                                                var literalValue = (literal.Value == "NULL") ? "" : literal.Value;
+
+                                                                WriteMessage($"column {debugColumn}:{literalValue}");
+
+                                                                debugColumn++;
+                                                            }
                                                         }
 
                                                         
@@ -201,7 +212,7 @@ namespace Malfoy
                                                     //Check if we need to flush the file output
                                                     if (fileOutput.Count >= 100000)
                                                     {
-                                                        File.AppendAllLines(outputPath, fileOutput);
+                                                        if (fileOutput.Count > 0) File.AppendAllLines(outputPath, fileOutput);
                                                         if (metaOutput.Count > 0) File.AppendAllLines(metapath, metaOutput);
 
                                                         fileOutput.Clear();
@@ -231,7 +242,7 @@ namespace Malfoy
 
                 //Write out file
                 WriteMessage($"Finished writing to {fileName}-output.txt at {DateTime.Now.ToShortTimeString()}.");
-                File.AppendAllLines(outputPath, fileOutput);
+                if (fileOutput.Count > 0) File.AppendAllLines(outputPath, fileOutput);
                 if (metaOutput.Count > 0) File.AppendAllLines(metapath, metaOutput);
             }
 
