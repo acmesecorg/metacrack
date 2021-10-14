@@ -26,8 +26,8 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate ajarn.com.output.txt --hash 0",
-      "workingDirectory": "D:\\Ajarn (0)"
+      "commandLineArgs": "validate thingyverse.final.txt --hash 3200  --email",
+      "workingDirectory": "D:\\"
     },
     "Export with Remove": {
       "commandName": "Project",
@@ -36,7 +36,7 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql thingiverse.com.sql --s2 --columns 6 3 --table `comments` --debug",
+      "commandLineArgs": "sql thingyverse-users.sql --s2 --columns 0 5 --table `users` --meta 1 2 3 34 ",
       "workingDirectory": "D:\\thingiverse"
     },
     "Rank": {
@@ -51,13 +51,22 @@
     },
     "Split": {
       "commandName": "Project",
-      "commandLineArgs": "split badoo.txt 32kk",
-      "workingDirectory": "D:\\Badoo (0)"
+      "workingDirectory": "D:\\thingiverse"
     },
     "Catalog Stem": {
       "commandName": "Project",
       "commandLineArgs": "catalog homechef-meta.txt d:\\meta --prefix meta --columns 1 --stem-email --stem-names names.dict --tokenize",
       "workingDirectory": "D:\\Input"
+    },
+    "Cut": {
+      "commandName": "Project",
+      "commandLineArgs": "cut thingiverse.com.sql thingyverse-users.sql 152656382 154736144 ",
+      "workingDirectory": "D:\\thingiverse"
+    },
+    "Sort": {
+      "commandName": "Project",
+      "commandLineArgs": "sort thingyverse-comments.dump.txt --deduplicate",
+      "workingDirectory": "D:\\thingiverse"
     }
   }
 }
