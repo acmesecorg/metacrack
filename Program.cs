@@ -36,7 +36,7 @@ namespace Malfoy
 
                         if (attr.Name == name)
                         {
-                            ConsoleUtil.WriteMessage($"Using {name}", ConsoleColor.DarkYellow);
+                            ConsoleUtil.WriteMessage($"Using {name} plugin.", ConsoleColor.DarkYellow);
 
                             //Try regular synchronous invoke
                             var method = type2.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);

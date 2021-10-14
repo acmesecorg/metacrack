@@ -9,18 +9,14 @@
       "commandName": "Project",
       "commandLineArgs": "catalog D:\\Input\\DailyMotion D:\\Output\\DailyMotion --prefix Meta"
     },
-    "Sql S3": {
-      "commandName": "Project",
-      "commandLineArgs": "sql \"f:\\wishbone users\" --s3 --columns 2 16"
-    },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "homechef.left2.txt 8082_homechef-com_found_hash_algorithm_plain.txt",
-      "workingDirectory": "D:\\"
+      "commandLineArgs": "ajarn.com.output.0.txt ajarn-formatted_output12.txt",
+      "workingDirectory": "D:\\Ajarn (0)"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup homechef.left2.txt d:\\output --hash 3200 --export",
+      "commandLineArgs": "lookup houzz.dump.left.txt d:\\output --hash 1800",
       "workingDirectory": "d:\\"
     },
     "Map": {
@@ -30,23 +26,18 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate yotapresto-hashes.txt --hash 3200 --iterations 12",
-      "workingDirectory": "d:\\"
+      "commandLineArgs": "validate ajarn.com.output.txt --hash 0",
+      "workingDirectory": "D:\\Ajarn (0)"
     },
     "Export with Remove": {
       "commandName": "Project",
       "commandLineArgs": "dailymotion-hashes-left.txt dailymotion-hashes-left.output.txt --remove dailymotion-hashes-left.hash --remove-associated dailymotion-hashes-left.word",
       "workingDirectory": "d:\\"
     },
-    "Sql S2": {
-      "commandName": "Project",
-      "commandLineArgs": "sql DOGEDEFI.ORG.sql --s2 --columns 2 3 --table `user_login`",
-      "workingDirectory": "D:\\"
-    },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql zynga.com.sql --columns 1 9 7 --table `users`",
-      "workingDirectory": "D:\\Zynga (27200)"
+      "commandLineArgs": "sql PEforums.txt --s2 --columns 5 2 3 --table `mybb_mybbusers` --meta 1",
+      "workingDirectory": "D:\\Minecraft Pocket Edition Forum"
     },
     "Rank": {
       "commandName": "Project",

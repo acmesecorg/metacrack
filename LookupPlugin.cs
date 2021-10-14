@@ -93,10 +93,10 @@ namespace Malfoy
 
             //We only want to iterate through a file once, so we have lists of files and lists of their contents in buckets by hex key
             var lookups = new List<FileLookup>();
-            var variation = "";
+            var variation = ".";
 
-            if (options.Stem) variation = "stem";
-            if (options.StemOnly) variation = "stemonly";
+            if (options.Stem) variation = ".stem";
+            if (options.StemOnly) variation = ".stemonly";
 
             var hashInfo = GetHashInfo(options.Hash);
 
@@ -109,8 +109,8 @@ namespace Malfoy
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
 
-                    var outputHashPath = $"{filePathName}.{variation}.hash";
-                    var outputWordPath = $"{filePathName}.{variation}.word";
+                    var outputHashPath = $"{filePathName}{variation}.hash";
+                    var outputWordPath = $"{filePathName}{variation}.word";
 
                     //Check that there are no output files
                     if (!CheckForFiles(new string[] { outputHashPath, outputWordPath }))
@@ -332,8 +332,8 @@ namespace Malfoy
                 }
                 else
                 {
-                    File.AppendAllLines($"{filePathName}.{variation}.hash", lookup.Hashes);
-                    File.AppendAllLines($"{filePathName}.{variation}.word", lookup.Words);
+                    File.AppendAllLines($"{filePathName}{variation}.hash", lookup.Hashes);
+                    File.AppendAllLines($"{filePathName}{variation}.word", lookup.Words);
                 }
             }
         }
