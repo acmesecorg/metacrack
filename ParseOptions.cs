@@ -17,6 +17,9 @@ namespace Malfoy
         [Option("columns")]
         public IEnumerable<string> Columns { get; set; }
 
+        [Option("date-columns")]
+        public IEnumerable<string> DateColumns { get; set; }
+
         [Option("names")]
         public IEnumerable<string> Names { get; set; }
 

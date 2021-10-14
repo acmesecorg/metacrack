@@ -33,6 +33,8 @@
             //Determine columns;
             int[] columns = (options.Columns.Count() == 0) ? new int[] { 1 } : Array.ConvertAll(options.Columns.ToArray(), s => int.Parse(s));
             int maxColumn = columns.Max();
+            int[] datecolumns = (options.DateColumns.Count() == 0) ? new int[] { 1 } : Array.ConvertAll(options.DateColumns.ToArray(), s => int.Parse(s));
+
 
             foreach (var filePath in fileEntries)
             {
@@ -110,7 +112,23 @@
                             {
                                 foreach (var column in columns)
                                 {
-                                    values.Add(splits[column]);
+                                    //Check if we need to parse out the date
+                                    if (datecolumns.Contains(column))
+                                    {
+                                        if (DateOnly.TryParse(splits[column], out var date))
+                                        {
+                                            //We are only interested in the yyyy year
+                                            values.Add(date.Year.ToString());
+                                        }
+                                        else
+                                        {
+                                            values.Add("");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        values.Add(splits[column]);
+                                    }
                                 }
                                 output.Add(String.Join(":", values));
                             }
@@ -122,6 +140,16 @@
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
+
+                        //Write out buffer
+                        if ((output.Count > 1000000 || notparsed.Count > 1000000) && !options.Deduplicate)
+                        {
+                            File.AppendAllLines(outputPath, options.Deduplicate ? output.Distinct() : output);
+                            File.AppendAllLines(outputNotParsedPath, notparsed);
+
+                            output.Clear();
+                            notparsed.Clear();
+                        }
                     }
                 }
 
