@@ -46,8 +46,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse badoo.txt  --type delimited --delimiter : --columns 1 2 4 7 --date-columns 7",
-      "workingDirectory": "D:\\Badoo"
+      "commandLineArgs": "parse edmodo-25600.txt  --type edmodo ",
+      "workingDirectory": "D:\\Edmodo (25600)"
     },
     "Split": {
       "commandName": "Project",

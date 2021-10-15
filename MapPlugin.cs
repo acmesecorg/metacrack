@@ -21,8 +21,16 @@
 
             if (options.MapPath == "")
             {
-                WriteMessage("No map path specified. Creating blank worldlist.");
-                version = "blank";
+                if (options.Limit > 0)
+                {
+                    WriteMessage($"Cannot use --limit with no map file.");
+                    return;
+                }
+                else
+                {
+                    WriteMessage("No map path specified. Creating blank worldlist.");
+                    version = "blank";
+                }
             }
             else
             {
@@ -48,6 +56,9 @@
             {
                 map.AddRange(File.ReadAllLines(mapEntry));
             }
+
+            //Take the first n items
+            if (options.Limit > 0) map = map.Take(options.Limit).ToList();
 
             //Cater for blank scenario ie no map entries
             if (map.Count == 0) map.Add("");

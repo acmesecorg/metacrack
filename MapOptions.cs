@@ -13,5 +13,8 @@ namespace Malfoy
 
         [Option("hash", Default = -1)]
         public int Hash { get; set; }
+
+        [Option("limit")]
+        public int Limit { get; set; }
     }
 }
