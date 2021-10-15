@@ -137,6 +137,36 @@
                                 notparsed.Add(line);
                             }
                         }
+                        else if (options.ParseType == "edmodo")
+                        {
+                            var splits = line.Split(':', 2);
+
+                            if (splits.Length == 2 && splits[1].Length > 64)
+                            {
+                                var hash = splits[1];
+                                var i = 0;
+                                var builder = new System.Text.StringBuilder();
+
+
+                                while (i < 66)
+                                {
+                                    builder.Append(hash[i]);
+                                    i += 2;
+                                }
+
+                                builder.Append(hash.Substring(65));
+
+                                var final = builder.ToString();
+                                
+
+
+                                output.Add($"{splits[0]}:{final}");
+                            }
+                            else
+                            {
+                                notparsed.Add(line);
+                            }
+                        }
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
