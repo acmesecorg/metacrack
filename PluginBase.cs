@@ -143,7 +143,6 @@ namespace Malfoy
             //$P$984478476IagS59wHZvyQMArzfx58u.
             if (mode == 400) return new HashInfo(mode, 1, 34, false, "$P$B");
 
-            //b2771af9d6e8395c72254bbc379dd092:NqPyawIn
             if (mode == 1800) return new HashInfo(mode, 1, 106, false);
 
             //b2771af9d6e8395c72254bbc379dd092:NqPyawIn
@@ -155,7 +154,8 @@ namespace Malfoy
             //pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=
             if (mode == 10000) return new HashInfo(mode, 1, 77, false);
 
-            //01d5d2e592c80ac251f44e68fe2195ec99d6eaa1:a373f69ba94f38e5fe2da2bb2bb49c88b8682a6a
+            if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2y");
+
             if (mode == 27200) return new HashInfo(mode, 2, 40, true);
 
             //Return a default setting with zero length
