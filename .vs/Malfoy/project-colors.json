@@ -15,7 +15,12 @@
       "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
       "DisplayName": "Miscellaneous Files",
       "ColorIndex": -1
+    },
+    "209c82e5-6cee-48ad-98fb-4306036dd050": {
+      "ProjectGuid": "209c82e5-6cee-48ad-98fb-4306036dd050",
+      "DisplayName": "Malfoy.Test",
+      "ColorIndex": 2
     }
   },
-  "NextColorIndex": 2
+  "NextColorIndex": 3
 }

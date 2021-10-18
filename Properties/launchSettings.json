@@ -7,7 +7,8 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog D:\\Input\\DailyMotion D:\\Output\\DailyMotion --prefix Meta"
+      "commandLineArgs": "catalog badoo.meta.txt d:\\meta --prefix badoo --tokenize --columns 2 3 4",
+      "workingDirectory": "D:\\Input"
     },
     "Export": {
       "commandName": "Project",
@@ -36,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql thingyverse-users.sql --s2 --columns 0 5 --table `users` --meta 1 2 3 34 ",
-      "workingDirectory": "D:\\thingiverse"
+      "commandLineArgs": "sql badoo.txt --s2 --columns 0 5 --table `users` --meta 1 2 3 34 ",
+      "workingDirectory": "D:\\Badoo (0)"
     },
     "Rank": {
       "commandName": "Project",
@@ -46,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse edmodo-25600.txt  --type edmodo ",
-      "workingDirectory": "D:\\Edmodo (25600)"
+      "commandLineArgs": "parse badoo.txt --delimiter : --columns 1 4 7 --date-columns 7",
+      "workingDirectory": "D:\\Badoo (0)"
     },
     "Split": {
       "commandName": "Project",

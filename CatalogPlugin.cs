@@ -80,7 +80,7 @@ namespace Malfoy
                         var line = reader.ReadLine();
                         progressTotal += line.Length + 1;
 
-                        //We add teh lower case version for comparison only
+                        //We add the lower case version for comparison only
                         if (line.Length >= 3 && line.Length < 70) lookups.Add(line.ToLower());
 
                         //Update the percentage

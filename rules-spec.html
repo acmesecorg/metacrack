@@ -1,0 +1,155 @@
+<html>
+<body>
+<div class="table sectionedit6"><table class="inline">
+	<thead>
+	<tr class="row0">
+		<th class="col0"> Name </th><th class="col1"> Function </th><th class="col2"> Description </th><th class="col3"> Example Rule </th><th class="col4"> Input Word </th><th class="col5"> Output Word </th><th class="col6"> Note </th>
+	</tr>
+	</thead>
+	<tbody><tr class="row1">
+		<td class="col0"> Nothing </td><td class="col1"> : </td><td class="col2"> Do nothing (passthrough) </td><td class="col3"> : </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> Lowercase </td><td class="col1"> l </td><td class="col2"> Lowercase all letters </td><td class="col3"> l </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssw0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> Uppercase </td><td class="col1"> u </td><td class="col2"> Uppercase all letters </td><td class="col3"> u </td><td class="col4"> p@ssW0rd </td><td class="col5"> P@SSW0RD </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> Capitalize </td><td class="col1"> c </td><td class="col2"> Capitalize the first letter and lower the rest </td><td class="col3"> c </td><td class="col4"> p@ssW0rd </td><td class="col5"> P@ssw0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> Invert Capitalize </td><td class="col1"> C </td><td class="col2"> Lowercase first found character, uppercase the rest </td><td class="col3"> C </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@SSW0RD </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> Toggle Case </td><td class="col1"> t </td><td class="col2"> Toggle the case of all characters in word. </td><td class="col3"> t </td><td class="col4"> p@ssW0rd </td><td class="col5"> P@SSw0RD </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> Toggle @ </td><td class="col1"> TN </td><td class="col2"> Toggle the case of characters at position N </td><td class="col3"> T3 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@sSW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> Reverse </td><td class="col1"> r </td><td class="col2"> Reverse the entire word </td><td class="col3"> r </td><td class="col4"> p@ssW0rd </td><td class="col5"> dr0Wss@p </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row9">
+		<td class="col0"> Duplicate </td><td class="col1"> d </td><td class="col2"> Duplicate entire word </td><td class="col3"> d </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0rdp@ssW0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row10">
+		<td class="col0"> Duplicate N </td><td class="col1"> pN </td><td class="col2"> Append duplicated word N times </td><td class="col3"> p2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0rdp@ssW0rdp@ssW0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row11">
+		<td class="col0"> Reflect </td><td class="col1"> f </td><td class="col2"> Duplicate word reversed </td><td class="col3"> f </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0rddr0Wss@p </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row12">
+		<td class="col0"> Rotate Left </td><td class="col1"> { </td><td class="col2"> Rotate the word left. </td><td class="col3"> { </td><td class="col4"> p@ssW0rd </td><td class="col5"> @ssW0rdp </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row13">
+		<td class="col0"> Rotate Right </td><td class="col1"> } </td><td class="col2"> Rotate the word right </td><td class="col3"> } </td><td class="col4"> p@ssW0rd </td><td class="col5"> dp@ssW0r </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row14">
+		<td class="col0"> Append Character </td><td class="col1"> $X </td><td class="col2"> Append character X to end </td><td class="col3"> $1 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0rd1 </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row15">
+		<td class="col0"> Prepend Character </td><td class="col1"> ^X </td><td class="col2"> Prepend character X to front </td><td class="col3"> ^1 </td><td class="col4"> p@ssW0rd </td><td class="col5"> 1p@ssW0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row16">
+		<td class="col0"> Truncate left </td><td class="col1"> [ </td><td class="col2"> Delete first character </td><td class="col3"> [ </td><td class="col4"> p@ssW0rd </td><td class="col5"> @ssW0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row17">
+		<td class="col0"> Trucate right </td><td class="col1"> ] </td><td class="col2"> Delete last character </td><td class="col3"> ] </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@assW0r </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row18">
+		<td class="col0"> Delete @ N </td><td class="col1"> DN </td><td class="col2"> Delete character at position N </td><td class="col3"> D3 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@sW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row19">
+		<td class="col0"> Extract range </td><td class="col1"> xNM </td><td class="col2"> Extract M characters, starting at position N </td><td class="col3"> x04 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ss </td><td class="col6"> * # </td>
+	</tr>
+	<tr class="row20">
+		<td class="col0"> Omit range </td><td class="col1"> ONM </td><td class="col2"> Delete M characters, starting at position N </td><td class="col3"> O12 </td><td class="col4"> p@ssW0rd </td><td class="col5"> psW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row21">
+		<td class="col0"> Insert @ N </td><td class="col1"> iNX </td><td class="col2"> Insert character X at position N </td><td class="col3"> i4! </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ss!W0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row22">
+		<td class="col0"> Overwrite @ N </td><td class="col1"> oNX </td><td class="col2"> Overwrite character at position N with X </td><td class="col3"> o3$ </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@s$W0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row23">
+		<td class="col0"> Truncate @ N </td><td class="col1"> 'N </td><td class="col2"> Truncate word at position N </td><td class="col3"> '6 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0 </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row24">
+		<td class="col0"> Replace </td><td class="col1"> sXY </td><td class="col2"> Replace all instances of X with Y </td><td class="col3"> ss$ </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@$$W0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row25">
+		<td class="col0"> Purge </td><td class="col1"> @X </td><td class="col2"> Purge all instances of X </td><td class="col3"> @s </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@W0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row26">
+		<td class="col0"> Duplicate first N </td><td class="col1"> zN </td><td class="col2"> Duplicate first character N times </td><td class="col3"> z2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> ppp@ssW0rd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row27">
+		<td class="col0"> Duplicate last N </td><td class="col1"> ZN </td><td class="col2"> Duplicate last character N times </td><td class="col3"> Z2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0rddd </td><td class="col6 leftalign">  </td>
+	</tr>
+	<tr class="row28">
+		<td class="col0"> Duplicate all </td><td class="col1"> q </td><td class="col2"> Duplicate every character </td><td class="col3"> q </td><td class="col4"> p@ssW0rd </td><td class="col5"> pp@@ssssWW00rrdd </td><td class="col6"> </td>
+	</tr>
+	<tr class="row29">
+		<td class="col0"> Extract memory </td><td class="col1"> XNMI </td><td class="col2"> Insert substring of length M starting from position N of word saved to memory at position I </td><td class="col3"> lMX428 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssw0rdw0 </td><td class="col6"> + </td>
+	</tr>
+	<tr class="row30">
+		<td class="col0"> Append memory </td><td class="col1"> 4 </td><td class="col2"> Append the word saved to memory to current word </td><td class="col3"> uMl4 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssw0rdP@SSW0RD </td><td class="col6"> + </td>
+	</tr>
+	<tr class="row31">
+		<td class="col0"> Prepend memory </td><td class="col1"> 6 </td><td class="col2"> Prepend the word saved to memory to current word </td><td class="col3"> rMr6 </td><td class="col4"> p@ssW0rd </td><td class="col5"> dr0Wss@pp@ssW0rd </td><td class="col6"> + </td>
+	</tr>
+	<tr class="row32">
+		<td class="col0"> Memorize </td><td class="col1"> M </td><td class="col2"> Memorize current word </td><td class="col3"> lMuX084 </td><td class="col4"> p@ssW0rd </td><td class="col5"> P@SSp@ssw0rdW0RD </td><td class="col6"> + </td>
+	</tr>
+</tbody></table></div>
+
+<div class="table sectionedit10"><table class="inline">
+	<thead>
+	<tr class="row0">
+		<th class="col0"> Name </th><th class="col1"> Function </th><th class="col2"> Description </th><th class="col3"> Example Rule </th><th class="col4"> Input Word </th><th class="col5"> Output Word </th><th class="col6"> Note </th>
+	</tr>
+	</thead>
+	<tbody><tr class="row1">
+		<td class="col0"> Swap front </td><td class="col1"> k </td><td class="col2"> Swap first two characters </td><td class="col3"> k </td><td class="col4"> p@ssW0rd </td><td class="col5"> @pssW0rd </td><td class="col6"> </td>
+	</tr>
+	<tr class="row2">
+		<td class="col0"> Swap back </td><td class="col1"> K </td><td class="col2"> Swap last two characters </td><td class="col3"> K </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0dr </td><td class="col6"> </td>
+	</tr>
+	<tr class="row3">
+		<td class="col0"> Swap @ N </td><td class="col1"> *NM </td><td class="col2"> Swap character at position N with character at position M </td><td class="col3"> *34 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@sWs0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row4">
+		<td class="col0"> Bitwise shift left </td><td class="col1"> LN </td><td class="col2"> Bitwise shift left character @ N </td><td class="col3"> L2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@æsW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row5">
+		<td class="col0"> Bitwise shift right </td><td class="col1"> RN </td><td class="col2"> Bitwise shift right character @ N </td><td class="col3"> R2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@9sW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row6">
+		<td class="col0"> Ascii increment </td><td class="col1"> +N </td><td class="col2"> Increment character @ N by 1 ascii value </td><td class="col3"> +2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@tsW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row7">
+		<td class="col0"> Ascii decrement </td><td class="col1"> -N </td><td class="col2"> Decrement character @ N by 1 ascii value </td><td class="col3"> -1 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p?ssW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row8">
+		<td class="col0"> Replace N + 1 </td><td class="col1"> .N </td><td class="col2"> Replace character @ N with value at @ N plus 1 </td><td class="col3"> .1 </td><td class="col4"> p@ssW0rd </td><td class="col5"> psssW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row9">
+		<td class="col0"> Replace N - 1 </td><td class="col1"> ,N </td><td class="col2"> Replace character @ N with value at @ N minus 1 </td><td class="col3"> ,1 </td><td class="col4"> p@ssW0rd </td><td class="col5"> ppssW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row10">
+		<td class="col0"> Duplicate block front </td><td class="col1"> yN </td><td class="col2"> Duplicate first N characters </td><td class="col3"> y2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@p@ssW0rd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row11">
+		<td class="col0"> Duplicate block back </td><td class="col1"> YN </td><td class="col2"> Duplicate last N characters </td><td class="col3"> Y2 </td><td class="col4"> p@ssW0rd </td><td class="col5"> p@ssW0rdrd </td><td class="col6"> * </td>
+	</tr>
+	<tr class="row12">
+		<td class="col0"> Title </td><td class="col1"> E </td><td class="col2"> Lower case the whole line, then upper case the first letter and every letter after a space </td><td class="col3"> E </td><td class="col4"> p@ssW0rd w0rld </td><td class="col5"> P@ssw0rd W0rld </td><td class="col6"> + </td>
+	</tr>
+	<tr class="row13">
+		<td class="col0"> Title w/separator </td><td class="col1"> eX </td><td class="col2"> Lower case the whole line, then upper case the first letter and every letter after a custom separator character </td><td class="col3"> e- </td><td class="col4"> p@ssW0rd-w0rld </td><td class="col5"> P@ssw0rd-W0rld </td><td class="col6"> + </td>
+	</tr>
+</tbody></table></div>
+
+</body>	
+</html>	
