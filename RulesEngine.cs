@@ -24,6 +24,100 @@ namespace Malfoy
         public static List<string> DoubleTokens = new List<string> { "$", "^", "p", "T", "D", "'", "@", "z", "Z", "L", "R", "+", "-", ".", ",", "y", "Y" };
         public static List<string> TripleTokens = new List<string> { "x", "O", "i", "o", "s", "*"};
 
+        //Filters a list for duplicates given a list of words and a set of rules
+        public static List<string> FilterByRules(List<string> input, List<List<string>> rules)
+        {
+            //1. Remove any duplicates from the values
+            var values = input.Distinct().ToList(); 
+
+            //2. Create all permutations of all values
+            var dict = new Dictionary<string, List<string>>();
+
+            foreach (var value in values)
+            {
+                var perms = new HashSet<string>();
+
+                foreach (var rule in rules)
+                {
+                    var word = ProcessRuleTokens(value, rule);
+                    perms.Add(word);
+                }
+
+                dict.Add(value, perms.ToList());
+            }
+
+            //3. Keep looping until no more values are removed
+            var valuesCount = values.Count();
+            var lastCount = valuesCount + 1;
+
+            while (lastCount > valuesCount)
+            {
+                //If valuesCount doesnt change in this iteration, break out of the while
+                lastCount = valuesCount;
+
+                //Loop through each perms list and count how many are in the values
+                var counts = new Dictionary<string, int>();
+
+                foreach (var value in dict.Keys)
+                {
+                    counts[value] = -1; //Because self will be counted too
+
+                    foreach (var perm in dict[value])
+                    {
+                        if (values.Contains(perm)) counts[value] = counts[value]+ 1;
+                    }
+                }
+
+                //Find the counts with the most matches               
+                var found = "";
+                var count = 0;
+
+                foreach (var value in counts.Keys)
+                {
+                    if (counts[value] > count)
+                    {
+                        found = value;
+                        count = counts[value];
+                    }
+                }
+
+                //Remove the values in the dict matching the value with the highest count
+                if (count > 0)
+                {
+                    foreach (var perm in dict[found])
+                    {
+                        if (perm != found)
+                        {
+                            //Remove from dict and values
+                            values.Remove(perm);
+                            dict.Remove(perm);
+                        }
+                    }
+
+                    //Set new valuesCount
+                    valuesCount = values.Count;
+                }
+            }
+
+
+            return values;
+        }
+
+
+        //Get a list of rules and return a collection of tokens
+        public static List<List<string>> ProcessRules(string[] rules)
+        {
+            var results = new List<List<string>>();
+
+            foreach (var rule in rules)
+            {
+                var tokens = TokenizeRule(rule);
+                if (tokens.Count > 0) results.Add(tokens);
+            }
+
+            return results;
+        }
+
         //Process a rule made of one or more tokens
         public static string ProcessRuleTokens(string word, List<string> tokens)
         {
