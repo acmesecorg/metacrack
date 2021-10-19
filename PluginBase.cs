@@ -31,6 +31,32 @@ namespace Malfoy
         private static long _sharedProgressTotal;
         private static long _sharedProgress;
 
+        public static List<List<string>> GetRules(string option)
+        {
+            string path;
+
+            try
+            {
+                path = Path.Combine(Directory.GetCurrentDirectory(), option);
+            }
+            catch (Exception ex)
+            {
+                WriteHighlight($"Exception getting rule path. {ex.Message}");
+                return null;
+            }
+
+            try
+            {
+                var lines = File.ReadAllLines(path);
+                return RulesEngine.ProcessRules(lines);
+            }
+            catch (Exception ex)
+            {
+                WriteHighlight($"Exception loading rules. {ex.Message}");
+                return null;
+            }
+        }
+
         public static string IncrementFilename(string filenameNoExtension, string type)
         {
             var dottype = $".{type}";
