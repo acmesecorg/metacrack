@@ -177,6 +177,8 @@ namespace Malfoy
             //$2a$05$LhayLxezLhK1LhWvKxCyLOj0j1u.Kj0jZ0pEmm134uzrQlFvQJLF6
             if (mode == 3200) return new HashInfo(mode, 1, 60, false);
 
+            if (mode == 2611) return new HashInfo(mode, 2, 32, true);
+
             //pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=
             if (mode == 10000) return new HashInfo(mode, 1, 77, false);
 

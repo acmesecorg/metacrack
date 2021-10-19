@@ -13,6 +13,8 @@ namespace Malfoy
         private static int LookupValueLengthMax = 70;
         private static int IdentifierCountMax = 40;
 
+        private static Regex _regexFast;
+
         private struct FileLookup
         {
             public FileLookup(string filename)
@@ -27,7 +29,7 @@ namespace Malfoy
 
                 Numerics = new List<string>();
                 Alphas = new List<string>();
-                Singles = new List<string>();   
+                Singles = new List<string>();
             }
 
             public Dictionary<string, Dictionary<string, string>> Buckets;
@@ -49,11 +51,16 @@ namespace Malfoy
 
             if (fileEntries.Length == 0)
             {
-                WriteError($"No files found for {options.InputPath} in {currentDirectory}.");
+                WriteError($"No files found for {options.InputPath} in {currentDirectory}");
                 return;
             }
 
-            WriteMessage($"Using prefix {options.Prefix} .");
+            //Work out if we are using a filter
+            var rules = (string.IsNullOrEmpty(options.Filter)) ? null : GetRules(options.Filter);
+
+            if (rules != null) WriteMessage($"Loaded {rules.Count()} rules from {options.Filter}");
+
+            WriteMessage($"Using prefix {options.Prefix}");
 
             var sourceFiles = Directory.GetFiles(options.SourceFolder, $"{options.Prefix}-*");
 
@@ -64,12 +71,12 @@ namespace Malfoy
                 return;
             }
 
-            if (options.Tokenize) WriteMessage("Tokenize enabled.");
-            if (options.Hash > 0) WriteMessage($"Validating hash mode {options.Hash}.");
+            if (options.Tokenize) WriteMessage("Tokenize enabled");
+            if (options.Hash > 0) WriteMessage($"Validating hash mode {options.Hash}");
 
             if (options.Stem && options.StemOnly)
             {
-                WriteError("Options --stem and --stem-only cannot both be specified.");
+                WriteError("Options --stem and --stem-only cannot both be specified");
                 return;
             }
 
@@ -194,7 +201,7 @@ namespace Malfoy
                     {
                         var key = $"{hex1}{hex2}";
                         var sourcePath = $"{options.SourceFolder}\\{options.Prefix}-{key}.txt";
-                        DoLookup(key, currentDirectory, variation, sourcePath, lookups, options);
+                        DoLookup(key, currentDirectory, variation, sourcePath, lookups, options, rules);
 
                         bucketCount++;
                         WriteProgress($"Looking up key {key}", bucketCount, 256);
@@ -205,10 +212,11 @@ namespace Malfoy
             }
         }
 
-        private static void DoLookup(string key, string currentDirectory, string variation, string sourcePath, List<FileLookup> fileLookups, LookupOptions options)
+        private static void DoLookup(string key, string currentDirectory, string variation, string sourcePath, List<FileLookup> fileLookups, LookupOptions options, List<List<string>> rules)
         {
             //See if we can shortcut this key
             var novalues = true;
+            var delim = new char[] { ':' };
 
             //Clear each lookup outputs
             foreach (var fileLookup in fileLookups)
@@ -216,7 +224,7 @@ namespace Malfoy
                 if (fileLookup.Buckets[key].Count > 0) novalues = false;
 
                 fileLookup.Hashes.Clear();
-                fileLookup.Words.Clear();                
+                fileLookup.Words.Clear();
             }
 
             if (novalues) return;
@@ -231,11 +239,13 @@ namespace Malfoy
                 while (!reader.EndOfStream)
                 {
                     var line = reader.ReadLine();
-                    var splits = line.Split(new char[] { ':' }, 2);
-                    var identifier = splits[0].ToLower();
+
+                    //Improve speed by not splitting, reading first n chars instead
+                    var identifier = line[..18].ToLower();
 
                     //We dont want to inject loads of combolists and bad data. This also seems to break attack mode 9
                     //So track the previous email record
+                    
                     if (lastIdentifier == identifier)
                     {
                         lastIdentifierCount++;
@@ -250,24 +260,37 @@ namespace Malfoy
                             if (fileLookup.CurrentHash.Count > 0)
                             {
                                 var currentHash = fileLookup.CurrentHash[0];
+                                var words = new List<string>();
 
                                 foreach (var single in fileLookup.Singles)
                                 {
-                                    fileLookup.Hashes.Add(currentHash);
-                                    fileLookup.Words.Add(single);
+                                    words.Add(single);
                                 }
 
                                 foreach (var alpha in fileLookup.Alphas)
                                 {
-                                    fileLookup.Hashes.Add(currentHash);
-                                    fileLookup.Words.Add(alpha);
+                                    words.Add(alpha);
 
                                     foreach (var numeric in fileLookup.Numerics)
                                     {
-                                        fileLookup.Hashes.Add(currentHash);
-                                        fileLookup.Words.Add($"{alpha}{numeric}");
+                                        words.Add($"{alpha}{numeric}");
                                     }
                                 }
+
+                                //If there are rules, filter the filelookup words, and then remove associated words and hashes by index
+                                //Otherwise just make sure they are distinct
+                                if (rules != null)
+                                {
+                                    words = RulesEngine.FilterByRules(words, rules);
+                                }
+                                else
+                                {
+                                    words = words.Distinct().ToList();
+                                }
+
+                                //Add currentHash n times depending on number of words
+                                fileLookup.Hashes.AddRange(Enumerable.Repeat(currentHash, words.Count));
+                                fileLookup.Words.AddRange(words);
 
                                 fileLookup.CurrentHash.Clear();
                                 fileLookup.Alphas.Clear();
@@ -279,34 +302,40 @@ namespace Malfoy
 
                     lastIdentifier = identifier;
 
-                    if (lastIdentifierCount < IdentifierCountMax && splits.Length == 2 && !string.IsNullOrEmpty(splits[0]) && !string.IsNullOrEmpty(splits[1]) && splits[1].Length < LookupValueLengthMax)
+                    if (lastIdentifierCount < IdentifierCountMax)
                     {
                         foreach (var fileLookup in fileLookups)
                         {
                             var bucketEntries = fileLookup.Buckets[key];
 
-                            if (bucketEntries.ContainsKey(identifier))
+                            if (bucketEntries.TryGetValue(identifier, out var hash))
+                            //if (bucketEntries.ContainsKey(identifier))
                             {
                                 //Lookup the hash in the bucket entries for this identifier
                                 //It wont change between identifiers
-                                var hash = bucketEntries[identifier];
+                                //var hash = bucketEntries[identifier];
 
                                 if (!string.IsNullOrEmpty(hash))
                                 {
-                                    //We cant modify a struct in a loop, so we just add into the collection once
-                                    if (fileLookup.CurrentHash.Count == 0) fileLookup.CurrentHash.Add(hash);
+                                    var splits = line.Split(delim, 2);
 
-                                    if (options.Tokenize)
+                                    if (splits.Length == 2 && !string.IsNullOrEmpty(splits[0]) && !string.IsNullOrEmpty(splits[1]) && splits[1].Length < LookupValueLengthMax)
                                     {
-                                        var tokens = GetTokens(splits[1]);
-                                        foreach (var token in tokens)
+                                        //We cant modify a struct in a loop, so we just add into the collection once
+                                        if (fileLookup.CurrentHash.Count == 0) fileLookup.CurrentHash.Add(hash);
+
+                                        if (options.Tokenize)
                                         {
-                                            AddToLookup(hash, token, fileLookup, options);
+                                            var tokens = GetTokens(splits[1]);
+                                            foreach (var token in tokens)
+                                            {
+                                                AddToLookup(hash, token, fileLookup, options);
+                                            }
                                         }
-                                    }
-                                    else
-                                    {
-                                        AddToLookup(hash, splits[1], fileLookup, options);
+                                        else
+                                        {
+                                            AddToLookup(hash, splits[1], fileLookup, options);
+                                        }
                                     }
                                 }
                             }
@@ -382,8 +411,11 @@ namespace Malfoy
                 //Check if we should try stem the alpha
                 if (options.Stem || options.StemOnly)
                 {
-                    var match = Regex.Match(password, "^([a-z]*)", RegexOptions.IgnoreCase);
+                    //https://stackoverflow.com/questions/39470506/c-sharp-regex-performance-very-slow
+                    if (_regexFast == null) _regexFast = new Regex("^([a-z]*)", RegexOptions.Compiled & RegexOptions.IgnoreCase);
 
+                    var match = _regexFast.Match(password);
+                    
                     if (match.Success && match.Value.Length > 3)
                     {
                         //We dont stem lower in case there are multiple capitals we wouldnt pick up with a rule

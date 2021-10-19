@@ -20,12 +20,12 @@ namespace Malfoy
 
     public static class RulesEngine
     {
-        public static List<string> SingleTokens = new List<string> { ":", "l", "u", "c", "C", "t", "r", "d", "f", "{", "}", "[", "]", "q", "k", "K" };
-        public static List<string> DoubleTokens = new List<string> { "$", "^", "p", "T", "D", "'", "@", "z", "Z", "L", "R", "+", "-", ".", ",", "y", "Y" };
-        public static List<string> TripleTokens = new List<string> { "x", "O", "i", "o", "s", "*"};
+        public static readonly List<string> SingleTokens = new() { ":", "l", "u", "c", "C", "t", "r", "d", "f", "{", "}", "[", "]", "q", "k", "K" };
+        public static readonly List<string> DoubleTokens = new() { "$", "^", "p", "T", "D", "'", "@", "z", "Z", "L", "R", "+", "-", ".", ",", "y", "Y" };
+        public static readonly List<string> TripleTokens = new() { "x", "O", "i", "o", "s", "*"};
 
         //Filters a list for duplicates given a list of words and a set of rules
-        public static List<string> FilterByRules(List<string> input, List<List<string>> rules)
+        public static List<string> FilterByRules(IEnumerable<string> input, List<List<string>> rules)
         {
             //1. Remove any duplicates from the values
             var values = input.Distinct().ToList(); 
@@ -194,6 +194,8 @@ namespace Malfoy
 
         public static string ProcessToken(string word, string token)
         {
+            if (string.IsNullOrEmpty(word)) return "";
+
             if (token == ":") return word;
             if (token == "l") return word.ToLowerInvariant();
             if (token == "u") return word.ToUpperInvariant();
@@ -386,6 +388,9 @@ namespace Malfoy
                         var n = token[1].HexToInt();
                         var m = token[2].HexToInt();
 
+                        if (n >= word.Length) return "";
+                        if (n + m >= word.Length) return $"{word[..n]}";
+
                         return $"{word[..n]}{word[(n + m)..]}";
                     }
 
@@ -403,7 +408,7 @@ namespace Malfoy
                     {
                         var n = token[1].HexToInt();
 
-                        if (n > word.Length) return word;
+                        if (n >= word.Length) return word;
                         return $"{word[..(n)]}{token[2]}{word[(n+1)..]}";
                     }
 

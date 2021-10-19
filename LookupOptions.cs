@@ -29,5 +29,8 @@ namespace Malfoy
 
         [Option("export", HelpText = "Creates an  email:data file for export instead or a word and hash list.")]
         public bool Export { get; set; }
+
+        [Option("filter", HelpText = "Filters a cluster of words using the rule file in the path provided.")]
+        public string Filter { get; set; }
     }
 }

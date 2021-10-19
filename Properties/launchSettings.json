@@ -17,7 +17,7 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": " lookup houzz.dump.left2.txt d:\\meta --prefix badoo --hash 1800",
+      "commandLineArgs": "lookup coffee.data.left.txt d:\\output --stem --hash 2611 --filter D:\\hashcat-6.2.4\\rules\\best64.rule",
       "workingDirectory": "d:\\"
     },
     "Map": {
