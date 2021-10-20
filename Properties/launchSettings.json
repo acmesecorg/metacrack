@@ -8,7 +8,7 @@
     "Catalog": {
       "commandName": "Project",
       "commandLineArgs": "catalog badoo.meta.txt d:\\meta --prefix badoo --tokenize --columns 2 3 4",
-      "workingDirectory": "D:\\Input"
+      "workingDirectory": "D:\\"
     },
     "Export": {
       "commandName": "Project",
@@ -17,8 +17,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup coffee.data.left.txt d:\\output --stem --hash 2611 --filter D:\\hashcat-6.2.4\\rules\\best64.rule",
-      "workingDirectory": "d:\\"
+      "commandLineArgs": "lookup minted2.dump.valid.txt d:\\output --filter \"D:\\hashcat-6.2.4\\rules\\best64.rule\" --hash 25600",
+      "workingDirectory": "D:\\"
     },
     "Map": {
       "commandName": "Project",
@@ -27,7 +27,7 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate thingyverse.final.txt --hash 3200  --email",
+      "commandLineArgs": "validate minted2.dump.txt --hash 25600 --email --iterations 08",
       "workingDirectory": "D:\\"
     },
     "Export with Remove": {
@@ -37,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql badoo.txt --s2 --columns 0 5 --table `users` --meta 1 2 3 34 ",
-      "workingDirectory": "D:\\Badoo (0)"
+      "commandLineArgs": "sql minted2.sql --s3 --columns 3 2 --table `users`",
+      "workingDirectory": "D:\\Minted (25600)"
     },
     "Rank": {
       "commandName": "Project",

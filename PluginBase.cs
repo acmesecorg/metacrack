@@ -147,6 +147,12 @@ namespace Malfoy
                     var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
                     if (splits[1] != iteration.ToString()) return false;
                 }
+                if (info.Mode == 25600)
+                {
+                    var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
+                    var iterationString = (iteration < 10) ? $"0{iteration}" : iteration.ToString();
+                    if (splits[1] != iterationString) return false;
+                }
             }
 
             return true;
@@ -182,7 +188,7 @@ namespace Malfoy
             //pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=
             if (mode == 10000) return new HashInfo(mode, 1, 77, false);
 
-            if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2y");
+            if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2");
 
             if (mode == 27200) return new HashInfo(mode, 2, 40, true);
 
