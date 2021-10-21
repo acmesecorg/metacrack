@@ -12,17 +12,18 @@
 
             if (fileEntries.Length == 0)
             {
-                WriteMessage($"Lookup file(s) {options.InputPath} not found.");
+                WriteMessage($"Lookup file(s) {options.InputPath} not found");
                 return;
             }
 
             if (options.Hash == -1 && !options.ValidateEmailOnly)
             {
-                WriteMessage("Specify a hash mode using the --hash option.");
+                WriteMessage("Specify a hash mode using the --hash option");
                 return;
             }
 
-            WriteMessage($"Validating hash mode {options.Hash}.");
+            WriteMessage($"Validating hash mode {options.Hash}");
+            if (options.Iterations > 0) WriteMessage($"Validating iterations {options.Iterations}.");
 
             if (options.ValidateEmail && options.ValidateEmailOnly)
             {
@@ -30,8 +31,8 @@
                 return;
             }
 
-            if (options.ValidateEmail) WriteMessage("Validating email.");
-            if (options.ValidateEmailOnly) WriteMessage("Validating email only.");
+            if (options.ValidateEmail) WriteMessage("Validating email");
+            if (options.ValidateEmailOnly) WriteMessage("Validating email only");
 
             WriteMessage($"Started at {DateTime.Now.ToShortTimeString()}.");
 

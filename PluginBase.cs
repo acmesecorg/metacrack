@@ -142,12 +142,12 @@ namespace Malfoy
             //Validate iterations
             if (iteration > 0)
             {
-                if (info.Mode == 3200)
+                if (info.Mode == 10000)
                 {
                     var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
                     if (splits[1] != iteration.ToString()) return false;
                 }
-                if (info.Mode == 25600)
+                else if (info.Mode == 3200 || info.Mode == 25600)
                 {
                     var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
                     var iterationString = (iteration < 10) ? $"0{iteration}" : iteration.ToString();
