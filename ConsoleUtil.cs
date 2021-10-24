@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace Malfoy
+namespace Metacrack
 {
     public static class ConsoleUtil
     {

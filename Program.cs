@@ -1,7 +1,7 @@
 ﻿using CommandLine;
 using System.Reflection;
 
-namespace Malfoy
+namespace Metacrack
 {
     public class Program
     {

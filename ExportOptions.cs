@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Malfoy
+namespace Metacrack
 {
     //This is the default plugin
     [Verb("export", true, HelpText = "Cretaes a new list of founds and lefts from a list of hashes and solved hashes.")]

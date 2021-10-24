@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Malfoy
+namespace Metacrack
 {
     /// <summary>
     /// Models a plugin specification.

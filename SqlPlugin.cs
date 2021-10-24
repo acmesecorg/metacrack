@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 
 
-namespace Malfoy
+namespace Metacrack
 {
     [Plugin("sql")]
     public class SqlPlugin: PluginBase

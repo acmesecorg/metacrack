@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Malfoy
+namespace Metacrack
 {
     [Verb("sql", HelpText = "Parses a sql file into credential text file.")]
     public class SqlOptions

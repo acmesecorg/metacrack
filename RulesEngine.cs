@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Malfoy
+namespace Metacrack
 {
     public class TokenException: Exception
     {

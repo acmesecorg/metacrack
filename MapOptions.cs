@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Malfoy
+namespace Metacrack
 {
     [Verb("map", HelpText = "Creates a hash list with a mapped associated wordlist.")]
     public class MapOptions

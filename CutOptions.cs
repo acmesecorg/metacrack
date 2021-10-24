@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Malfoy
+namespace Metacrack
 {
     [Verb("cut", HelpText = "Ranks a list of hash:plain text but the occurence of plain values.")]
     public class CutOptions

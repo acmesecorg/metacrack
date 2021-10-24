@@ -1,4 +1,4 @@
-﻿namespace Malfoy
+﻿namespace Metacrack
 {
     public class SortPlugin : PluginBase
     {

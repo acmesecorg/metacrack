@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Malfoy
+namespace Metacrack
 {
     [Verb("catalog", HelpText = "Add contents of files to a data catalog.")]
     public class CatalogOptions

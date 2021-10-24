@@ -1,7 +1,7 @@
 ﻿using CommandLine;
 using System.Collections.Generic;
 
-namespace Malfoy
+namespace Metacrack
 {
     [Verb("lookup", HelpText = "Lookup meta data for a list of keys.")]
     public class LookupOptions
