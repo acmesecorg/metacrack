@@ -2,7 +2,7 @@
 
 namespace Metacrack
 {
-    [Verb("split", HelpText = "Creates a hash list with a mapped associated wordlist.")]
+    [Verb("split", HelpText = "Splits a file by line count into multiple files based on the value provided.")]
     public class SplitOptions
     {
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The path to the file(s) to be split.")]

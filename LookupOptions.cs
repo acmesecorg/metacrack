@@ -9,7 +9,7 @@ namespace Metacrack
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The input path to process .txt files from.")]
         public string InputPath { get; set; }
 
-        [Value(1, Required = true, , MetaName = "SourceFolder", HelpText = "The source catalog to lookup data in.")]
+        [Value(1, Required = true, MetaName = "SourceFolder", HelpText = "The source catalog to lookup data in.")]
         public string SourceFolder { get; set; }
 
         [Option("prefix", Default = "Password")]

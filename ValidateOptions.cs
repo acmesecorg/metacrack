@@ -2,7 +2,7 @@
 
 namespace Metacrack
 {
-    [Verb("validate", HelpText = "Creates a hash list with a mapped associated wordlist.")]
+    [Verb("validate", HelpText = "Parses a file and validates each line given the hash provided.")]
     public class ValidateOptions
     {
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The path to the file(s) containing the input values.")]
