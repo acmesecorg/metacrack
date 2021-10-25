@@ -37,7 +37,7 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql minted2.sql --s3 --columns 3 2 --table `users`",
+      "commandLineArgs": "sql2 minted3.sql --s3 --columns 0 5 6 --table `minted_address`",
       "workingDirectory": "D:\\Minted (25600)"
     },
     "Rank": {
@@ -52,7 +52,8 @@
     },
     "Split": {
       "commandName": "Project",
-      "workingDirectory": "D:\\thingiverse"
+      "commandLineArgs": "split",
+      "workingDirectory": "D:\\"
     },
     "Catalog Stem": {
       "commandName": "Project",
