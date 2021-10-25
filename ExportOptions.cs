@@ -3,13 +3,13 @@
 namespace Metacrack
 {
     //This is the default plugin
-    [Verb("export", true, HelpText = "Cretaes a new list of founds and lefts from a list of hashes and solved hashes.")]
+    [Verb("export", false, HelpText = "Creates a new list of founds and lefts from a list of hashes and solved hashes.")]
     public class ExportOptions
     {        
-        [Value(0, Required = true, HelpText = "The file containing the original hashes.")]
+        [Value(0, Required = true, MetaName = "HashesPath", HelpText = "The file containing the original hashes.")]
         public string HashesPath { get; set; }
 
-        [Value(1, Required = true, HelpText = "The search pattern for the hash lookup files.")]
+        [Value(1, Required = true, MetaName = "LookupPath", HelpText = "The search pattern for the hash lookup files.")]
         public string LookupPath { get; set; }
 
         [Option('f', "found")]
@@ -24,10 +24,10 @@ namespace Metacrack
         [Option]
         public bool Base64 { get; set; }
 
-        [Option("remove", Default = "")]
+        [Option("remove", Default = "", HelpText = "The path to the file containing hashes to be removed.")]
         public string RemoveHashesPath { get; set; }
 
-        [Option("remove-associated", Default = "")]
+        [Option("remove-associated", Default = "", HelpText = "The path to the file containing associated words to be removed. Use in conjunction with --remove.")]
         public string RemoveWordsPath { get; set; }
     }
 }

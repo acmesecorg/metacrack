@@ -10,10 +10,10 @@ namespace Metacrack
     [Verb("catalog", HelpText = "Add contents of files to a data catalog.")]
     public class CatalogOptions
     {        
-        [Value(0, Required = true, HelpText = "The input path and subfolders to process files from.")]
+        [Value(0, Required = true, MetaName = "InputPath", HelpText = "The input path and subfolders to process files from.")]
         public string InputPath { get; set; }
 
-        [Value(1, Required = true, HelpText = "The output folder to append data to or create new files in.")]
+        [Value(1, Required = true, MetaName = "OutputFolder", HelpText = "The output folder to append data to or create new files in.")]
         public string OutputFolder { get; set; }
 
         [Option("prefix", Default = "Password")]
