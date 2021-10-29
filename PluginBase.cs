@@ -175,6 +175,9 @@ namespace Metacrack
             //$P$984478476IagS59wHZvyQMArzfx58u.
             if (mode == 400) return new HashInfo(mode, 1, 34, false, "$P$B");
 
+            if (mode == 1400) return new HashInfo(mode, 1, 64, true);
+            if (mode == 1410) return new HashInfo(mode, 2, 64, true);
+
             if (mode == 1800) return new HashInfo(mode, 1, 106, false);
 
             //b2771af9d6e8395c72254bbc379dd092:NqPyawIn

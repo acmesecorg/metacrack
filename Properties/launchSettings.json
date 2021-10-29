@@ -7,8 +7,7 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog badoo.meta.txt d:\\meta --prefix badoo --tokenize --columns 2 3 4",
-      "workingDirectory": "D:\\"
+      "commandLineArgs": "catalog badoo.meta.txt d:\\meta --prefix badoo --tokenize --columns 2 3 4"
     },
     "Export": {
       "commandName": "Project",
@@ -27,8 +26,8 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate minted2.dump.txt --hash 25600 --email --iterations 08",
-      "workingDirectory": "D:\\"
+      "commandLineArgs": "validate wattpad.dump.invalid.txt --hash 1400",
+      "workingDirectory": "D:\\Wattpad_RF"
     },
     "Export with Remove": {
       "commandName": "Project",
@@ -47,8 +46,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse badoo.txt --delimiter : --columns 1 4 7 --date-columns 7",
-      "workingDirectory": "D:\\Badoo (0)"
+      "commandLineArgs": "parse wattpad.meta.txt --delimiter : --columns 0 1 2 3 --date-columns 3",
+      "workingDirectory": "D:\\Wattpad_RF"
     },
     "Split": {
       "commandName": "Project",

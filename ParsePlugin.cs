@@ -174,8 +174,8 @@
                         //Write out buffer
                         if ((output.Count > 1000000 || notparsed.Count > 1000000) && !options.Deduplicate)
                         {
-                            File.AppendAllLines(outputPath, options.Deduplicate ? output.Distinct() : output);
-                            File.AppendAllLines(outputNotParsedPath, notparsed);
+                            if (output.Count > 0)  File.AppendAllLines(outputPath, options.Deduplicate ? output.Distinct() : output);
+                            if (notparsed.Count > 0) File.AppendAllLines(outputNotParsedPath, notparsed);
 
                             output.Clear();
                             notparsed.Clear();
@@ -184,8 +184,8 @@
                 }
 
                 //Check if we must deduplicate
-                File.AppendAllLines(outputPath, options.Deduplicate ? output.Distinct() : output);
-                File.AppendAllLines(outputNotParsedPath, notparsed);
+                if (output.Count > 0) File.AppendAllLines(outputPath, options.Deduplicate ? output.Distinct() : output);
+                if (notparsed.Count > 0) File.AppendAllLines(outputNotParsedPath, notparsed);
             }
         }
     }
