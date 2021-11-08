@@ -18,10 +18,12 @@ Help for each verb can be viewed by typing `meta <plugin>` - where <plugin> is t
 ## License
 Metacrack is licensed under the MIT license. Refer to [license.txt](https://github.com/metacrackorg/metacrack/blob/main/LICENSE) for more information.
   
-## Usage
+## Usage and features
 
-Metacrack uses metadata associated with a hash to create a per-hash list of possible words to use where a hash is difficult or expensive to crack. Common sources of data include previous password breaches, usernames, birthdates, and emails addresses.
-  
+Metacrack uses metadata associated with a hash to create a per-hash list of possible words to use where a hash is difficult or expensive to crack. Common sources of data include previous password breaches, usernames, birthdates, and emails addresses. 
+
+Data is indexed by a key derived from an anonymised version of an email address, created using function `left(sha1(email), 20)`. By providing a list of email:hash combinations, it is possible to output two files that are compatible with [Hashcat](https://github.com/hashcat/hashcat) attack mode 9. Words that would be duplicated by a rule in hashcat can be filtered out by supplying the rule to metacrack. Output in the form of cracked hashes from hashcat can be provided to metacrack to be removed from hash / wordlists, and also exported in various formats.  
+ 
   > *Note*
   > Ensure that you are both legally and ethically allowed to use the meta data associated with the hashes you are trying to crack. 
 
