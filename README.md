@@ -39,7 +39,7 @@ The following plugins are documented in the order that they might be used to cre
  
  ```
  alice@acme.org:password::
- bob@acme.org:letmein::1979
+ bob@acme.org:letmein:Robert Plant:1979
  carol@acme.org:ilovecats:Carol Smith:
  ```
   
