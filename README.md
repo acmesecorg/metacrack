@@ -27,7 +27,7 @@ Metacrack uses metadata associated with a hash to create a per-hash list of poss
 
 ## Plugins 
 
-The following plugins are documented in the order that they might be used to create an attack.
+The following plugins are documented in the order that they might be used to create a new attack.
   
  ### *catalog*
   
