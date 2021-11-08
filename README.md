@@ -31,7 +31,7 @@ The following plugins are documented in the order that they might be used to cre
   
  ### *catalog*
   
- Add contents of files to a data catalog. Files should start with an identifier such as an email address and contain one or more values, sepearted by the `:` character e.g.
+ Add contents of files to a data catalog. Files should start with an identifier such as an email address and contain one or more values, seperated by the `:` character e.g.
  
  ```
  alice@acme.org:password::
