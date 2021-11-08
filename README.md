@@ -1,6 +1,6 @@
 # *metacrack*
 
-Metacrack is a commandline tool for security researchers to create targeted hash / word association lists to help crack salted hashes in https://github.com/hashcat/hashcat. Metacrack is currently in beta, and is not optimised for performance. 
+Metacrack is a commandline tool for security researchers to create targeted hash / word association lists to help crack salted hashes in https://github.com/hashcat/hashcat. Metacrack is currently in beta, and is not yet optimised for performance. 
 
 Each function is written as a plugin which maps directly to a command line verb for example:
 
