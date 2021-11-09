@@ -10,7 +10,7 @@ Each function is written as a plugin which maps directly to a command line verb,
 - `export` is the verb you wish to use 
 - `values.txt` and `output.txt` are parameters specific to the `export` verb.
 
-Help for each verb can be viewed by typing `meta <plugin>` - where <plugin> is the name of the verb / plugin you wish to use - without parameters. It is also possible to write your own plugin as a c# dll, which will automatically be loaded and executed by the `meta` command line tool.
+Help for each verb can be viewed by typing `meta <plugin> --help`. It is also possible to write your own plugin as a c# dll, which will automatically be loaded and executed by the `meta` command line tool. See [creating your own plugin](#creating-your-own-plugin) for more details.
   
   > *Note*
   > The creation of metacrack pre-dates the announcement of the formation of the legal entity formally known as Facebook, and the similarity in names is both unfortunate and purely coincidental.
@@ -43,4 +43,7 @@ The following plugins are documented in the order that they might be used to cre
  bob@acme.org:letmein:Robert Plant:1979
  carol@acme.org:ilovecats:Carol Smith:
  ```
-  
+ 
+ ## Creating your own plugin
+ 
+ Content coming soon.
