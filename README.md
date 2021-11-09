@@ -1,6 +1,6 @@
 # *metacrack*
 
-Metacrack is a command line tool for security researchers and pentesters to create targeted hash / word association lists to help crack salted hashes in [hashcat](https://github.com/hashcat/hashcat). Metacrack is currently in beta, and is not yet optimised for performance. 
+Metacrack is a command line tool for security researchers and pentesters to create targeted hash / word association lists to help crack salted hashes in [hashcat](https://github.com/hashcat/hashcat). Metacrack is currently in beta, and is not yet optimised for performance. You should be very comfortable with using command line tools, as well as Hashcat.
 
 Each function is written as a plugin which maps directly to a command line verb, for example:
 
@@ -19,6 +19,7 @@ Help for each verb can be viewed by typing `meta <plugin>` - where <plugin> is t
 Metacrack is licensed under the MIT license. Refer to [license.txt](https://github.com/metacrackorg/metacrack/blob/main/LICENSE) for more information.
   
 ## Usage and features
+
 
 Metacrack uses metadata associated with a hash to create a per-hash list of possible words to use where a hash is difficult or expensive to crack. Common sources of data include previous password breaches, usernames, birthdates, and emails addresses. 
 
