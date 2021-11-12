@@ -32,17 +32,14 @@ By providing a file containing a list of *email:hash* combinations, it is possib
 
 ## Plugins 
 
-The following plugins are documented in the order that they might be used to create a new attack.
-  
- ### *catalog*
-  
- Add contents of files to a data catalog. Files should start with an identifier such as an email address and contain one or more values, seperated by the `:` character e.g.
+The following plugins are documented in the order that they might be used to create a new attack. 
  
- ```
- alice@acme.org:password::
- bob@acme.org:letmein:Robert Plant:1979
- carol@acme.org:ilovecats:Carol Smith:
- ```
+| Verb | Description |
+| --- | --- |
+| catalog | Add contents of files to a data catalog.|
+| git diff | Show file differences that haven't been staged |
+ 
+
  
  ## Creating your own plugin
  
