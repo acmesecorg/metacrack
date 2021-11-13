@@ -37,7 +37,7 @@ The following plugins are documented in the order that they might be used to cre
 | Verb | Description |
 | --- | --- |
 | [catalog](https://github.com/metacrackorg/metacrack/wiki/Catalog) | Add contents of files to a data catalog.|
-| git diff | Show file differences that haven't been staged |
+| test | lorem ipsum |
  
 
  
