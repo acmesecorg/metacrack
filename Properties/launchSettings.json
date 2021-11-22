@@ -16,8 +16,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup minted2.dump.valid.txt d:\\output --filter \"D:\\hashcat-6.2.4\\rules\\best64.rule\" --hash 25600",
-      "workingDirectory": "D:\\"
+      "commandLineArgs": "lookup 10000.*left.txt d:\\output --filter ..\\d3ad0ne.rule --hash 10000",
+      "workingDirectory": "D:\\Dubsmash (10000)"
     },
     "Map": {
       "commandName": "Project",
@@ -36,8 +36,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql2 minted3.sql --s3 --columns 0 5 6 --table `minted_address`",
-      "workingDirectory": "D:\\Minted (25600)"
+      "commandLineArgs": "sql dave.csv --s4 --debug",
+      "workingDirectory": "D:\\Dave (3200)"
     },
     "Rank": {
       "commandName": "Project",
@@ -46,8 +46,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse wattpad.meta.txt --delimiter : --columns 0 1 2 3 --date-columns 3",
-      "workingDirectory": "D:\\Wattpad_RF"
+      "commandLineArgs": "parse dave.dump.txt --delimiter : --columns 0 1 2 3 4 --date-columns 4 --validate",
+      "workingDirectory": "D:\\Dave (3200)"
     },
     "Split": {
       "commandName": "Project",

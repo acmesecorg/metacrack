@@ -24,6 +24,9 @@ namespace Metacrack
         public static readonly List<string> DoubleTokens = new() { "$", "^", "p", "T", "D", "'", "@", "z", "Z", "L", "R", "+", "-", ".", ",", "y", "Y" };
         public static readonly List<string> TripleTokens = new() { "x", "O", "i", "o", "s", "*"};
 
+        public static readonly List<string> UnsupportedQuadTokens = new() { "X" };
+        public static readonly List<string> UnsupportedSingleTokens = new() { "4", "6", "M" };
+
         //Filters a list for duplicates given a list of words and a set of rules
         public static List<string> FilterByRules(IEnumerable<string> input, List<List<string>> rules)
         {
@@ -134,18 +137,31 @@ namespace Metacrack
         public static List<string> TokenizeRule(string rule)
         {
             var tokens = new List<string>();
-       
-            //Remove all white space
-            rule = Regex.Replace(rule, @"\s+", "");
+
+            //We can only remove leading whitespace
+            //Otherwise, the space is a processable character
+            rule = rule.TrimStart();
 
             //Check for comments, return empty tokens
-            if (rule.StartsWith("##")) return tokens;
+            if (rule.StartsWith("#")) return tokens;
 
             while (rule.Length > 0)
             {
                 var found = "";
 
                 //Loop through each token type and add to the output
+                if (rule.Length > 3)
+                {
+                    foreach (var token in UnsupportedQuadTokens)
+                    {
+                        if (rule.StartsWith(token))
+                        {
+                            //If we find an unsupported rule, then skip the entire line
+                            return new List<string>();
+                        }
+                    }
+                }
+
                 if (rule.Length > 2)
                 {
                     foreach (var token in TripleTokens)
@@ -164,7 +180,7 @@ namespace Metacrack
                     {
                         if (rule.StartsWith(token))
                         {
-                            found = found = rule.Substring(0, 2);
+                            found = rule.Substring(0, 2);
                             break;
                         }
                     }
@@ -176,17 +192,32 @@ namespace Metacrack
                     {
                         if (rule.StartsWith(token))
                         {
-                            found = found = rule.Substring(0, 1);
+                            found = rule.Substring(0, 1);
                             break;
                         }
                     }
                 }
 
-                if (found == "") throw new RuleException($"Could not process remaining rule {rule}, token {tokens.Count}");
+                if (found == "")
+                {
+                    foreach (var token in UnsupportedSingleTokens)
+                    {
+                        if (rule.StartsWith(token))
+                        {
+                            //If we find an unsupported rule, then skip the entire line
+                            return new List<string>();
+                        }
+                    }
+                }
+
+                if (found == "") throw new RuleException($"Could not process rule {rule}, token {tokens.Count}");
 
                 //Add token and remove from front of rule
                 tokens.Add(found);
                 rule = rule.Substring(found.Length);
+
+                //Parse out the next space
+                while (rule.StartsWith(" ")) rule = rule.Substring(1);
             }
 
             return tokens;
