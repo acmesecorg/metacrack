@@ -26,5 +26,7 @@ namespace Metacrack
         [Option("deduplicate")]
         public bool Deduplicate { get; set; }
 
+        [Option("validate")]
+        public bool Validate { get; set; }
     }
 }

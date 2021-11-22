@@ -108,33 +108,40 @@
                             var splits = line.Split(options.Delimiter, StringSplitOptions.TrimEntries);
                             var values = new List<string>();
 
-                            if (splits.Length > maxColumn)
+                            if (options.Validate && !ValidateEmail(splits[0], out var emailSteam))
                             {
-                                foreach (var column in columns)
-                                {
-                                    //Check if we need to parse out the date
-                                    if (datecolumns.Contains(column))
-                                    {
-                                        if (DateOnly.TryParse(splits[column], out var date))
-                                        {
-                                            //We are only interested in the yyyy year
-                                            values.Add(date.Year.ToString());
-                                        }
-                                        else
-                                        {
-                                            values.Add("");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        values.Add(splits[column]);
-                                    }
-                                }
-                                output.Add(String.Join(":", values));
+                                notparsed.Add(line);
                             }
                             else
                             {
-                                notparsed.Add(line);
+                                if (splits.Length > maxColumn)
+                                {
+                                    foreach (var column in columns)
+                                    {
+                                        //Check if we need to parse out the date
+                                        if (datecolumns.Contains(column))
+                                        {
+                                            if (DateOnly.TryParse(splits[column], out var date))
+                                            {
+                                                //We are only interested in the yyyy year
+                                                values.Add(date.Year.ToString());
+                                            }
+                                            else
+                                            {
+                                                values.Add("");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            values.Add(splits[column]);
+                                        }
+                                    }
+                                    output.Add(String.Join(":", values));
+                                }
+                                else
+                                {
+                                    notparsed.Add(line);
+                                }
                             }
                         }
                         else if (options.ParseType == "edmodo")
