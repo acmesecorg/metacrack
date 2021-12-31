@@ -1,4 +1,9 @@
-﻿namespace Metacrack
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace Metacrack
 {
     public class ParsePlugin : PluginBase
     {
@@ -121,7 +126,7 @@
                                         //Check if we need to parse out the date
                                         if (datecolumns.Contains(column))
                                         {
-                                            if (DateOnly.TryParse(splits[column], out var date))
+                                            if (DateTime.TryParse(splits[column], out var date))
                                             {
                                                 //We are only interested in the yyyy year
                                                 values.Add(date.Year.ToString());

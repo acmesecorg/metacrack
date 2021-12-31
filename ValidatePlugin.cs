@@ -1,4 +1,8 @@
-﻿namespace Metacrack
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace Metacrack
 {
     public class ValidatePlugin : PluginBase
     {

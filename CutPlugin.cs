@@ -1,4 +1,7 @@
-﻿namespace Metacrack
+﻿using System.Collections.Generic;
+using System.IO;
+
+namespace Metacrack
 {
     public class CutPlugin : PluginBase
     {

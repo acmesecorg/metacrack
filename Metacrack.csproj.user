@@ -7,4 +7,10 @@
     <ActiveDebugProfile>Lookup</ActiveDebugProfile>
     <_LastSelectedProfileId>C:\Users\James\Documents\GitHub\Metacrack\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <StartAction>Project</StartAction>
+    <StartArguments>catalog test.txt --columns 1 2 --fields p u</StartArguments>
+    <StartWorkingDirectory>..\..\..\Downloads</StartWorkingDirectory>
+    <ExternalConsole>true</ExternalConsole>
+  </PropertyGroup>
 </Project>

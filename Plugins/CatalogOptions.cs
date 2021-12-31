@@ -5,24 +5,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Metacrack
+namespace Metacrack.Plugins
 {
-    [Verb("catalog", HelpText = "Add contents of files to a data catalog.")]
+    [Verb("catalog", HelpText = "Add contents of files to a catalog.")]
     public class CatalogOptions
-    {        
+    {
+        public static readonly string[] ValidFields = { "p", "password", "u", "username", "n", "name", "d", "date", "i", "number", "v", "value" };
+
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The input path and subfolders to process files from.")]
         public string InputPath { get; set; }
 
-        [Value(1, Required = true, MetaName = "OutputFolder", HelpText = "The output folder to append data to or create new files in.")]
-        public string OutputFolder { get; set; }
+        [Value(1, Required = false, Default = "meta.db", MetaName = "OutputPath", HelpText = "The output path to the new or existing database file.")]
+        public string OutputPath { get; set; }
 
-        [Option("prefix", Default = "Password")]
-        public string Prefix { get; set;}
-
-        [Option("no-optimize", HelpText = "Prevents optimisation from running after data is added.")]
-        public bool NoOptimize { get; set; }
-
-        [Option("tokenize", HelpText = "Attempts to turn each value into further sub values.")]
+        [Option("tokenize", HelpText = "Attempts to turn each space seperated value into further sub values.")]
         public bool Tokenize { get; set; }
 
         [Option("stem-email", HelpText = "Use email as a source of values.")]
@@ -34,7 +30,10 @@ namespace Metacrack
         [Option("stem-names")]
         public string NamesPath { get; set; }
 
-        [Option]
+        [Option('c', "columns")]
         public IEnumerable<string> Columns { get; set; }
+
+        [Option('f', "fields")]
+        public IEnumerable<string> Fields { get; set; }
     }
 }

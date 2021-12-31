@@ -1,5 +1,10 @@
 ﻿using CommandLine;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Metacrack
 {
@@ -57,7 +62,7 @@ namespace Metacrack
 
                         if (attr.Name == name)
                         {
-                            ConsoleUtil.WriteMessage($"Using {name} plugin.", ConsoleColor.DarkYellow);
+                            ConsoleUtil.WriteMessage($"Using {name} plugin", ConsoleColor.DarkYellow);
 
                             //Try regular synchronous invoke
                             var method = type2.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);

@@ -1,6 +1,10 @@
-﻿using System.Security.Cryptography;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Metacrack.Model;
 
 namespace Metacrack
 {
@@ -94,22 +98,52 @@ namespace Metacrack
             return string.Join(".", result);
         }
 
-        public static bool ValidateEmail(string email, out string emailStem)
+        public static bool ValidateEmail(ReadOnlySpan<char> email, out string emailStem)
         {
+            //Assign this value so that we can return false
             emailStem = null;
-
             if (email.Contains(':')) return false;
 
-            var emailSplits = email.Split('@');
-            if (emailSplits.Length != 2) return false;
+            var emailStemBuilder = new StringBuilder();
+            var emailSplits = email.SplitByChar('@');
+            var valid = false;
 
-            var domainSplits = emailSplits[1].Split('.');
-            if (domainSplits.Length < 2) return false;
+            foreach (var (emailSplit, index) in emailSplits)
+            {
+                //Remove any +
+                if (index == 0)
+                {
+                    var nameSplits = emailSplit.SplitByChar('+');
 
-            //Now stem the email
-            var nameSplits = emailSplits[0].Split('+', 2);
+                    //Check for first entry
+                    if (!nameSplits.MoveNext()) return false;
 
-            emailStem = $"{nameSplits[0]}@{emailSplits[1]}";
+                    emailStemBuilder.Append(nameSplits.Current);
+                }
+
+                //Validate domain splits
+                else if (index == 1)
+                {
+                    var domainSplits = emailSplit.SplitByChar('.');
+                    if (domainSplits.MoveToEnd() != 2) return false;
+
+                    //Append domain
+                    emailStemBuilder.Append("@");
+                    emailStemBuilder.Append(emailSplit);
+
+                    //Flag as valid value
+                    valid = true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            //Make sure valid flag was set in index 1
+            if (!valid) return false;
+
+            emailStem = emailStemBuilder.ToString();
 
             return true;
         }
@@ -314,89 +348,59 @@ namespace Metacrack
             return size;
         }
 
-        public static void OptimizeFolder(string folder, string prefix)
+        public static void StemEmail(string email, HashSet<string> lookups, Entity entity)
         {
-            WriteMessage($"Optimising buckets.");
+            var subsplits = email.SplitByChar('@');
+            if (!subsplits.MoveNext()) return;
 
-            var progressTotal = 0;
-            var files = Directory.GetFiles(folder, $"{prefix}-*");
-            var count = files.Length;
-
-            //TODO: use multiple tasks here to improve performance
-            foreach (var sourceFile in files)
-            {
-                var fileInfo = new FileInfo(sourceFile);
-                var fileName = Path.GetFileNameWithoutExtension(sourceFile);
-
-                WriteProgress($"Optimizing {fileName}", progressTotal, count);
-
-                var bucket = new List<string>();
-                using (var reader = new StreamReader(sourceFile))
-                {
-                    while (!reader.EndOfStream)
-                    {
-                        bucket.Add(reader.ReadLine());
-                    }
-                }
-
-                //Optimize this bucket by deduplicating and then sorting
-                bucket = bucket.Distinct().OrderBy(q => q).ToList();
-
-                File.Delete(sourceFile);
-                File.AppendAllLines(sourceFile, bucket);
-
-                progressTotal++;
-            }
-        }
-
-        public static void StemEmail(string email, HashSet<string> lookups, HashSet<string> finals)
-        {
-            var subsplits = email.Split('@');
-            var name = subsplits[0];
-
+            var name = subsplits.Current.Value;
+            
             //Add the whole name
-            finals.Add(name);
+            entity.AddNames(name);
 
             //Remove special characters, giving us alpha and numerics
             //Regex expression is cached
-            var matches = Regex.Matches(name, "[a-z]+|[0-9]+", RegexOptions.IgnoreCase);
+            var matches = Regex.Matches(name.ToString(), "[a-z]+|[0-9]+", RegexOptions.IgnoreCase);
 
             //Split any text by list of lookup names
             //Using a hashset means we dont get repeats
             foreach (var match in matches)
             {
-                var value = ((Match)match).Value;
+                var value = ((Match)match).Value.AsSpan();
 
                 //We will let rules take care of single digit numbers
                 //We are really more interested in special numbers and dates of birth etc here
                 if (int.TryParse(value, out var number))
                 {
-                    if (number > 9) finals.Add(value);
+                    if (number > 9) entity.AddNumbers(value);
                 }
                 else
                 {
-                    finals.Add(value);
+                    var finals = new StringBuilder();
+                    finals.Append(value);
 
                     //Split names now, because the email will be anonimised after this
                     //Try split single name eg bobjenkins into bob and jenkins
                     foreach (var entry in lookups)
                     {
-                        //For comparison only, we use lower case. 
-                        //Entries have already been lowered
-                        if (value.ToLower().StartsWith(entry))
+                        //For comparison only, we ignore case
+                        if (value.StartsWith(entry, StringComparison.OrdinalIgnoreCase))
                         {
-                            finals.Add(entry);
+                            finals.Append(':');
+                            finals.Append(entry);
 
-                            var other = value.Replace(entry, "");
+                            var other = value.Slice(entry.Length);
 
                             if (other.Length > 1)
                             {
-                                finals.Add(other);
+                                finals.Append(':');
+                                finals.Append(other);
                             }
                         }
                     }
                 }
             }
+            
         }
 
         public static string FormatSize(long bytes)
