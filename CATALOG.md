@@ -6,7 +6,7 @@ Input files should always begin with an email address. The email address is anon
 
 Values in input files should be seperated by a ':' character.
 
-  > *Note*<br>
+  > **Note**<br>
   > Catalog files are implemented as a sqlite table with a number of text fields which map to the *fields* option. These files can be viewed with any sqlite compatible browser.
 
 ## Usage
