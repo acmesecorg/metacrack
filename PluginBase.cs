@@ -386,8 +386,15 @@ namespace Metacrack
 
                         if (other.Length > 1)
                         {
-                            finals.Append(':');
-                            finals.Append(other);
+                            if (int.TryParse(other, out var number2))
+                            {
+                                if (number2 > 9) entity.AddNumbers(other);
+                            }
+                            else
+                            {
+                                finals.Append(':');
+                                finals.Append(other);
+                            }
                         }
                     }
                 }
