@@ -1,19 +1,20 @@
 # *catalog*
 
-Adds character seperated data from an inout text file  to a new or existing catalog.
+Adds character seperated data from an input text file to a new or existing catalog.
 
-## Example
+## Usage
 
-`meta catalog input.txt mydata.db --columns 1 2 --fields p u
+`meta catalog inputpath [outputpath] [options]`
 
-## Parameters
 
-| Verb | Description |
-| --- | --- |
-| [catalog](https://github.com/metacrackorg/metacrack/wiki/Catalog) | Add contents of files to a data catalog.|
-| test | lorem ipsum |
+| Option | Description |
+| :--- | :--- |
+| -c --columns| The ordinals (positions) in the input file to map to fields where email is always at position 0.|
+| -f --fields| Names of the predefined fields to write values to. Each column chosen in the *columns* option should have a matching field. Valid values are: *p password u username n name d date i number v value* |
+| <img width=200> | |
+
  
 
- ## Usage
+## Examples
  
  Content coming soon.
