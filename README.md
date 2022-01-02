@@ -21,7 +21,7 @@ Metadata is first cataloged using the *catalog* verb which stores the data index
   
 By providing a file containing a list of *email:hash* combinations, it is possible to perform a *lookup* to create two files that are compatible with [Hashcat](https://github.com/hashcat/hashcat) associative attack (attack mode 9). Words that would be duplicated by a rule in hashcat can be filtered out by supplying the rule to metacrack. Hashes can be filtered by Hashcat mode and iteration count to ensure that they are valid, as any inconsistencies will prevent hashcat from running the attack. Output in the form of cracked hashes from hashcat can be provided to metacrack to be removed from hash / wordlists, and exported using the *export* verb, in various formats.  
  
-  > **Note**
+  > **Note**<br>
   > Ensure that you are both legally and ethically allowed to use the meta data associated with the hashes you are trying to crack. 
 
 ## Plugins 
