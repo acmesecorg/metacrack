@@ -11,12 +11,11 @@ Each function is written as a plugin which maps directly to a command line verb,
 - `values.txt` and `output.txt` are parameters specific to the `export` verb.
 
 Help for each verb can be viewed by typing `meta <plugin> --help`. It is also possible to write your own plugin as a c# dll, which will automatically be loaded and executed by the `meta` command line tool. See [creating your own plugin](#creating-your-own-plugin) for more details.
-  
-  > *Note*
-  > The creation of metacrack pre-dates the announcement of the formation of the legal entity formally known as Facebook, and the similarity in names is both unfortunate and purely coincidental.
+
   
 ## License
 Metacrack is licensed under the MIT license. Refer to [license.txt](https://github.com/metacrackorg/metacrack/blob/main/LICENSE) for more information.
+
   
 ## Usage and features
 
