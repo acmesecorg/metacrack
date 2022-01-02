@@ -1,5 +1,4 @@
 # *metacrack*
-
 Metacrack is a command line tool for security researchers and pentesters to create targeted hash / word association lists to help crack salted hashes in [hashcat](https://github.com/hashcat/hashcat). Metacrack is currently in beta, and is not yet optimised for performance. Users of Metacrack should be very comfortable with using command line tools, including Hashcat.
 
 Each function is written as a plugin which maps directly to a command line verb, for example:
@@ -12,15 +11,10 @@ Each function is written as a plugin which maps directly to a command line verb,
 
 Help for each verb can be viewed by typing `meta <plugin> --help`. It is also possible to write your own plugin, which will automatically be loaded and executed by the `meta` command line tool. See [creating your own plugin](#creating-your-own-plugin) for more details.
   
-  > *Note*
-  > The creation of metacrack pre-dates the announcement of the formation of the legal entity formally known as Facebook, and the similarity in names is both unfortunate and purely coincidental.
-  
 ## License
 Metacrack is licensed under the MIT license. Refer to [license.txt](https://github.com/metacrackorg/metacrack/blob/main/LICENSE) for more information.
   
 ## Usage and features
-
-
 Metacrack uses metadata associated with a hash to create a per-hash list of possible words to use where a hash is difficult or expensive to crack. Common sources of data include previous password breaches, usernames, birthdates, and emails addresses. 
 
 Metadata is first cataloged using the **catalog** verb which stores the data indexed by a key derived from an anonymised version of an email address.
@@ -31,7 +25,6 @@ By providing a file containing a list of *email:hash* combinations, it is possib
   > Ensure that you are both legally and ethically allowed to use the meta data associated with the hashes you are trying to crack. 
 
 ## Plugins 
-
 The following plugins are documented in the order that they might be used when trying to crack a list of hashes. 
  
 | Verb | Description |
@@ -42,5 +35,4 @@ The following plugins are documented in the order that they might be used when t
 
  
  ## Creating your own plugin
- 
  Content to be added.
