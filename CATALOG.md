@@ -49,8 +49,7 @@ Running the command below creates a new catalog file called metadata.db and popu
 | :--- | :--- | :--- | :--- | :--- | :--- |  :--- |
 |-8817702922204933476|test||||||		
 |-6442325452012969502|password3||||||
-|-4702923869590031925|password1:password5||||||			
-|&nbsp;|||||||		
+|-4702923869590031925|password1:password5||||||					
 
 ### Add usernames to the catalog
 
@@ -67,7 +66,6 @@ To add the usernames contained in the second column, we can reprocess the file s
 |-8817702922204933476|test|test2|||||		
 |-6442325452012969502|password3|alice|||||
 |-4702923869590031925|password1:password5|alice74:alice2|||||			
-|&nbsp;|||||||	
 
 ### Stemming the email address for further values
 
@@ -89,4 +87,3 @@ Given the file *names.txt* and running the command following:
 |-8817702922204933476|test|test2|alice||1974|alice1974|	
 |-6442325452012969502|password3|alice|alice|||alice|
 |-4702923869590031925|password1:password5|alice74:alice2|alice:smith|||alice.smith|			
-|&nbsp;|||||||	
