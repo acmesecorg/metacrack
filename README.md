@@ -36,7 +36,7 @@ The following plugins are documented in the order that they might be used when t
  
 | Verb | Description |
 | --- | --- |
-| [catalog](/metacrackorg/metacrack/blob/sqlite/CATALOG.md) | Add contents of files to a data catalog.|
+| [catalog](//metacrackorg/metacrack/blob/sqlite/CATALOG.md) | Add contents of files to a data catalog.|
 | test | lorem ipsum |
  
 
