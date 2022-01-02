@@ -36,7 +36,7 @@ The following plugins are documented in the order that they might be used to cre
  
 | Verb | Description |
 | --- | --- |
-| [catalog](https://github.com/metacrackorg/metacrack/wiki/Catalog) | Add contents of files to a data catalog.|
+| [catalog](CATALOG.MD) | Add contents of files to a data catalog.|
 | test | lorem ipsum |
  
 
