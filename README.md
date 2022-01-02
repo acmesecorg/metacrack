@@ -10,7 +10,7 @@ Each function is written as a plugin which maps directly to a command line verb,
 - `export` is the verb you wish to use 
 - `values.txt` and `output.txt` are parameters specific to the `export` verb.
 
-Help for each verb can be viewed by typing `meta <plugin> --help`. It is also possible to write your own plugin as a c# dll, which will automatically be loaded and executed by the `meta` command line tool. See [creating your own plugin](#creating-your-own-plugin) for more details.
+Help for each verb can be viewed by typing `meta <plugin> --help`. It is also possible to write your own plugin, which will automatically be loaded and executed by the `meta` command line tool. See [creating your own plugin](#creating-your-own-plugin) for more details.
   
   > *Note*
   > The creation of metacrack pre-dates the announcement of the formation of the legal entity formally known as Facebook, and the similarity in names is both unfortunate and purely coincidental.
@@ -32,15 +32,15 @@ By providing a file containing a list of *email:hash* combinations, it is possib
 
 ## Plugins 
 
-The following plugins are documented in the order that they might be used to create a new attack. 
+The following plugins are documented in the order that they might be used when trying to crack a list of hashes. 
  
 | Verb | Description |
 | --- | --- |
-| [catalog](https://github.com/metacrackorg/metacrack/wiki/Catalog) | Add contents of files to a data catalog.|
+| [catalog](catalog.md) | Add contents of files to a data catalog.|
 | test | lorem ipsum |
  
 
  
  ## Creating your own plugin
  
- Content coming soon.
+ Content to be added.
