@@ -9,7 +9,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>catalog test.txt --columns 1 2 --fields p u</StartArguments>
+    <StartArguments>catalog test.txt --columns 1 2 --fields p u -n names.txt --stem-email-only</StartArguments>
     <StartWorkingDirectory>..\..\..\Downloads</StartWorkingDirectory>
     <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>

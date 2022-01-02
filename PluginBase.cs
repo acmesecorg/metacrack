@@ -355,52 +355,45 @@ namespace Metacrack
 
             var name = subsplits.Current.Value;
             
-            //Add the whole name
-            entity.AddNames(name);
+            //Add the whole name as a value
+            entity.AddValues(name);
 
             //Remove special characters, giving us alpha and numerics
             //Regex expression is cached
-            var matches = Regex.Matches(name.ToString(), "[a-z]+|[0-9]+", RegexOptions.IgnoreCase);
+            var value = name.RemoveSpecialCharacters();
 
-            //Split any text by list of lookup names
-            //Using a hashset means we dont get repeats
-            foreach (var match in matches)
+            //We will let rules take care of single digit numbers
+            //We are really more interested in special numbers and dates of birth etc here
+            if (int.TryParse(value, out var number))
             {
-                var value = ((Match)match).Value.AsSpan();
-
-                //We will let rules take care of single digit numbers
-                //We are really more interested in special numbers and dates of birth etc here
-                if (int.TryParse(value, out var number))
+                if (number > 9) entity.AddNumbers(value);
+            }
+            else
+            {
+                var finals = new StringBuilder();
+                    
+                //Split names now, because the email will be anonimised after this
+                //Try split single name eg bobjenkins into bob and jenkins
+                foreach (var entry in lookups)
                 {
-                    if (number > 9) entity.AddNumbers(value);
-                }
-                else
-                {
-                    var finals = new StringBuilder();
-                    finals.Append(value);
-
-                    //Split names now, because the email will be anonimised after this
-                    //Try split single name eg bobjenkins into bob and jenkins
-                    foreach (var entry in lookups)
+                    //For comparison only, we ignore case
+                    if (value.StartsWith(entry, StringComparison.OrdinalIgnoreCase))
                     {
-                        //For comparison only, we ignore case
-                        if (value.StartsWith(entry, StringComparison.OrdinalIgnoreCase))
+                        if (finals.Length > 0) finals.Append(':');
+                        finals.Append(entry);
+
+                        var other = value.Slice(entry.Length);
+
+                        if (other.Length > 1)
                         {
                             finals.Append(':');
-                            finals.Append(entry);
-
-                            var other = value.Slice(entry.Length);
-
-                            if (other.Length > 1)
-                            {
-                                finals.Append(':');
-                                finals.Append(other);
-                            }
+                            finals.Append(other);
                         }
                     }
                 }
+
+                entity.AddNames(finals.ToString());
             }
-            
         }
 
         public static string FormatSize(long bytes)

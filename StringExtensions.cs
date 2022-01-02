@@ -25,6 +25,28 @@ public static class StringExtensions
         return BitConverter.ToInt64(bytes, 0);
     }
 
+    public static string RemoveSpecialCharacters(this string str)
+    {
+        return RemoveSpecialCharacters(str.AsSpan()).ToString();
+    }
+
+    public static ReadOnlySpan<char> RemoveSpecialCharacters(this ReadOnlySpan<char> str)
+    {
+        Span<char> buffer = new char[str.Length];
+        int idx = 0;
+
+        foreach (char c in str)
+        {
+            if (char.IsLetterOrDigit(c))
+            {
+                buffer[idx] = c;
+                idx++;
+            }
+        }
+
+        return buffer.Slice(0, idx);
+    }
+
     public static string MergeWith(this string existing, string additions)
     {
         if (string.IsNullOrEmpty(existing)) return additions;
