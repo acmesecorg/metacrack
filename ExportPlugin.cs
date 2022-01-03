@@ -124,7 +124,7 @@ namespace Metacrack
                 var leftPath = $"{currentDirectory}\\{IncrementFilename(fileName, "left")}.txt"; //hash
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { plainsPath, foundPath, leftPath}))
+                if (!CheckOverwrite(new string[] { plainsPath, foundPath, leftPath}))
                 {
                     WriteHighlight($"Skipping {hashesPath}.");
                     continue;

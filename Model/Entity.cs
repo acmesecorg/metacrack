@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using SQLite;
 
 namespace Metacrack.Model
 {
     public class Entity
     {
+        private static int ValueLengthMax = 70;
+
         //Internal SqlLite RowId is a 64bit signed, so use this for best performance
         [PrimaryKey]
         public long RowId { get; set; }
@@ -124,34 +128,127 @@ namespace Metacrack.Model
             Values = Values.AsSpan().MergeWith(values, ':');
         }
 
-        public void SetValue(string value, string column)
+        public void SetValue(string value, string field)
         {
             if (string.IsNullOrEmpty(value)) return;
 
-            SetValue(value.AsSpan(), column);
+            SetValue(value.AsSpan(), field);
         }
 
-        public void SetValue(ReadOnlySpan<char> value, string column)
+        public List<string> GetValues(IEnumerable<string> fields)
         {
+            var result = new List<string>();
+
+            //First collect fields that could be modified by a date or number
+            foreach (var field in fields)
+            {
+                if (field == "p" || field == "password")
+                {
+                    if (!string.IsNullOrEmpty(Passwords))
+                    {
+                        foreach (var (value, index) in Passwords.SplitByChar(':'))
+                        {
+                            var valueString = value.ToString();
+                            if (!result.Contains(valueString)) result.Add(valueString);
+                        }
+                    }
+                }
+                else if (field == "u" || field == "username")
+                {
+                    if (!string.IsNullOrEmpty(Usernames))
+                    {
+                        foreach (var (value, index) in Usernames.SplitByChar(':'))
+                        {
+                            var valueString = value.ToString();
+                            if (!result.Contains(valueString)) result.Add(valueString);
+                        }
+                    }
+                }
+                else if (field == "n" || field == "name")
+                {
+                    if (!string.IsNullOrEmpty(Names))
+                    {
+                        foreach (var (value, index) in Names.SplitByChar(':'))
+                        {
+                            var valueString = value.ToString();
+                            if (!result.Contains(valueString)) result.Add(valueString);
+                        }
+                    }
+                }
+                else if (field == "v" || field == "value")
+                {
+                    if (!string.IsNullOrEmpty(Values))
+                    {
+                        foreach (var (value, index) in Values.SplitByChar(':'))
+                        {
+                            var valueString = value.ToString();
+                            if (!result.Contains(valueString)) result.Add(valueString);
+                        }
+                    }
+                }
+            }
+
+            //Modify existing words if dates and numbers selected
+            foreach (var field in fields)
+            {
+                if (field == "i" || field == "number")
+                {
+                    foreach (var (value, index) in Numbers.SplitByChar(':'))
+                    {
+                        foreach (var existing in result)
+                        {
+                            var combo = $"{existing}{value.ToString()}";
+                            if (!result.Contains(combo)) result.Add(combo);
+                        }
+                    }
+                }
+                else if (field == "d" || field == "date")
+                {
+                    foreach (var (value, index) in Dates.SplitByChar(':'))
+                    {
+                        foreach (var existing in result)
+                        {
+                            //Take last two chars if year
+                            if (Dates.Length == 4)
+                            {
+                                var yeartd = $"{existing}{value.Slice(2).ToString()}";
+                                if (!result.Contains(yeartd)) result.Add(yeartd);
+                            }
+
+                            //Now add all 4 characters or any other version
+                            var combo = $"{existing}{value.ToString()}";
+                            if (!result.Contains(combo)) result.Add(combo);
+                        }
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public void SetValue(ReadOnlySpan<char> value, string field)
+        {
+            if (value.Length > ValueLengthMax) return;
+
             if (value.Length == 0) return;
 
-            if (column == "p" || column == "password")
+            if (field == "p" || field == "password")
             {
                 AddPasswords(value);
             }
-            else if(column == "u" || column == "username")
+            else if(field == "u" || field == "username")
             {
                 AddUsernames(value);
             }
-            else if (column == "n" || column == "name")
+            else if (field == "n" || field == "name")
             {
                 AddNames(value);
             }
-            else if (column == "d" || column == "date")
+            else if (field == "d" || field == "date")
             {
                 AddDates(value);
             }
-            else if (column == "i" || column == "number")
+            else if (field == "i" || field == "number")
             {
                 AddNumbers(value);
             }

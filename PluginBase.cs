@@ -28,27 +28,17 @@ namespace Metacrack
 
     public abstract class PluginBase
     {
-        public static string[] Hex = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+        public static readonly string[] ValidFields = { "p", "password", "u", "username", "n", "name", "d", "date", "i", "number", "v", "value" };
+        public static readonly string[] Hex = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+        public const int MaxSessionsDefault = 20;
 
         //Cache this for better performance. Since it is static, we dont worry so much about disposal
         private static SHA1 _sha1;
         private static long _sharedProgressTotal;
         private static long _sharedProgress;
 
-        public static List<List<string>> GetRules(string option)
+        public static List<List<string>> GetRules(string path)
         {
-            string path;
-
-            try
-            {
-                path = Path.Combine(Directory.GetCurrentDirectory(), option);
-            }
-            catch (Exception ex)
-            {
-                WriteHighlight($"Exception getting rule path. {ex.Message}");
-                return null;
-            }
-
             try
             {
                 var lines = File.ReadAllLines(path);
@@ -148,12 +138,12 @@ namespace Metacrack
             return true;
         }
 
-        public static bool ValidateHash(string hash, HashInfo info)
+        public static bool ValidateHash(ReadOnlySpan<char> hash, HashInfo info)
         {
-            return ValidateHash(hash, info, 0);
+            return ValidateHash(hash, info, "0");
         }
 
-        public static bool ValidateHash(string hash, HashInfo info, int iteration)
+        public static bool ValidateHash(ReadOnlySpan<char> hash, HashInfo info, string iteration)
         {
             //Unknown hash
             if (info.Length == 0) return true;
@@ -174,25 +164,41 @@ namespace Metacrack
             }
 
             //Validate iterations
-            if (iteration > 0)
+            if (iteration != "0")
             {
                 if (info.Mode == 10000)
                 {
-                    var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
-                    if (splits[1] != iteration.ToString()) return false;
+                    var splits = hash.SplitByChar('$');
+                    foreach (var (split, index) in splits)
+                    {
+                        if (index == 1 && split != iteration) return false;
+                    }
                 }
                 else if (info.Mode == 3200 || info.Mode == 25600)
                 {
-                    var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
-                    var iterationString = (iteration < 10) ? $"0{iteration}" : iteration.ToString();
-                    if (splits[1] != iterationString) return false;
+                    var splits = hash.SplitByChar('$');
+
+                    foreach (var (split, index) in splits)
+                    {
+                        if (index == 1)
+                        {
+                            //Compare, skipping any initial zeros eg compare 01 to 1
+                            for (var i=0; i<split.Length; i++)
+                            {
+                                if (split.Length == iteration.Length + i)
+                                {
+                                    if (split.Slice(i) != iteration) return false;
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
             return true;
         }
 
-        public static bool ValidateSalt(string salt, HashInfo info)
+        public static bool ValidateSalt(ReadOnlySpan<char> salt, HashInfo info)
         {
             if (info.Mode == 27200) return salt.Length == 40;
             return true;
@@ -234,6 +240,17 @@ namespace Metacrack
         }        
 
         public static bool IsHex(IEnumerable<char> chars)
+        {
+            foreach (var c in chars)
+            {
+                var isHex = ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'));
+
+                if (!isHex) return false;
+            }
+            return true;
+        }
+
+        public static bool IsHex(ReadOnlySpan<char> chars)
         {
             foreach (var c in chars)
             {
@@ -318,7 +335,7 @@ namespace Metacrack
             }
         }
 
-        public static bool CheckForFiles(string[] paths)
+        public static bool CheckOverwrite(string[] paths)
         {
             foreach (var path in paths)
             {

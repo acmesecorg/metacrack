@@ -52,9 +52,9 @@ namespace Metacrack.Plugins
             //Validate fields
             foreach (var field in fields)
             {
-                if (!CatalogOptions.ValidFields.Contains(field))
+                if (!ValidFields.Contains(field))
                 {
-                    WriteError($"Invalid field {field}. Field must be one of the following: {string.Join(",", CatalogOptions.ValidFields)}");
+                    WriteError($"Invalid field {field}. Field must be one of the following: {string.Join(",", ValidFields)}");
                     return;
                 }
             }

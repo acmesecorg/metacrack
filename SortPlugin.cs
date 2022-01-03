@@ -33,7 +33,7 @@ namespace Metacrack
                 var outputPath = $"{filePathName}.temp.txt";
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { outputPath}))
+                if (!CheckOverwrite(new string[] { outputPath}))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 

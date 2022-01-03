@@ -10,8 +10,6 @@ namespace Metacrack.Plugins
     [Verb("catalog", HelpText = "Add contents of files to a catalog.")]
     public class CatalogOptions
     {
-        public static readonly string[] ValidFields = { "p", "password", "u", "username", "n", "name", "d", "date", "i", "number", "v", "value" };
-
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The input path and subfolders to process files from.")]
         public string InputPath { get; set; }
 
@@ -33,7 +31,7 @@ namespace Metacrack.Plugins
         [Option('c', "columns", HelpText = "The ordinals (positions) in the input file to map to fields where email is always at position 0.")]
         public IEnumerable<string> Columns { get; set; }
 
-        [Option('f', "fields", HelpText = "The predefinied fields to write values to. Each column should have a matching field. Valid values are: " +
+        [Option('f', "fields", HelpText = "The predefined fields to write values to. Each column should have a matching field. Valid values are: " +
             "p password u username n name d date i number v value.")]
         public IEnumerable<string> Fields { get; set; }
     }

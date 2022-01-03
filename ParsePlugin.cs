@@ -57,7 +57,7 @@ namespace Metacrack
                 var outputNotParsedPath = $"{filePathName}.noparse.txt";
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { outputPath, outputNotParsedPath }))
+                if (!CheckOverwrite(new string[] { outputPath, outputNotParsedPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 

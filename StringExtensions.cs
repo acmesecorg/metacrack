@@ -56,6 +56,7 @@ public static class StringExtensions
     }
 
     //Ensure empty checks are done further up the call stack for best performance
+    //TODO: add limit checks so that eg we have max 20 values
     public static string MergeWith(this ReadOnlySpan<char> existing, ReadOnlySpan<char> additions, char seperator)
     {
         //Create maximum length

@@ -84,7 +84,7 @@ namespace Metacrack
                 _outputWordPath = $"{filePathName}.{version}.word";
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))
+                if (!CheckOverwrite(new string[] { _outputHashPath, _outputWordPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 

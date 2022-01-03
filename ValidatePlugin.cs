@@ -56,7 +56,7 @@ namespace Metacrack
                 _outputInvalidPath = $"{filePathName}.invalid{fileInfo.Extension}";
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { _outputValidPath, _outputInvalidPath }))
+                if (!CheckOverwrite(new string[] { _outputValidPath, _outputInvalidPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 
@@ -93,7 +93,7 @@ namespace Metacrack
                         {
                             if (emailValid && splits.Length > options.Column)
                             {
-                                if (ValidateHash(splits[options.Column], hashInfo, options.Iterations))
+                                if (ValidateHash(splits[options.Column], hashInfo, options.Iterations.ToString()))
                                 {
                                     valid.Add(line);
                                 }

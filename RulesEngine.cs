@@ -102,7 +102,6 @@ namespace Metacrack
                 }
             }
 
-
             return values;
         }
 
