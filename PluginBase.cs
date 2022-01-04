@@ -51,6 +51,17 @@ namespace Metacrack
             }
         }
 
+        public static bool TryParse(string value, out int number)
+        {
+            number = 0;
+            value = value.Replace("kk", "000000");
+            value = value.Replace("k", "000");
+
+            if (!int.TryParse(value, out var count)) return false;
+
+            return true;
+        }
+
         public static string IncrementFilename(string filenameNoExtension, string type)
         {
             var dottype = $".{type}";

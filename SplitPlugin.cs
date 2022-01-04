@@ -18,14 +18,9 @@ namespace Metacrack
             }
 
             //Work out count
-            var countString = options.CountString;
-
-            countString = countString.Replace("kk", "000000");
-            countString = countString.Replace("k", "000");
-
-            if (!int.TryParse(countString, out var count))
+            if (!TryParse(options.CountString, out var count))
             {
-                WriteMessage($"Could not parse {countString} to a number .");
+                WriteMessage($"Could not parse {options.CountString} to a number.");
                 return;
             }
 

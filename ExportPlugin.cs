@@ -121,6 +121,8 @@ namespace Metacrack
                 var fileName = Path.GetFileNameWithoutExtension(hashesPath);
                 var plainsPath = $"{currentDirectory}\\{fileName}.plains.txt"; //email:plain
                 var foundPath = $"{currentDirectory}\\{fileName}.found.txt"; //hash:plain
+
+                //Increment filename needs optimisation
                 var leftPath = $"{currentDirectory}\\{IncrementFilename(fileName, "left")}.txt"; //hash
 
                 //Check that there are no output files
