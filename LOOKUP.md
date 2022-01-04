@@ -1,28 +1,25 @@
 # *lookup*
 
-Adds character seperated data from an input text file to a new or existing catalog.
+Takes a text file containing lines of email:hash pairs, and prepares one or more files containing lists of associated hash and word lists for running using [hashcat](https://github.com/hashcat/hashcat) mode 9, using a previously created [catalog](CATALOG.md).
 
-Input files should always begin with an email address. The email address is anonymized by hashing the email address and then deriving a 64bit signed integer to create a unique row id. A catalog will therefore not contain any email address information. Email addresses can however be used to derive name values using the *stem-email* and *stem-email-only* options.
+Input files should always begin with an email address and hashes (and optional salts) should be provided seperated by the ':' character. When using a hash with a seperate salt, ensure that an appropriate mode option has been added. 
 
-Values in input files should be seperated by a ':' character.
-
-  > **Note**<br>
-  > Catalog files are implemented as a sqlite table with a number of text fields which map to the *fields* option. These files can be viewed with any sqlite compatible browser.
+Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the number of hashes outputted. Lookup can also split files into parts using the *part* option.
 
 ## Usage
 
-`meta catalog inputpath [outputpath] [options]`
+`meta lookup inputpath [catalogpath] [options]`
 &nbsp;<br>
 &nbsp;<br>
 
 | Option | Description |
 | :--- | :--- |
-| -c --columns| The ordinals (positions) in the input file to map to fields where email is always at position 0.|
-| -f --fields| Names of the predefined fields to write values to. Each column chosen in the *columns* option should have a matching field. Valid values are: *p password u username n name d date i number v value* |
-| -t --tokenize| Turns space seperated text into sub values.|
-| -n --names| Path to line seperated text file containing names to use in email stemming process when using *steam-email* or *stem-email-only* options|
-| --stem-email| Use email username as a source of name values. The username portion of the email address is copied to the values field, whilst valid matches from the file specified in the *names* option are copied to the *names* field|
-| --stem-email-only|Works the same as the *stem-email* option, but no other values are considered. |
+| -m --hash-type| The mode used to verify each hash before a hash / word entry is created in each file. Matches values from Hashcat.|
+| -r --rule| Path to the rule file to use to remove duplicate words during processing.|
+| -f --fields| The predefined fields in the catalog to read values from. Valid values are: p password u username n name d date i number v value. Dates and numbers are appended to other fields when specified.
+| -p --part| When specified, causing a file to be broken into multiple parts. Value is specified as number of lines per file. The suffix k can be used to represent 1000 e.g. 300k = 300000, 3kk = 3000 000. Single values are interpreted implicity with a kk suffix eg 4 = 4000 000 |
+| -s --sessions| Splits words for the same hash across multiple sessions. Hashes that are cracked can be removed from subsequent sessions. Extra words are placed in the last session.|
+| --hash-maximum | Maximum number of words considered per hash.|
 | <img width=300> | |
 
  
