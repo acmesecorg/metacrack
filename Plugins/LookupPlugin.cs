@@ -86,7 +86,7 @@ namespace Metacrack
                 var fileName = Path.GetFileNameWithoutExtension(filePath);
                 var lineCount = 0L;
                 var writeCount = 0L;
-                var session = new Session(fileName, 0, part);
+                var sessionManager = new SessionManager(fileName, options.Sessions, part);
 
                 //Loop through the file
                 //A line must be valid+email:hash valid+email:hash:salt
@@ -146,16 +146,10 @@ namespace Metacrack
                                 //Limit the words to the maximum
                                 if (words.Count() > options.HashMaximum) words = words.Take(options.HashMaximum).ToList();
 
-                                //Ensure the session is configured correctly by letitng it know how mnay lines are being added
-                                session.AddingLines(words.Count());
+                                //Write out to buffered disk
+                                sessionManager.AddWords(hash, words);
 
-                                foreach (var word in words)
-                                {
-                                    session.HashStream.WriteLine(hash);
-                                    session.WordStream.WriteLine(word);
-                                }
-
-                                writeCount += words.Count();
+                                writeCount += words.Count;
                             }
 
                             //Update the percentage
@@ -170,7 +164,8 @@ namespace Metacrack
                 }
                 finally
                 {
-                    session.Dispose();
+                    //Ensure data is saved
+                    sessionManager.Dispose();
                 }
 
                 WriteMessage($"Read {lineCount} lines and wrote {writeCount} lines for {fileInfo.Name}.");

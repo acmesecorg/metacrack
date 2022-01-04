@@ -9,7 +9,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <StartAction>Project</StartAction>
-    <StartArguments>lookup breach.txt meta.db -m 3200 -f p u n</StartArguments>
+    <StartArguments>lookup breach.txt meta.db -m 3200 -f p u n -s 2</StartArguments>
     <StartWorkingDirectory>..\..\..\Downloads</StartWorkingDirectory>
     <ExternalConsole>true</ExternalConsole>
   </PropertyGroup>
