@@ -6,7 +6,9 @@ Input files should always begin with an email address or username identifier, an
 
 > bob@acme.com:ab4f63f9ac65152575886860dde480a1:gb89z
 
-When using a hash with a seperate salt, ensure that an appropriate mode option has been added. Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the ratio of hashes to words in the output. Lookup can also split files into parts using the *part* option.
+When using a hash with a seperate salt, ensure that an appropriate mode option has been added. Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the ratio of hashes to words in the output. 
+
+Lookup can also split files into parts using the *part* option.
 
 ## Usage
 
