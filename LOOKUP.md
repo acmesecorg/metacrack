@@ -24,7 +24,7 @@ Lookup can also split files into parts using the *part* option.
 | -p --part| When specified, causing a file to be broken into multiple parts. Value is specified as number of lines per file. The suffix *k* can be used to represent 1000 e.g. *300k* = 300000, *3kk* = 3000 000. Single values are interpreted implicity with a kk suffix eg *4* = 4000 000 |
 | -s --sessions| Splits words for the same hash across multiple sessions. Hashes that are cracked can be removed from subsequent sessions. Extra words are placed in the last session.|
 | --hash-maximum | Maximum number of words considered per hash.|
-| <img width=300> | |
+| <img width=350> | |
 
  
 
