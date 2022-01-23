@@ -1,13 +1,13 @@
 # *catalog*
 
-Adds character seperated data from an input text file to a new or existing catalog.
+Adds character seperated data from an input text file to a new or existing database.
 
-Input files should always begin with an email address. The email address is anonymized by hashing the email address and then deriving a 64bit signed integer to create a unique row id. A catalog will therefore not contain any email address information. Email addresses can however be used to derive name values using the *stem-email* and *stem-email-only* options.
+Input files should always begin with an email address. The email address is anonymized by hashing the email address and then deriving a 64bit signed integer to create a unique row id. A database will therefore not contain any email address information. Email addresses can however be used to derive name values using the *stem-email* and *stem-email-only* options, however this may substantially de-anonimise the data.
 
 Values in input files should be seperated by a ':' character.
 
   > **Note**<br>
-  > Catalog files are implemented as a sqlite table with a number of text fields which map to the *fields* option. These files can be viewed with any sqlite compatible browser.
+  > Database files are implemented as a sqlite table with a number of text fields which map to the *fields* option. These files can be viewed with any sqlite compatible browser.
 
 ## Usage
 
