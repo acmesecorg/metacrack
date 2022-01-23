@@ -30,7 +30,7 @@ The following plugins are documented in the order that they might be used when t
 | Verb | Description |
 | --- | --- |
 | [catalog](CATALOG.md) | Add contents of files to a database.|
-| [lookup](LOOKUP.md) | Lookup meta data for a list of email:hash pairs. |
+| [lookup](LOOKUP.md) | Lookup meta data for a list of *email:hash* or *username:hash* pairs. |
  
 
  
