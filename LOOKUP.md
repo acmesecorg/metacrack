@@ -2,7 +2,7 @@
 
 Takes a text file containing lines of *email:hash* or *username:hash* pairs, and prepares one or more files containing lists of associated hash and word lists for running using [hashcat](https://github.com/hashcat/hashcat) mode 9, using a previously created [database](CATALOG.md).
 
-Input files should always begin with an email address and hashes (and optional salts) should be provided seperated by the ':' character. When using a hash with a seperate salt, ensure that an appropriate mode option has been added. 
+Input files should always begin with an email address or username identifier, and hashes (and optional salts) should be provided seperated by the ':' character. When using a hash with a seperate salt, ensure that an appropriate mode option has been added. 
 
 Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the number of hashes outputted. Lookup can also split files into parts using the *part* option.
 
@@ -16,8 +16,8 @@ Because hashcat will fail if any hash is incorrect (causing the hash and word co
 | :--- | :--- |
 | -m --hash-type| The mode used to verify each hash before a hash / word entry is created in each file. Matches values from Hashcat.|
 | -r --rule| Path to the rule file to use to remove duplicate words during processing.|
-| -f --fields| The predefined fields in the catalog to read values from. Valid values are: p password u username n name d date i number v value. Dates and numbers are appended to other fields when specified.
-| -p --part| When specified, causing a file to be broken into multiple parts. Value is specified as number of lines per file. The suffix k can be used to represent 1000 e.g. 300k = 300000, 3kk = 3000 000. Single values are interpreted implicity with a kk suffix eg 4 = 4000 000 |
+| -f --fields| The predefined fields in the catalog to read values from. Valid values are: *p password u username n name d date i number v value*. Dates and numbers are appended to other fields when specified.
+| -p --part| When specified, causing a file to be broken into multiple parts. Value is specified as number of lines per file. The suffix *k* can be used to represent 1000 e.g. *300k* = 300000, *3kk* = 3000 000. Single values are interpreted implicity with a kk suffix eg *4* = 4000 000 |
 | -s --sessions| Splits words for the same hash across multiple sessions. Hashes that are cracked can be removed from subsequent sessions. Extra words are placed in the last session.|
 | --hash-maximum | Maximum number of words considered per hash.|
 | <img width=300> | |
