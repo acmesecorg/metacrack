@@ -1,6 +1,6 @@
 # *lookup*
 
-Takes a text file containing lines of email:hash pairs, and prepares one or more files containing lists of associated hash and word lists for running using [hashcat](https://github.com/hashcat/hashcat) mode 9, using a previously created [catalog](CATALOG.md).
+Takes a text file containing lines of *email:hash* or *username:hash* pairs, and prepares one or more files containing lists of associated hash and word lists for running using [hashcat](https://github.com/hashcat/hashcat) mode 9, using a previously created [database](CATALOG.md).
 
 Input files should always begin with an email address and hashes (and optional salts) should be provided seperated by the ':' character. When using a hash with a seperate salt, ensure that an appropriate mode option has been added. 
 
