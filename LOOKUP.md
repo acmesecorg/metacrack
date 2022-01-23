@@ -2,9 +2,11 @@
 
 Takes a text file containing lines of *email:hash* or *username:hash* pairs, and prepares one or more files containing lists of associated hash and word lists for running using [hashcat](https://github.com/hashcat/hashcat) mode 9, using a previously created [database](CATALOG.md).
 
-Input files should always begin with an email address or username identifier, and hashes (and optional salts) should be provided seperated by the ':' character. When using a hash with a seperate salt, ensure that an appropriate mode option has been added. 
+Input files should always begin with an email address or username identifier, and hashes (and optional salts) should be provided seperated by the ':' character e.g. 
 
-Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the number of hashes outputted. Lookup can also split files into parts using the *part* option.
+> bob@acme.com:ab4f63f9ac65152575886860dde480a1:gb89z
+
+When using a hash with a seperate salt, ensure that an appropriate mode option has been added. Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the ratio of hashes to words in the output. Lookup can also split files into parts using the *part* option.
 
 ## Usage
 
