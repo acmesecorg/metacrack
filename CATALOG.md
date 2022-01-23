@@ -69,9 +69,9 @@ To add the usernames contained in the second column, we can reprocess the file s
 
 ### Stemming the email address for further values
 
-The email address of a user can be used to provide further words to be used in an associative attack. Generally they provide lower cracks than passwords or usernames, but can still be a good source of words to be used against expensive salted hashes where dictionary attacks are not desirable.
+The email address of a user can be used to provide further words to be used in an associative attack. Generally they provide lower cracks than passwords or usernames, but can still be a good source of words to be used against expensive salted hashes where dictionary attacks are not desirable, especially when combined with dates and numbers in the catalog, or when using a rule.
 
-Email stemming routine requires a list of line seperated names in a text format. It removes and special characters from the email address and then uses any matches to generate additional values. The derived names are stored in the *Names* field, whilst the original email user is stored in the *Values* field.
+The email stemming processor requires a list of line seperated names in a text format. It removes special characters from the email address and then uses any matches to generate additional values. The derived names are stored in the *Names* field, whilst the original email user is stored in the *Values* field.
 
 Given the file *names.txt* and running the command following:
 
