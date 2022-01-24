@@ -32,7 +32,7 @@ Lookup can also split files into parts using the *part* option.
  
 Given the file *breach.txt*
 
->Email|Hash
+>Email|Hash  
 >alice.smith@icloud.com:$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >alice1974@apple.com:$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
@@ -42,19 +42,21 @@ Running the command below creates a hash and word file pair named *breach.hash* 
 &nbsp;<br>
 &nbsp;<br>
 
-breach.hash
+*breach.hash*
 >$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
-breach.word
->password1
->password5
->test				
+*breach.word*
+>password1  
+>password5  
+>test  			
 
 These files have the same length and the hash has been validated so that hashcat can now be used in associative mode e.g.
 
 `hashcat -a 9 -m 3200 breach.hash breach.word -o breach.output.txt`
+&nbsp;<br>
+&nbsp;<br>
 
 ### Using a rule to cut down on repetitions
 
@@ -66,34 +68,16 @@ Re-run the command but this time specify a rule:
 &nbsp;<br>
 &nbsp;<br>
 
-breach.hash
->$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+*breach.hash*
 >$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
-breach.word
->password1
->password5
+*breach.word*
+>password1  
 >test		
 		
+### Including extra fields in the outout
 
-### Stemming the email address for further values
+### Using parts and sessions
 
-The email address of a user can be used to provide further words to be used in an associative attack. Generally they provide lower cracks than passwords or usernames, but can still be a good source of words to be used against expensive salted hashes where dictionary attacks are not desirable.
-
-Email stemming routine requires a list of line seperated names in a text format. It removes and special characters from the email address and then uses any mathing names to generate additional values. The derived names are stored in the *Names* field, whilst the original email user is stored in the *Values* field.
-
-Given the file *names.txt* and running the command following:
-
->Alice<br>
->Bob<br>
-
-`meta catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-emails`
-&nbsp;<br>
-&nbsp;<br>
-
-| RowId | Passwords | Usernames | Names | Dates | Numbers | Values |
-| :--- | :--- | :--- | :--- | :--- | :--- |  :--- |
-|-8817702922204933476|test|test2|alice||1974|alice1974|	
-|-6442325452012969502|password3|alice|alice|||alice|
-|-4702923869590031925|password1:password5|alice74:alice2|alice:smith|||alice.smith|			
+		
