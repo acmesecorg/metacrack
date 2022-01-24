@@ -32,10 +32,10 @@ Values in input files should be seperated by a ':' character.
 Given the file *input.txt*
 
 >Email|Password|Username<br>
->alice.smith@icloud.com:password1:alice74<br>
->alice@hotmail.com:password3:alice<br>
->alice.smith+test@icloud.com:password5:alice2<br>
->alice1974@apple.com:test:test2<br>
+>alice.smith<span>@icloud.com:password1:alice74<br>
+>alice<span>@hotmail.com:password3:alice<br>
+>alice.smith+test<span>@icloud.com:password5:alice2<br>
+>alice1974<span>@apple.com:test:test2<br>
 
 Passwords are often reused by users and they are the most common type of meta data used to create an associative attack. Between 10% and 25% records in a data breach may contain reused passwords or passwords that can be matched with a simple rule.
 
