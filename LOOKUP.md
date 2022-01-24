@@ -30,43 +30,52 @@ Lookup can also split files into parts using the *part* option.
 
 ## Examples
  
-Given the file *input.txt*
+Given the file *breach.txt*
 
->Email|Password|Username<br>
->alice.smith@icloud.com:password1:alice74<br>
->alice@hotmail.com:password3:alice<br>
->alice.smith+test@icloud.com:password5:alice2<br>
->alice1974@apple.com:test:test2<br>
+>Email|Hash
+>alice.smith@icloud.com:$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>alice1974@apple.com:$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
-Passwords are often reused by users and they are the most common type of meta data used to create an associative attack. Between 10% and 25% records in a data breach may contain reused passwords or passwords that can be matched with a simple rule.
+Running the command below creates a hash and word file pair named *breach.hash* and *breach.word*. 
 
-Running the command below creates a new catalog file called metadata.db and populates the *Passwords* field with the first column of the input file. Note that the email address containing *+test* is converted to the base username form and added to the existing value in *Passwords*.
-
-`meta catalog input.txt metadata.db`
+`meta lookup breach.txt metadata.db -m 3200`
 &nbsp;<br>
 &nbsp;<br>
 
-| RowId | Passwords | Usernames | Names | Dates | Numbers | Values |
-| :--- | :--- | :--- | :--- | :--- | :--- |  :--- |
-|-8817702922204933476|test||||||		
-|-6442325452012969502|password3||||||
-|-4702923869590031925|password1:password5||||||					
+breach.hash
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
-### Add usernames to the catalog
+breach.word
+>password1
+>password5
+>test				
 
-Usernames can often form the basis of a user password, and can deliver a considerable amount of cracks when used with a more complicated ruleset, approaching the amount yielded when using a known passwords from other breaches.
+These files have the same length and the hash has been validated so that hashcat can now be used in associative mode e.g.
 
-To add the usernames contained in the second column, we can reprocess the file specifying the columns and fields we want to use. There should always be a field specified for every column. When ommitted, the first column is mapped to the Passwords field as per the example above. No new passwords were added because they already existed in the catalog.
+`hashcat -a 9 -m 3200 breach.hash breach.word -o breach.output.txt`
 
-`meta catalog input.txt metadata.db --columns 1 2 --fields p u`
+### Using a rule to cut down on repetitions
+
+In the previous example, the words *password1* and *password5* were returned for the same hash. Although this is sometimes unavoidable, it is far more efficient to use a rule inside hashcat then to specify similar guesses for a hash.
+
+Re-run the command but this time specify a rule:
+
+`meta lookup breach.txt metadata.db -m 3200 -r best64.rule`
 &nbsp;<br>
 &nbsp;<br>
 
-| RowId | Passwords | Usernames | Names | Dates | Numbers | Values |
-| :--- | :--- | :--- | :--- | :--- | :--- |  :--- |
-|-8817702922204933476|test|test2|||||		
-|-6442325452012969502|password3|alice|||||
-|-4702923869590031925|password1:password5|alice74:alice2|||||			
+breach.hash
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
+
+breach.word
+>password1
+>password5
+>test		
+		
 
 ### Stemming the email address for further values
 
