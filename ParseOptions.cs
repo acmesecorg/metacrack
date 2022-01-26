@@ -5,7 +5,7 @@ namespace Metacrack
     [Verb("parse", HelpText = "Parses a file by the type provided into new parsed and unparsed files.")]
     public class ParseOptions
     {
-        [Value(0, Required = true, MetaName = "InputPath", HelpText = "The path to the file(s) containing the hash:plains.")]
+        [Value(0, Required = true, MetaName = "InputPath", HelpText = "The path to the file(s) contianing the data to be parsed")]
         public string InputPath { get; set; }
 
         [Option("type", Default = "delimited")]

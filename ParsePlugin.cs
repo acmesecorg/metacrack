@@ -1,4 +1,6 @@
-﻿namespace Metacrack
+﻿using System.Text;
+
+namespace Metacrack
 {
     public class ParsePlugin : PluginBase
     {
@@ -174,6 +176,24 @@
                                 notparsed.Add(line);
                             }
                         }
+                        else if (options.ParseType == "hextochar")
+                        {
+                            var splits = line.Split(':');
+
+                            if (splits.Length == 2)
+                            {
+                                var hash = splits[1];
+
+                                var final = Encoding.UTF8.GetString(FromHex(splits[1]));
+
+                                output.Add($"{splits[0]}:{final}");
+                            }
+                            else
+                            {
+                                notparsed.Add(line);
+                            }
+                        }
+
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
