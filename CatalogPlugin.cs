@@ -137,6 +137,7 @@ namespace Metacrack
                                 if (ValidateEmail(splits[0], out var emailStem))
                                 {
                                     validCount++;
+                                    emailStem = emailStem.ToLower();
 
                                     //We hash the email address to put it in the correct bucket
                                     //We create 256 buckets based on the first byte of the hash
