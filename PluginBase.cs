@@ -31,6 +31,8 @@ namespace Metacrack
         private static long _sharedProgressTotal;
         private static long _sharedProgress;
 
+        private static MD5 _md5;
+
         public static List<List<string>> GetRules(string option)
         {
             string path;
@@ -168,6 +170,8 @@ namespace Metacrack
         {
             //8743b52063cd84097a65d1633f5c74f5
             if (mode == 0) return new HashInfo(mode, 1, 32, true);
+            if (mode == 11) return new HashInfo(mode, 2, 32, true);
+            if (mode == 20) return new HashInfo(mode, 2, 32, true);
 
             //b89eaac7e61417341b710b727768294d0e6a277b
             if (mode == 100) return new HashInfo(mode, 2, 40, true);
@@ -208,6 +212,32 @@ namespace Metacrack
                 if (!isHex) return false;
             }
             return true;
+        }
+
+        public static byte[] FromHex(string hex)
+        {
+            if (hex.Length % 2 == 1)
+                throw new Exception("The binary key cannot have an odd number of digits");
+
+            byte[] arr = new byte[hex.Length >> 1];
+
+            for (int i = 0; i < hex.Length >> 1; ++i)
+            {
+                arr[i] = (byte)((GetHexVal(hex[i << 1]) << 4) + (GetHexVal(hex[(i << 1) + 1])));
+            }
+
+            return arr;
+        }
+
+        public static int GetHexVal(char hex)
+        {
+            int val = (int)hex;
+            //For uppercase A-F letters:
+            //return val - (val < 58 ? 48 : 55);
+            //For lowercase a-f letters:
+            //return val - (val < 58 ? 48 : 87);
+            //Or the two combined, but a bit slower:
+            return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
 
         public static HashSet<String> GetTokens(string value)
@@ -397,6 +427,22 @@ namespace Metacrack
                     }
                 }
             }
+        }
+
+        public static string HashMd5(string input)
+        {
+            if (_md5 == null) _md5 = MD5.Create();
+
+            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+            byte[] hashBytes = _md5.ComputeHash(inputBytes);
+
+            // Convert the byte array to hexadecimal string
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hashBytes.Length; i++)
+            {
+                sb.Append(hashBytes[i].ToString("X2"));
+            }
+            return sb.ToString().ToLower();
         }
 
         public static string FormatSize(long bytes)

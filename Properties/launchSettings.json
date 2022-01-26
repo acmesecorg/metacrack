@@ -7,17 +7,18 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog badoo.meta.txt d:\\meta --prefix badoo --tokenize --columns 2 3 4"
+      "commandLineArgs": "catalog  doxbin-rf.txt d:\\meta --prefix doxbinrf",
+      "workingDirectory": "D:\\DoxBin (3200)"
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "ajarn.com.output.0.txt ajarn-formatted_output12.txt",
-      "workingDirectory": "D:\\Ajarn (0)"
+      "commandLineArgs": "export idc.left.txt idc.left.output.txt --shuck idc.left.word",
+      "workingDirectory": "D:\\IDC Games (2811)\\Run2"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup 10000.*left.txt d:\\output --filter ..\\d3ad0ne.rule --hash 10000",
-      "workingDirectory": "D:\\Dubsmash (10000)"
+      "commandLineArgs": "lookup doxbin.parse.txt d:\\meta --prefix doxbin --hash 3200",
+      "workingDirectory": "D:\\DoxBin (3200)"
     },
     "Map": {
       "commandName": "Project",
@@ -36,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql dave.csv --s4 --debug",
-      "workingDirectory": "D:\\Dave (3200)"
+      "commandLineArgs": "sql eatigo.sql --table Users --columns 3 2 --s2",
+      "workingDirectory": "D:\\Eatigo (0)"
     },
     "Rank": {
       "commandName": "Project",
@@ -46,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse dave.dump.txt --delimiter : --columns 0 1 2 3 4 --date-columns 4 --validate",
-      "workingDirectory": "D:\\Dave (3200)"
+      "commandLineArgs": "parse doxbin.txt --type hextochar",
+      "workingDirectory": "D:\\DoxBin"
     },
     "Split": {
       "commandName": "Project",
@@ -68,6 +69,11 @@
       "commandName": "Project",
       "commandLineArgs": "sort thingyverse-comments.dump.txt --deduplicate",
       "workingDirectory": "D:\\thingiverse"
+    },
+    "Hash": {
+      "commandName": "Project",
+      "commandLineArgs": "hash dailyquiz.dict --hash 0",
+      "workingDirectory": "D:\\hashcat-6.2.5+8"
     }
   }
 }
