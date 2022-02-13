@@ -138,7 +138,7 @@ namespace Metacrack.Model
         public List<string> GetValues(IEnumerable<string> fields)
         {
             var result = new List<string>();
-
+            
             //First collect fields that could be modified by a date or number
             foreach (var field in fields)
             {
@@ -188,6 +188,9 @@ namespace Metacrack.Model
                 }
             }
 
+            //Derive passwords from the number and date fields
+            var derived = new List<string>();
+
             //Modify existing words if dates and numbers selected
             foreach (var field in fields)
             {
@@ -198,7 +201,7 @@ namespace Metacrack.Model
                         foreach (var existing in result)
                         {
                             var combo = $"{existing}{value.ToString()}";
-                            if (!result.Contains(combo)) result.Add(combo);
+                            if (!result.Contains(combo) && !derived.Contains(combo)) derived.Add(combo);
                         }
                     }
                 }
@@ -212,17 +215,18 @@ namespace Metacrack.Model
                             if (Dates.Length == 4)
                             {
                                 var yeartd = $"{existing}{value.Slice(2).ToString()}";
-                                if (!result.Contains(yeartd)) result.Add(yeartd);
+                                if (!result.Contains(yeartd) && !derived.Contains(yeartd)) derived.Add(yeartd);
                             }
 
                             //Now add all 4 characters or any other version
                             var combo = $"{existing}{value.ToString()}";
-                            if (!result.Contains(combo)) result.Add(combo);
+                            if (!result.Contains(combo) && !derived.Contains(combo)) derived.Add(combo);
                         }
                     }
                 }
             }
 
+            result.AddRange(derived);
             return result;
         }
 
