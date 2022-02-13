@@ -67,6 +67,8 @@ Re-run the command but this time specify a rule:
 &nbsp;<br>
 &nbsp;<br>
 
+gives the following output:
+	
 *breach.hash*
 >$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
@@ -75,7 +77,9 @@ Re-run the command but this time specify a rule:
 >password1  
 >test		
 		
-### Including extra fields in the outout
+### Including extra fields in the output
+	
+
 
 ### Using parts and sessions
 
