@@ -133,6 +133,13 @@ The following files are created
 >breach.session1.hash  
 >breach.session1.word  
 >breach.session2.hash  
->breach.session2.word 
+>breach.session2.word  
 >breach.session3.hash  
 >breach.session3.word 
+
+To run hashcat against the first pair of files, use a command such as this:
+	
+`hashcat -a 9 -m 3200 breach.session1.hash breach.session1.word -o breach.session1.output.txt`
+&nbsp;<br>
+&nbsp;<br>
+See the [export]() page for details on how to remove matced values from .hash and .word files before starting the next session.
