@@ -62,12 +62,13 @@ These files have the same length and the hash has been validated so that hashcat
 In the previous example, the words *password1* and *password5* were returned for the same hash. Although this is sometimes unavoidable, it is far more efficient to use a rule inside hashcat then to specify similar guesses for a hash.
 
 Re-run the command but this time specify a rule:
+	
+  > **Note**<br>
+  > The *best64.rule* file can be found inside the /rules folder of your hashcat installation or from the GitHub repository [here](https://github.com/hashcat/hashcat/blob/master/rules/best64.rule). 
 
 `meta lookup breach.txt metadata.db -m 3200 -r best64.rule`
 &nbsp;<br>
 &nbsp;<br>
-
-gives the following output:
 	
 *breach.hash*
 >$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
