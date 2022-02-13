@@ -57,6 +57,35 @@ These files have the same length and the hash has been validated so that hashcat
 &nbsp;<br>
 &nbsp;<br>
 
+	
+### Including extra fields in the output
+	
+To use other fields from our database catalog, we need to specify which fields to use. The [catalog](https://github.com/metacrackorg/metacrack/blob/sqlite/CATALOG.md) example shows how to add various forms of meta data to the catalog. Using the *-f* or *--fields** option, we can also include these values as words in our output.
+
+The following command uses passwords, usernames, and numbers from the catalog:
+
+`meta lookup breach.txt metadata.db -m 3200 -f p u i`
+&nbsp;<br>
+&nbsp;<br>
+	
+*breach.hash*
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
+
+*breach.word*
+>password1 
+>password5 
+>alice74   
+>alice2    
+>test  
+	
+	
 ### Using a rule to cut down on repetitions
 
 In the previous example, the words *password1* and *password5* were returned for the same hash. Although this is sometimes unavoidable, it is far more efficient to use a rule inside hashcat then to specify similar guesses for a hash.
@@ -77,10 +106,7 @@ Re-run the command but this time specify a rule:
 *breach.word*
 >password1  
 >test		
-		
-### Including extra fields in the output
-	
-
+   
 
 ### Using parts and sessions
 
