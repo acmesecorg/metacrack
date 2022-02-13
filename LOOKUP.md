@@ -78,36 +78,55 @@ The following command uses passwords, usernames, and numbers from the catalog:
 >$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 >$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
-*breach.word*
->password1 
->password5 
+*breach.word* 
+>password1  
+>password5  
 >alice74   
 >alice2    
->test  
+>test     
+>test2  
+>test1974      
+>test21974
 	
-	
+  
 ### Using a rule to cut down on repetitions
 
-In the previous example, the words *password1* and *password5* were returned for the same hash. Although this is sometimes unavoidable, it is far more efficient to use a rule inside hashcat then to specify similar guesses for a hash.
+In the previous example, the words *password1* and *password5*, and *test* and *test2* were returned as guesses for the same hash. Although this is sometimes unavoidable, it is far more efficient to use a rule inside hashcat then to specify similar guesses for a hash on seperate lines.
 
 Re-run the command but this time specify a rule:
 	
   > **Note**<br>
   > The *best64.rule* file can be found inside the /rules folder of your hashcat installation or from the GitHub repository [here](https://github.com/hashcat/hashcat/blob/master/rules/best64.rule). 
 
-`meta lookup breach.txt metadata.db -m 3200 -r best64.rule`
+`meta lookup breach.txt metadata.db -m 3200 -r best64.rule -f p u i`
 &nbsp;<br>
 &nbsp;<br>
 	
 *breach.hash*
 >$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 >$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
 *breach.word*
 >password1  
->test		
-   
+>password5  
+>alice74  
+>alice2  
+>test  
+>test21974  		
 
-### Using parts and sessions
+By using a rule, we have moved 25% of the guesses from the output files.
+ 
+### Using sessions
 
-		
+In our previous example, current versions of Hashcat (6.2.5) would continue to generate hashes from the words supplied for all hashes, even if a match was found. Sessions allow us to try a guess per hash, stop and remove any matched hashes and corresponsing words that have a solution, and then continue. 
+	
+To split the *.hash* and *.word* files into multiple sessions, use the *-s* or *--sessions* option as follows:
+
+`meta lookup breach.txt metadata.db -m 3200 -f p u i -s 2`
+&nbsp;<br>
+&nbsp;<br>
+	
