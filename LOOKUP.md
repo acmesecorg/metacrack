@@ -126,7 +126,13 @@ In our previous example, current versions of Hashcat (6.2.5) would continue to g
 	
 To split the *.hash* and *.word* files into multiple sessions, use the *-s* or *--sessions* option as follows:
 
-`meta lookup breach.txt metadata.db -m 3200 -f p u i -s 2`
+`meta lookup breach.txt metadata.db -m 3200 -f p u i -s 3`
 &nbsp;<br>
 &nbsp;<br>
-	
+The following files are created
+>breach.session1.hash  
+>breach.session1.word  
+>breach.session2.hash  
+>breach.session2.word 
+>breach.session3.hash  
+>breach.session3.word 
