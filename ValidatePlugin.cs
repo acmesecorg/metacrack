@@ -48,11 +48,14 @@
                 var fileName = Path.GetFileNameWithoutExtension(filePath);
                 var filePathName = $"{currentDirectory}\\{fileName}";
 
-                _outputValidPath = $"{filePathName}.valid{fileInfo.Extension}";
+                _outputValidPath =  $"{filePathName}.valid{fileInfo.Extension}";
                 _outputInvalidPath = $"{filePathName}.invalid{fileInfo.Extension}";
 
+                //Put the iterations in the output instead
+                if (options.Iterations > 0) _outputValidPath = $"{filePathName}.{options.Iterations}{fileInfo.Extension}";
+
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { _outputValidPath, _outputInvalidPath }))
+                if (!CheckForFiles(new string[] { _outputValidPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 

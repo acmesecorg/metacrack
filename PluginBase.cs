@@ -9,6 +9,7 @@ namespace Metacrack
         public int Mode;
         public int Columns;
         public int Length;
+        public int MaxLength;
         public bool IsHex;
         public string Prefix;
 
@@ -18,7 +19,19 @@ namespace Metacrack
             Columns = columns;
             Length = length;    
             IsHex = isHex;  
-            Prefix = prefix;    
+            Prefix = prefix;
+
+            MaxLength = length;
+        }
+
+        public HashInfo(int mode, int columns, int length, int maxlength, bool isHex, string prefix = null)
+        {
+            Mode = mode;
+            Columns = columns;
+            Length = length;
+            MaxLength = maxlength;
+            IsHex = isHex;
+            Prefix = prefix;            
         }
     }
 
@@ -127,7 +140,8 @@ namespace Metacrack
             if (info.Length == 0) return true;
 
             //Validate length
-            if (info.Length != hash.Length) return false;
+            if (hash.Length < info.Length) return false;
+            if (hash.Length > info.MaxLength) return false;
 
             //Validate hex
             if (info.IsHex)
@@ -196,7 +210,7 @@ namespace Metacrack
             if (mode == 2611) return new HashInfo(mode, 2, 32, true);
 
             //pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=
-            if (mode == 10000) return new HashInfo(mode, 1, 77, false);
+            if (mode == 10000) return new HashInfo(mode, 1, 77, 79, false);
 
             if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2");
 

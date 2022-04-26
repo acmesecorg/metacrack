@@ -27,8 +27,8 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate wattpad.dump.invalid.txt --hash 1400",
-      "workingDirectory": "D:\\Wattpad_RF"
+      "commandLineArgs": "validate btc-alpha.parsed.txt --hash 10000 --iterations 36000",
+      "workingDirectory": "D:\\Btc Alpha (10000)"
     },
     "Export with Remove": {
       "commandName": "Project",
