@@ -7,8 +7,8 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog  doxbin-rf.txt d:\\meta --prefix doxbinrf",
-      "workingDirectory": "D:\\DoxBin (3200)"
+      "commandLineArgs": "catalog  hautelook.meta.txt d:\\meta --prefix hautelook --columns 1 2",
+      "workingDirectory": "D:\\Hautelook (3200)"
     },
     "Export": {
       "commandName": "Project",
@@ -17,8 +17,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup doxbin.parse.txt d:\\meta --prefix doxbin --hash 3200",
-      "workingDirectory": "D:\\DoxBin (3200)"
+      "commandLineArgs": "lookup aarinfantasy.data.left.txt d:\\meta --prefix aarinfantasy --hash 400",
+      "workingDirectory": "D:\\AarinFantasy (400)\\Run2"
     },
     "Map": {
       "commandName": "Project",
@@ -37,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql eatigo.sql --table Users --columns 3 2 --s2",
-      "workingDirectory": "D:\\Eatigo (0)"
+      "commandLineArgs": "sql sonicbids_users.sql --table auth_user --columns 4 5 --meta 1 2 3",
+      "workingDirectory": "D:\\SonicBids (10000)"
     },
     "Rank": {
       "commandName": "Project",
