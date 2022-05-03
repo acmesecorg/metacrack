@@ -7,8 +7,8 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog  hautelook.meta.txt d:\\meta --prefix hautelook --columns 1 2",
-      "workingDirectory": "D:\\Hautelook (3200)"
+      "commandLineArgs": "catalog  hautelook.meta.txt d:\\\\meta --prefix hautelook --columns 1 2",
+      "workingDirectory": "C:\\Users\\James\\Desktop"
     },
     "Export": {
       "commandName": "Project",
@@ -22,13 +22,13 @@
     },
     "Map": {
       "commandName": "Project",
-      "commandLineArgs": "map zynga.com-output.valid.left3.txt --hash 27200",
-      "workingDirectory": "d:\\"
+      "commandLineArgs": "map S.txt H.txt",
+      "workingDirectory": "D:\\crackon\\agent glitch"
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate btc-alpha.parsed.txt --hash 10000 --iterations 36000",
-      "workingDirectory": "D:\\Btc Alpha (10000)"
+      "commandLineArgs": "validate 6.email.plain.found --hash 400",
+      "workingDirectory": "D:\\crackon\\agent glitch"
     },
     "Export with Remove": {
       "commandName": "Project",
@@ -37,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql sonicbids_users.sql --table auth_user --columns 4 5 --meta 1 2 3",
-      "workingDirectory": "D:\\SonicBids (10000)"
+      "commandLineArgs": "sql aimware.sql --table forum_users --Start 1277461 --End 1524453 --columns 5 2 3 --meta 1",
+      "workingDirectory": "D:\\Aimware (2811)"
     },
     "Rank": {
       "commandName": "Project",
@@ -47,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse doxbin.txt --type hextochar",
-      "workingDirectory": "D:\\DoxBin"
+      "commandLineArgs": "parse 6.left --type ctc",
+      "workingDirectory": "D:\\crackon\\agent glitch"
     },
     "Split": {
       "commandName": "Project",
@@ -62,8 +62,8 @@
     },
     "Cut": {
       "commandName": "Project",
-      "commandLineArgs": "cut thingiverse.com.sql thingyverse-users.sql 152656382 154736144 ",
-      "workingDirectory": "D:\\thingiverse"
+      "commandLineArgs": "cut Hoffman_-_Agent_Glitch-original.bin hoffman.cut.txt 0 4550000 --hex",
+      "workingDirectory": "D:\\crackon\\pro"
     },
     "Sort": {
       "commandName": "Project",

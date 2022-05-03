@@ -135,6 +135,9 @@ namespace Metacrack
                             //https://stackoverflow.com/questions/19657101/what-is-the-difference-between-square-brackets-and-single-quotes-for-aliasing-in
                             line = line.Replace("`", "\"");
 
+                            //_binary is handled differently in tsql. For now we just remove the keyword
+                            line = line.Replace("_binary", "");
+
                             //Remove any mysql escape characters
                             line = line.Replace(@"\\", @"");//Using a single \ seems to cause issues
 
@@ -143,6 +146,9 @@ namespace Metacrack
                             line = line.Replace("\\t", "");
                             line = line.Replace("\\%", "%");
                             line = line.Replace("\\_", "_");
+
+                            
+
 
                             buffer.AppendLine(line);
                         }
