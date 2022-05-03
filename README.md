@@ -13,6 +13,7 @@ Help for each verb can be viewed by typing `meta <plugin> --help`. It is also po
   
 ## License
 Metacrack is licensed under the MIT license. Refer to [license.txt](https://github.com/metacrackorg/metacrack/blob/main/LICENSE) for more information.
+
   
 ## Usage and features
 Metacrack uses metadata associated with a hash to create a per-hash list of possible words to use where a hash is difficult or expensive to crack. Common sources of data include previous password breaches, usernames, birthdates, and emails addresses. 

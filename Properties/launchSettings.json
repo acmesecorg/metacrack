@@ -7,27 +7,28 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog badoo.meta.txt d:\\meta --prefix badoo --tokenize --columns 2 3 4"
+      "commandLineArgs": "catalog  hautelook.meta.txt d:\\\\meta --prefix hautelook --columns 1 2",
+      "workingDirectory": "C:\\Users\\James\\Desktop"
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "ajarn.com.output.0.txt ajarn-formatted_output12.txt",
-      "workingDirectory": "D:\\Ajarn (0)"
+      "commandLineArgs": "export idc.left.txt idc.left.output.txt --shuck idc.left.word",
+      "workingDirectory": "D:\\IDC Games (2811)\\Run2"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup 10000.*left.txt d:\\output --filter ..\\d3ad0ne.rule --hash 10000",
-      "workingDirectory": "D:\\Dubsmash (10000)"
+      "commandLineArgs": "lookup aarinfantasy.data.left.txt d:\\meta --prefix aarinfantasy --hash 400",
+      "workingDirectory": "D:\\AarinFantasy (400)\\Run2"
     },
     "Map": {
       "commandName": "Project",
-      "commandLineArgs": "map zynga.com-output.valid.left3.txt --hash 27200",
-      "workingDirectory": "d:\\"
+      "commandLineArgs": "map S.txt H.txt",
+      "workingDirectory": "D:\\crackon\\agent glitch"
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate wattpad.dump.invalid.txt --hash 1400",
-      "workingDirectory": "D:\\Wattpad_RF"
+      "commandLineArgs": "validate 6.email.plain.found --hash 400",
+      "workingDirectory": "D:\\crackon\\agent glitch"
     },
     "Export with Remove": {
       "commandName": "Project",
@@ -36,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql dave.csv --s4 --debug",
-      "workingDirectory": "D:\\Dave (3200)"
+      "commandLineArgs": "sql aimware.sql --table forum_users --Start 1277461 --End 1524453 --columns 5 2 3 --meta 1",
+      "workingDirectory": "D:\\Aimware (2811)"
     },
     "Rank": {
       "commandName": "Project",
@@ -46,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse dave.dump.txt --delimiter : --columns 0 1 2 3 4 --date-columns 4 --validate",
-      "workingDirectory": "D:\\Dave (3200)"
+      "commandLineArgs": "parse 6.left --type ctc",
+      "workingDirectory": "D:\\crackon\\agent glitch"
     },
     "Split": {
       "commandName": "Project",
@@ -61,13 +62,18 @@
     },
     "Cut": {
       "commandName": "Project",
-      "commandLineArgs": "cut thingiverse.com.sql thingyverse-users.sql 152656382 154736144 ",
-      "workingDirectory": "D:\\thingiverse"
+      "commandLineArgs": "cut Hoffman_-_Agent_Glitch-original.bin hoffman.cut.txt 0 4550000 --hex",
+      "workingDirectory": "D:\\crackon\\pro"
     },
     "Sort": {
       "commandName": "Project",
       "commandLineArgs": "sort thingyverse-comments.dump.txt --deduplicate",
       "workingDirectory": "D:\\thingiverse"
+    },
+    "Hash": {
+      "commandName": "Project",
+      "commandLineArgs": "hash dailyquiz.dict --hash 0",
+      "workingDirectory": "D:\\hashcat-6.2.5+8"
     }
   }
 }

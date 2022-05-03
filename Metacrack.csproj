@@ -8,6 +8,13 @@
     <AssemblyName>meta</AssemblyName>
     <FileVersion>0.9.0.*</FileVersion>
 	<ProductVersion>0.9.0.*</ProductVersion>
+	<Version>0.9.0.0</Version>
+	<Product>MetaCrack</Product>
+	<Copyright></Copyright>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryUrl>https://github.com/metacrackorg/metacrack</RepositoryUrl>
+	<Company></Company>
+	<Authors />
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -24,6 +31,14 @@
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.8.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
+    <PackageReference Include="Microsoft.SqlServer.TransactSql.ScriptDom" Version="150.4897.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

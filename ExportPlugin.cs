@@ -50,12 +50,32 @@ namespace Metacrack
                 }
             }
 
+            var shucks = new Dictionary<string, string>();
+
+            //Load and calculate shucking pairs
+            if (options.ShuckPath.Length > 0)
+            {
+                WriteMessage($"Creating shuck pairs for {options.ShuckPath}.");
+
+                using (var reader = new StreamReader(options.ShuckPath))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        shucks[HashMd5(line)] = line;
+                    }
+                }
+
+                WriteMessage($"Created {shucks.Count()} shuck pairs for {options.ShuckPath}.");
+            }
+
             //Load lookups into memory
             var lookups = new Dictionary<string, string>();
             var lineCount = 0;
 
             var size = GetFileEntriesSize(lookupFileEntries);
             var progressTotal = 0L;
+            var useShucks = shucks.Count() > 0;
 
             foreach (var lookupPath in lookupFileEntries)
             {
@@ -91,8 +111,16 @@ namespace Metacrack
                                 plain = splits[1];
                             }
 
+                            //Translate shucked result to plain or just add
                             //Only add if not already in file
-                            lookups[hash] = plain;
+                            if (useShucks && shucks.ContainsKey(plain))
+                            {
+                                lookups[hash] = shucks[plain];
+                            }
+                            else
+                            {
+                                lookups[hash] = plain;
+                            }
                         }
 
                         //Update the percentage

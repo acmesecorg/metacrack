@@ -13,7 +13,7 @@ namespace Metacrack
         private static Type[] _optionTypes;
         private static Type[] _pluginTypes;
 
-        private static string[] InternalPlugins = new string[] { "catalog", "cut", "export", "lookup", "map", "parse", "rank", "sort", "split", "validate", "help" };
+        private static string[] InternalPlugins = new string[] { "catalog", "cut", "export", "lookup", "map", "parse", "rank", "sort", "split", "sql", "validate", "help", "hash" };
 
         public static void Main(string[] args)
         {
