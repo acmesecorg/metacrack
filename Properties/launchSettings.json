@@ -47,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse 6.left --type ctc",
-      "workingDirectory": "D:\\crackon\\agent glitch"
+      "commandLineArgs": "parse raychat.parse.json --type json",
+      "workingDirectory": "D:\\raychat.bson"
     },
     "Split": {
       "commandName": "Project",
