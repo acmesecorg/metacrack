@@ -50,7 +50,7 @@ namespace Metacrack
                 var metapath = $"{filePathName}.meta.txt";
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { outputPath, metapath }))
+                if (!CheckOverwrite(new string[] { outputPath, metapath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
                     var fileInfo = new FileInfo(sqlPath);

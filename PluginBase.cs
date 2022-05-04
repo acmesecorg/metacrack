@@ -52,7 +52,7 @@ namespace Metacrack
 
         private static MD5 _md5;
 
-        public static List<List<string>> GetRules(string option)
+        public static List<List<string>> GetRules(string path)
         {
             try
             {

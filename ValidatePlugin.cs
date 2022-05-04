@@ -59,7 +59,7 @@ namespace Metacrack
                 if (options.Iterations > 0) _outputValidPath = $"{filePathName}.{options.Iterations}{fileInfo.Extension}";
 
                 //Check that there are no output files
-                if (!CheckForFiles(new string[] { _outputValidPath }))
+                if (!CheckOverwrite(new string[] { _outputValidPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 
