@@ -7,8 +7,8 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog  hautelook.meta.txt d:\\\\meta --prefix hautelook --columns 1 2",
-      "workingDirectory": "C:\\Users\\James\\Desktop"
+      "commandLineArgs": "catalog gun-users.parsed.txt c:\\breach\\output\\ --xref --xref-only",
+      "workingDirectory": "C:\\Breach\\GunUsers (3200)"
     },
     "Export": {
       "commandName": "Project",
@@ -17,8 +17,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup aarinfantasy.data.left.txt d:\\meta --prefix aarinfantasy --hash 400",
-      "workingDirectory": "D:\\AarinFantasy (400)\\Run2"
+      "commandLineArgs": "lookup forbes-hashes.left4.txt c:\\breach\\output --hash 400",
+      "workingDirectory": "C:\\Breach\\Forbes (400)"
     },
     "Map": {
       "commandName": "Project",

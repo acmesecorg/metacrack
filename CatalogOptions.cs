@@ -36,5 +36,11 @@ namespace Metacrack
 
         [Option]
         public IEnumerable<string> Columns { get; set; }
+
+        [Option("xref", HelpText = "Calculate x-references.")]
+        public bool XReference { get; set; }
+
+        [Option("xref-only", HelpText = "Skip other processing and only calculate x references in output folder.")]
+        public bool XReferenceOnly { get; set; }
     }
 }

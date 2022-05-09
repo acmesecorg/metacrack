@@ -257,6 +257,37 @@ namespace Metacrack
             return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
 
+        public static string ToHexString(string str)
+        {
+            var sb = new StringBuilder();
+
+            var bytes = Encoding.UTF8.GetBytes(str);
+            foreach (var t in bytes)
+            {
+                sb.Append(t.ToString("X2"));
+            }
+
+            return sb.ToString(); // returns: "48656C6C6F20776F726C64" for "Hello world"
+        }
+
+        public static string FromHexString(string hexString)
+        {
+            var bytes = new byte[hexString.Length / 2];
+            try
+            {
+                for (var i = 0; i < bytes.Length; i++)
+                {
+                    bytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
+                }
+
+                return Encoding.UTF8.GetString(bytes); // returns: "Hello world" for "48656C6C6F20776F726C64"
+            }
+            catch
+            {
+                return hexString;
+            }
+        }
+
         public static HashSet<String> GetTokens(string value)
         {
             var result = new HashSet<string>();
@@ -394,6 +425,24 @@ namespace Metacrack
 
                 progressTotal++;
             }
+        }
+
+        //We remove trailing non-alpha characters only
+        //Otherwise we loose too much meaning and variation
+        public static string StemWord(string word)
+        {
+            var chars = word.ToCharArray();
+            var length = chars.Length - 1;
+
+            while (length >= 0)
+            {
+                if (chars[length] != '\r' && chars[length] != '\n' && char.IsLetter(chars[length])) return new string(chars, 0, length + 1);
+
+                length--;
+            }
+
+            //Return an empty string
+            return "";
         }
 
         public static void StemEmail(string email, HashSet<string> lookups, HashSet<string> finals)
