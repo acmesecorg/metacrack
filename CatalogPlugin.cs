@@ -235,7 +235,11 @@ namespace Metacrack
                 WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}.");
             }
 
-            if (options.XReference) DoXReference(options).GetAwaiter().GetResult();
+            if (options.XReference)
+            {
+                DoXReference(options).GetAwaiter().GetResult();
+                WriteMessage($"Finished x referenceing values at {DateTime.Now.ToShortTimeString()}.");
+            }
         }
 
         private static async Task DoXReference(CatalogOptions options)
@@ -249,6 +253,14 @@ namespace Metacrack
 
             //Clear any existing lock objects
             _locks = new Dictionary<string, SemaphoreSlim>();
+            foreach (var hex1 in Hex)
+            {
+                foreach (var hex2 in Hex)
+                {
+                    //Create a new lock object for this hex key
+                    _locks.Add($"{hex1}{hex2}", new SemaphoreSlim(1, 1));
+                }                
+            }
 
             //Loop through each file with this prefix in the output folder
             var bucketCount = 0;
@@ -268,14 +280,7 @@ namespace Metacrack
                         var key = $"{hex1}{hex2}";
                         var path = $"{options.OutputFolder}\\{options.Prefix}-{key}.txt";
 
-                        //Create a new lock object for this hex key
-                        //Not related to the file, but the keys will be the same
-                        _locks.Add(key, new SemaphoreSlim(1,1));
-
                         tasks.Add(CalculateXRef(path, options));
-
-                        //Temp for testing 
-                        break;
                     }
 
                     //Wait for these tasks to complete (16 at a time)
@@ -289,50 +294,40 @@ namespace Metacrack
 
                         tasks.Remove(completedTask);
                     }
-
-                    //Temp for testing 
-                    break;
                 }
             }
 
 
-            //We now have 256 files full of associated words, but words will appear across the files
-            //Loop through each file, and for each other file combine (and remove) entries 
-            //bucketCount = 0;
-            //foreach (var hex1 in Hex)
-            //{
-            //    foreach (var hex2 in Hex)
-            //    {
-            //        var key = $"{hex1}{hex2}";
-            //        var mapPath = $"{xrefFolder}\\{options.Prefix}-{key}.tmp";
+            //We now have 256 files full of associated words, a word can appear multiple times, but only in one file
+            //Loop through each file, combine entries, then optimise the file            
 
-            //        //Load up the map file 
-            //        var map = ReadTempFile(mapPath);
+            bucketCount = 0;
+            WriteProgress($"Optimising files", bucketCount, 256);
 
-            //        bucketCount++;
-            //        WriteProgress($"Combining key {key}", bucketCount, 256);
+            foreach (var hex1 in Hex)
+            {
+                var tasks = new List<Task>();
 
-            //        foreach (var hex3 in Hex)
-            //        {
-            //            foreach (var hex4 in Hex)
-            //            {
-            //                var key2 = $"{hex3}{hex4}";
+                foreach (var hex2 in Hex)
+                {
+                    var key = $"{hex1}{hex2}";
+                    var mapPath = $"{options.OutputFolder}\\xref\\{options.Prefix}-xref-{key}.tmp";
+                    var outputPath = $"{options.OutputFolder}\\xref\\{options.Prefix}-xref-{key}.txt";
 
-            //                //Skip if the same file
-            //                if (key == key2) continue;
+                    tasks.Add(OptimiseFile(mapPath, outputPath));
+                }
 
-            //                var tempPath2 = $"{xrefFolder}\\{options.Prefix}-{key2}.tmp";
+                while (tasks.Count > 0)
+                {
+                    var completedTask = await Task.WhenAny(tasks.ToArray());
 
-            //                CombineXRef(map, tempPath2);
-            //            }
-            //        }
+                    bucketCount++;
 
-            //        //Write out the map file into final files
+                    WriteProgress($"Optimising files", bucketCount, 256);
 
-
-            //    }
-            //}
-
+                    tasks.Remove(completedTask);
+                }                
+            }
         }
 
         private static async Task CalculateXRef(string path, CatalogOptions options)
@@ -343,80 +338,93 @@ namespace Metacrack
             //password:word,word,word:count,count,count
             //Remember to re-ecode $HEX[] passwords
 
-            using (var reader = new StreamReader(path))
+            try
             {
-                var lastIdentifier = "";
-                var lastIdentifierCount = 0;
-
-                var associates = new Dictionary<string, Dictionary<string, int>>();
-                var candidates = new HashSet<string>();
-
-                //Read through the database
-                while (!reader.EndOfStream)
+                using (var reader = new StreamReader(path))
                 {
-                    var line = await reader.ReadLineAsync();
+                    var lastIdentifier = "";
+                    var lastIdentifierCount = 0;
 
-                    //Improve speed by not splitting, reading first n chars instead
-                    var identifier = line[..18].ToLower();
-                    var word = line[19..];
+                    var associates = new Dictionary<string, Dictionary<string, int>>();
+                    var candidates = new HashSet<string>();
 
-                    //Convert word from hex if needed
-                    if (word.StartsWith("$HEX["))
+                    //Read through the database
+                    while (!reader.EndOfStream)
                     {
-                        var passwordHex = word.Substring(5, word.Length - 6);
-                        word = FromHexString(passwordHex);
-                    }
+                        var lines = await reader.ReadLinesAsync(10);
 
-                    //We need to stem this word to remove permutations of the same thing
-                    //Because we are using a hashset, candidates wont be repeated
-                    word = StemWord(word);
+                        //Mark the end of the file by placing an end of file line that doesnt get processed
+                        if (reader.EndOfStream) lines.Add("ffffffffffffffffff:end:0");
 
-                    //For now, we are going to skip numbers and other specials, due to volume
-                    if (string.IsNullOrEmpty(word)) continue;
-
-                    //We need to filter out very long strings too
-                    if (word.Length > 20) continue;
-
-                    //We have to lower to word, just because we have so much data at this point
-                    //In future maybe set this as an option
-                    word = word.ToLower();
-
-                    if (lastIdentifier == "" || lastIdentifier == identifier)
-                    {
-                        lastIdentifierCount++;
-                    }
-                    else
-                    {
-                        lastIdentifierCount = 0;
-
-                        //We now need to add all the candidates to the associates and cross reference them with a count
-                        //Ignore email hashes with only one password
-                        if (candidates.Count > 1)
+                        foreach (var line in lines)
                         {
-                            foreach (var candidate in candidates)
+                            //Improve speed by not splitting, reading first n chars instead
+                            var identifier = line[..18].ToLower();
+                            var word = line[19..];
+
+                            //Convert word from hex if needed
+                            if (word.StartsWith("$HEX["))
                             {
-                                if (!associates.ContainsKey(candidate)) associates.Add(candidate, new Dictionary<string, int>());
-
-                                foreach (var candidate2 in candidates)
-                                {
-                                    if (candidate == candidate2) continue;
-
-                                    if (!associates[candidate].ContainsKey(candidate2)) associates[candidate].Add(candidate2, 0);
-                                    associates[candidate][candidate2]++;
-                                }
+                                var passwordHex = word.Substring(5, word.Length - 6);
+                                word = FromHexString(passwordHex);
                             }
-                        }
 
-                        candidates.Clear();
+                            //We need to stem this word to remove permutations of the same thing
+                            //Because we are using a hashset, candidates wont be repeated
+                            word = StemWord(word);
+
+                            //For now, we are going to skip numbers and other specials, due to volume
+                            if (string.IsNullOrEmpty(word)) continue;
+
+                            //We need to filter out very long strings too
+                            if (word.Length > 20) continue;
+
+                            //We have to lower to word, just because we have so much data at this point
+                            //In future maybe set this as an option
+                            word = word.ToLower();
+
+                            if (lastIdentifier == "" || lastIdentifier == identifier)
+                            {
+                                lastIdentifierCount++;
+                            }
+                            else
+                            {
+                                lastIdentifierCount = 0;
+
+                                //We now need to add all the candidates to the associates and cross reference them with a count
+                                //Ignore email hashes with only one password
+                                if (candidates.Count > 1)
+                                {
+                                    foreach (var candidate in candidates)
+                                    {
+                                        if (!associates.ContainsKey(candidate)) associates.Add(candidate, new Dictionary<string, int>());
+
+                                        foreach (var candidate2 in candidates)
+                                        {
+                                            if (candidate == candidate2) continue;
+
+                                            if (!associates[candidate].ContainsKey(candidate2)) associates[candidate].Add(candidate2, 0);
+                                            associates[candidate][candidate2]++;
+                                        }
+                                    }
+                                }
+
+                                candidates.Clear();
+                            }
+
+                            //There are some bad data email hashes with many words, so skips those
+                            if (lastIdentifierCount < 25) candidates.Add(word);
+                            lastIdentifier = identifier;
+                        }
                     }
 
-                    //There are some bad data email hashes with many words, so skips those
-                    if (lastIdentifierCount < 25) candidates.Add(word);
-                    lastIdentifier = identifier;
+                    //Write out the associates table to the intermediate final files
+                    await WriteFiles(associates, options);
                 }
-
-                //Write out the associates table to the intermediate final files
-                await WriteFiles(associates, options);
+            }
+            catch (Exception ex)
+            {
+                WriteError($"Exception calculating xref for {path}. {ex.Message}");
             }
         }
 
@@ -480,81 +488,132 @@ namespace Metacrack
             //Loop through each de, lock and write out the lines
             foreach (var de in output)
             {
-                var path = $"{options.OutputFolder}\\xref\\{options.Prefix}-xref-{de.Key}.txt";
+                var path = $"{options.OutputFolder}\\xref\\{options.Prefix}-xref-{de.Key}.tmp";
 
-                //https://blog.cdemi.io/async-waiting-inside-c-sharp-locks/
-                await _locks[de.Key].WaitAsync(); 
-                                
+                //https://blog.cdemi.io/async-waiting-inside-c-sharp-locks/           
                 try
                 {
-                    await File.WriteAllLinesAsync(path, de.Value);
+                    await _locks[de.Key].WaitAsync();
+                    await File.AppendAllLinesAsync(path, de.Value);
+                }
+                catch (Exception ex)
+                {
+                    WriteError(ex.Message);
                 }
                 finally
                 {
-                    //When the task is ready, release the semaphore. It is vital to ALWAYS release the semaphore when we are ready, or else we will end up with a Semaphore that is forever locked.
+                    //When the task is ready, always release the semaphore. 
                     _locks[de.Key].Release();
                 }
             }            
         }
 
+        //Sort by key, and optimise key/words
+        private static async Task OptimiseFile(string path, string outputPath)
+        {
+            try
+            {
+                //Dictionary already sorted by key
+                var map = await ReadCombineFile(path);
+                var output = new List<string>();
 
-        //Read a file. All words will be added to the file, so expect duplicate keys
-        private static async Task<Dictionary<string, Dictionary<string, int>>> ReadCombineFile(string path)
+                //Get rid of excess words for a key
+                //Write out to final file.
+                foreach (var de in map)
+                {
+                    //Get rid of data we cant keep, by removing the lowest counts
+                    //while (de.Value.Count > 100) de.Value.RemoveLowest();
+                    while (de.Value.Count > 10) de.Value.RemoveLowest();
+
+                    //Create final line and write it out
+                    var line = new StringBuilder();
+
+                    line.Append(de.Key);
+                    line.Append(':');
+                    line.Append(string.Join(":", de.Value.Keys));
+                    line.Append(':');
+                    line.Append(string.Join(":", de.Value.Values));
+
+                    output.Add(line.ToString());
+
+                    if (output.Count > 1000)
+                    {
+                        await File.AppendAllLinesAsync(outputPath, output);
+                        output.Clear();
+                    }
+                }
+
+                //Write any final lines
+                if (output.Count > 0) await File.AppendAllLinesAsync(outputPath, output);
+            }
+            catch (Exception ex)
+            {
+                WriteError($"Exception optimising {path}. {ex.Message}");
+            }
+        }
+
+        //Read a file of key words, their related words and counts
+        private static async Task<SortedDictionary<string, Dictionary<string, int>>> ReadCombineFile(string path)
         {
             //Loop through and turn file entries into a dictionary
-            var result = new Dictionary<string, Dictionary<string, int>>();
+            var result = new SortedDictionary<string, Dictionary<string, int>>();
 
             using (var reader = new StreamReader(path))
             {
                 while (!reader.EndOfStream)
                 {
-                    var line = await reader.ReadLineAsync();
-                    var splits = line.Split(':');
-                    var count = splits.Length - 1;
-                    var length = count / 2;
-                    var key = splits[0];
+                    //Read more lines into buffer at once
+                    var lines = await reader.ReadLinesAsync(10);
 
-                    var i = 1;
-                    var words = new List<string>();
-                    var values = new List<int>();
-
-                    //Split the line after the key between the words and counts eg word:word:word:count:count:count
-                    while (i <= count)
+                    foreach (var line in lines)
                     {
-                        if (i <= length)
+                        var splits = line.Split(':');
+                        var count = splits.Length - 1;
+                        var length = count / 2;
+                        var key = splits[0];
+
+                        var i = 1;
+                        var words = new List<string>();
+                        var values = new List<int>();
+
+                        //Split the line after the key between the words and counts eg word:word:word:count:count:count
+                        while (i <= count)
                         {
-                            words.Add(splits[i]);
-                        }
-                        else
-                        {
-                            values.Add(Convert.ToInt32(splits[i]));
-                        }
-
-                        i++;
-                    }
-
-                    if (!result.ContainsKey(key))
-                    {
-                        var keyValues = new Dictionary<string, int>();
-                            
-                        //Load the key values in the dictionary
-                        for (var j=0; j<words.Count; j++) keyValues.Add(words[j], values[j]);
-
-                        result.Add(key, keyValues);
-                    }
-                    else
-                    {
-                        var keyValues = result[key];
-
-                        for (var j = 0; j < words.Count; j++)
-                        {
-                            if (keyValues.ContainsKey(words[j]))
+                            if (i <= length)
                             {
-                                keyValues[words[j]] = keyValues[words[j]] + values[j];
+                                words.Add(splits[i]);
                             }
                             else
                             {
-                                keyValues.Add(words[j], values[j]);
+                                values.Add(Convert.ToInt32(splits[i]));
+                            }
+
+                            i++;
+                        }
+
+                        if (!result.ContainsKey(key))
+                        {
+                            var keyValues = new Dictionary<string, int>();
+
+                            //Load the key values in the dictionary
+                            for (var j = 0; j < words.Count; j++) keyValues.Add(words[j], values[j]);
+
+                            result.Add(key, keyValues);
+                        }
+                        else
+                        {
+                            var keyValues = result[key];
+
+                            for (var j = 0; j < words.Count; j++)
+                            {
+                                if (keyValues.ContainsKey(words[j]))
+                                {
+                                    keyValues[words[j]] = keyValues[words[j]] + values[j];
+                                }
+                                else
+                                {
+                                    keyValues.Add(words[j], values[j]);
+                                }
                             }
                         }
                     }
@@ -562,13 +621,6 @@ namespace Metacrack
             }
 
             return result;
-        }
-
-
-        //Sort by key, and optimise key/words
-        private static Task OptimiseFile(Dictionary<string, Dictionary<string, int>> map, string path)
-        {
-
         }
     }
 }

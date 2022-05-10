@@ -32,5 +32,8 @@ namespace Metacrack
 
         [Option("filter", HelpText = "Filters a cluster of words using the rule file in the path provided.")]
         public string Filter { get; set; }
+
+        [Option("infer", HelpText = "Adds cross references to output.")]
+        public bool UseInference { get; set; }
     }
 }

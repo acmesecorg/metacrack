@@ -12,6 +12,9 @@ namespace Metacrack
     {
         private static int LookupValueLengthMax = 70;
         private static int IdentifierCountMax = 40;
+        private static int InferenceIndexDepth = 10;
+
+        private static Dictionary<string, List<(string, long)>> _inferenceIndex;
 
         private static Regex _regexFast;
 
@@ -230,6 +233,7 @@ namespace Metacrack
             if (novalues) return;
 
             //Load the file
+            using (var sha1 = SHA1.Create())
             using (var reader = new StreamReader(sourcePath))
             {
                 var lastIdentifier = "";
@@ -276,6 +280,9 @@ namespace Metacrack
                                         words.Add($"{alpha}{numeric}");
                                     }
                                 }
+
+                                //Add infrered words if set
+                                if (options.UseInference) InferWords(words, options, sha1);
 
                                 //If there are rules, filter the filelookup words, and then remove associated words and hashes by index
                                 //Otherwise just make sure they are distinct
@@ -425,6 +432,90 @@ namespace Metacrack
                         if (!string.Equals(stem, password)) lookup.Alphas.Add(stem);
                     }
                 }
+            }
+        }
+
+        private static void InferWords(List<string> words, LookupOptions options, SHA1 sha1)
+        {
+            var additions = new HashSet<string>();
+
+            foreach (var word in words)
+            {
+                var hash = sha1.ComputeHash(Encoding.UTF8.GetBytes(word));
+                var key = hash[0].ToString("x2");
+
+                //Get the file name 
+                var path = $"{options.SourceFolder}\\xref\\{options.Prefix}-xref-{key}.txt";
+                var indexes = _inferenceIndex[key];
+                var indexWord = indexes[0].Item1;
+                var i = 0;
+
+                //while (indexWord < indexes[i].Item1)
+                //{
+                //    i++;
+                //    indexWord = indexes[i].Item1;
+                //}
+
+                ////Now we can open the file at the offset, and read forward until we find the word
+                //var line = GetWordLineFromOffset(word, indexes[i].Item2);                                             
+            }
+        }
+
+        private static List<(string, long)> CalculateInferenceFileIndexes(string key, string path)
+        {
+            var fileInfo = new FileInfo(path);
+            var middle = fileInfo.Length / 2;
+            var indexes = new List<(string, long)>();
+
+            if (!fileInfo.Exists) return indexes;
+
+            //Use a file stream so that we can seek
+            using (var fs = File.OpenRead(path))
+            {
+                CalculateInferenceFileIndex(indexes, fs, middle, 0);
+            }
+
+            //Sort the indexes by position
+            indexes.Sort((x, y) => y.Item2.CompareTo(x.Item2));
+
+            //Add to output
+            return indexes;
+        }
+
+        private static void CalculateInferenceFileIndex(List<(string, long)> indexes, FileStream stream, long position, int depth)
+        {
+            depth++;
+
+            //Get halfway between start and middle (position), and middle and end 
+            var top = position / 2;
+            var bottom = position + top;
+
+            indexes.Add(SeekWordAtPosition(stream, top));
+            indexes.Add(SeekWordAtPosition(stream, bottom));
+
+            //Recurse to 2^10 levels deep (1024 index points)
+            depth++;
+            if (depth < InferenceIndexDepth)
+            {
+                CalculateInferenceFileIndex(indexes, stream, top, depth);
+                CalculateInferenceFileIndex(indexes, stream, bottom, depth);
+            }
+        }
+
+        private static (string, long) SeekWordAtPosition(FileStream stream, long position)
+        {
+            //Add the words and offsets
+            stream.Seek(position, SeekOrigin.Begin);
+
+            using (StreamReader sr = new StreamReader(stream))
+            {
+                var chars = sr.ReadLine();
+                position += chars.Length;
+
+                var line = sr.ReadLine();
+                var word = line.Substring(line.IndexOf(':') - 1);
+
+                return (word, position);
             }
         }
     }

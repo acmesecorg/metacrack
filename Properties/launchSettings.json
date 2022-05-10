@@ -17,8 +17,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup forbes-hashes.left4.txt c:\\breach\\output --hash 400",
-      "workingDirectory": "C:\\Breach\\Forbes (400)"
+      "commandLineArgs": "lookup 10000.12000.left c:\\breach\\output --hash 10000 --filter ..\\best69.rule",
+      "workingDirectory": "C:\\Breach\\Dubsmash (10000)"
     },
     "Map": {
       "commandName": "Project",
