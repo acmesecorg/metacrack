@@ -429,8 +429,10 @@ namespace Metacrack
 
         //We remove trailing non-alpha characters only
         //Otherwise we loose too much meaning and variation
-        public static string StemWord(string word)
+        public static string StemWord(string word, bool lower)
         {
+            if (lower) word = word.ToLower();
+            
             var chars = word.ToCharArray();
             var length = chars.Length - 1;
 

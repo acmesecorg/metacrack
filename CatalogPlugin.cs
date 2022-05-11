@@ -267,40 +267,33 @@ namespace Metacrack
 
             WriteProgress($"Processing files", bucketCount, 256);
 
-            //Temp: skip this part for now
-            //if (bucketCount > 0)
-            if (bucketCount == 0)
+            foreach (var hex1 in Hex)
             {
-                foreach (var hex1 in Hex)
+                var tasks = new List<Task>();
+
+                foreach (var hex2 in Hex)
                 {
-                    var tasks = new List<Task>();
+                    var key = $"{hex1}{hex2}";
+                    var path = $"{options.OutputFolder}\\{options.Prefix}-{key}.txt";
 
-                    foreach (var hex2 in Hex)
-                    {
-                        var key = $"{hex1}{hex2}";
-                        var path = $"{options.OutputFolder}\\{options.Prefix}-{key}.txt";
+                    tasks.Add(CalculateXRef(path, options));
+                }
 
-                        tasks.Add(CalculateXRef(path, options));
-                    }
+                //Wait for these tasks to complete (16 at a time)
+                while (tasks.Count > 0)
+                {
+                    var completedTask = await Task.WhenAny(tasks.ToArray());
 
-                    //Wait for these tasks to complete (16 at a time)
-                    while (tasks.Count > 0)
-                    {
-                        var completedTask = await Task.WhenAny(tasks.ToArray());
+                    bucketCount++;
 
-                        bucketCount++;
+                    WriteProgress($"Processing files", bucketCount, 256);
 
-                        WriteProgress($"Processing files", bucketCount, 256);
-
-                        tasks.Remove(completedTask);
-                    }
+                    tasks.Remove(completedTask);
                 }
             }
-
-
+            
             //We now have 256 files full of associated words, a word can appear multiple times, but only in one file
             //Loop through each file, combine entries, then optimise the file            
-
             bucketCount = 0;
             WriteProgress($"Optimising files", bucketCount, 256);
 
@@ -371,17 +364,13 @@ namespace Metacrack
 
                             //We need to stem this word to remove permutations of the same thing
                             //Because we are using a hashset, candidates wont be repeated
-                            word = StemWord(word);
+                            word = StemWord(word, true);
 
                             //For now, we are going to skip numbers and other specials, due to volume
                             if (string.IsNullOrEmpty(word)) continue;
 
                             //We need to filter out very long strings too
                             if (word.Length > 20) continue;
-
-                            //We have to lower to word, just because we have so much data at this point
-                            //In future maybe set this as an option
-                            word = word.ToLower();
 
                             if (lastIdentifier == "" || lastIdentifier == identifier)
                             {
@@ -413,7 +402,13 @@ namespace Metacrack
                             }
 
                             //There are some bad data email hashes with many words, so skips those
-                            if (lastIdentifierCount < 25) candidates.Add(word);
+                            if (lastIdentifierCount < 25)
+                            {
+                                candidates.Add(word);
+
+                                //Add the stemmed version as well
+                                candidates.Add(StemWord(word, true));
+                            }
                             lastIdentifier = identifier;
                         }
                     }
@@ -596,9 +591,10 @@ namespace Metacrack
                             var keyValues = new Dictionary<string, int>();
 
                             //Load the key values in the dictionary
-                            for (var j = 0; j < words.Count; j++) keyValues.Add(words[j], values[j]);
+                            //We shoudlnt, but sometime we get duplicates
+                            for (var j = 0; j < words.Count; j++) keyValues.TryAdd(words[j], values[j]);
 
-                            result.Add(key, keyValues);
+                            result.TryAdd(key, keyValues);
                         }
                         else
                         {

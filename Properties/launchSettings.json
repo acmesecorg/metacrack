@@ -17,7 +17,7 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup 10000.12000.left c:\\breach\\output --hash 10000 --filter ..\\best69.rule",
+      "commandLineArgs": "lookup 10000.15000.left c:\\breach\\output --hash 10000 --filter ..\\best69.rule --infer",
       "workingDirectory": "C:\\Breach\\Dubsmash (10000)"
     },
     "Map": {
