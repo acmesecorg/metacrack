@@ -169,13 +169,17 @@ namespace Metacrack
         
         private static StatementList ProcessBuffer(SqlOptions options, StringBuilder buffer, long lineCount, int[] columns, int[] metas, List<string> fileOutput, List<string> metaOutput)
         {
-            var statements = _parser.ParseStatementList(new StringReader(buffer.ToString()), out var errors);
+            var bufferString = buffer.ToString();
+            var statements = _parser.ParseStatementList(new StringReader(bufferString), out var errors);
 
             if (errors.Count > 0)
             {
                 if (options.Debug) WriteMessage($"Line {lineCount},{errors[0].Offset}:{errors[0].Message}");
                 return null;
             }
+
+            var parseColumns = columns.Length == 0;
+            var parseMetas = metas.Length == 0;
 
             if (statements != null)
             {
@@ -195,11 +199,14 @@ namespace Metacrack
                             if (options.Debug) WriteMessage($"Parsed insert statement for target table without errors.");
 
                             var spec = insertStatement.InsertSpecification;
-
                             var source = spec.InsertSource;
 
                             if (source is ValuesInsertSource)
                             {
+                                //Check if we need to parse out column values
+                                if (parseColumns) columns = ParseColumns(insertStatement, spec, options.ColumnNames);
+                                if (parseMetas) metas = ParseColumns(insertStatement, spec, options.MetaNames);
+
                                 var valuesSource = source as ValuesInsertSource;
 
                                 foreach (var rowValues in valuesSource.RowValues)
@@ -268,6 +275,31 @@ namespace Metacrack
             }
 
             return statements;
+        }
+
+        private static int[] ParseColumns(InsertStatement insertStatement, InsertSpecification spec, IEnumerable<string> names)
+        {
+            var indexes = new List<int>();
+
+            //Loop through the columns, and compare tokens
+            foreach (var columnName in names)
+            {
+                var i = 0;
+                foreach (var column in spec.Columns)
+                {
+                    var token = insertStatement.ScriptTokenStream[column.FirstTokenIndex];
+                    var name = token.Text.Trim('"').Trim('[').Trim(']');
+
+                    if (name.Contains(columnName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        indexes.Add(i);
+                        break;
+                    }
+                    i++;
+                }
+            }
+
+            return indexes.ToArray();
         }
     }
 }
