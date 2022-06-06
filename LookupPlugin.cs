@@ -95,7 +95,7 @@ namespace Metacrack
 
             if (options.UseInference)
             {
-                if (options.Export) WriteMessage($"Using inference.");
+                WriteMessage($"Using inference.");
                 _inferenceIndex = new Dictionary<string, List<(string Word, long Offset)>>();
             }
 

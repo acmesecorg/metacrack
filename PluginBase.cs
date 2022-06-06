@@ -192,6 +192,7 @@ namespace Metacrack
 
             //2fc5a684737ce1bf7b3b239df432416e0dd07357:2014
             if (mode == 110) return new HashInfo(mode, 2, 40, true);
+            if (mode == 120) return new HashInfo(mode, 2, 40, true);
 
             //$P$984478476IagS59wHZvyQMArzfx58u.
             if (mode == 400) return new HashInfo(mode, 1, 34, false);
@@ -455,43 +456,47 @@ namespace Metacrack
             //Add the whole name
             finals.Add(name);
 
-            //Remove special characters, giving us alpha and numerics
-            //Regex expression is cached
-            var matches = Regex.Matches(name, "[a-z]+|[0-9]+", RegexOptions.IgnoreCase);
+            //Remove trailing special characters and numerics
+            var stem = StemWord(name, true);
 
-            //Split any text by list of lookup names
-            //Using a hashset means we dont get repeats
-            foreach (var match in matches)
+            finals.Add(stem);
+
+            //Remove any '+'
+            var index = stem.IndexOf('+');
+            if (index > -1) stem = stem.Substring(0, index);
+
+            index = stem.IndexOf('.');
+            if (index > -1)
             {
-                var value = ((Match)match).Value;
-
-                //We will let rules take care of single digit numbers
-                //We are really more interested in special numbers and dates of birth etc here
-                if (int.TryParse(value, out var number))
+                //Skip initials eg j.west
+                if (index > 1)
                 {
-                    if (number > 9) finals.Add(value);
+                    finals.Add(stem.Substring(0, index));
+                    finals.Add(stem.Substring(index + 1));
                 }
-                else
+            }
+            else
+            {
+                //Do lookups
+                
+                //Its very inefficient to loop through the lookup, checking if our stem starts with the entry
+                //So we will iterate through our stem, and do a direct lookup instead
+                if (stem.Length > 2)
                 {
-                    finals.Add(value);
-
-                    //Split names now, because the email will be anonimised after this
-                    //Try split single name eg bobjenkins into bob and jenkins
-                    foreach (var entry in lookups)
+                    var i = 3;
+                    var length = stem.Length;
+                    
+                    while (i < length)
                     {
-                        //For comparison only, we use lower case. 
-                        //Entries have already been lowered
-                        if (value.ToLower().StartsWith(entry))
+                        var check = stem.Substring(0, i);
+
+                        if (lookups.Contains(check))
                         {
-                            finals.Add(entry);
-
-                            var other = value.Replace(entry, "");
-
-                            if (other.Length > 1)
-                            {
-                                finals.Add(other);
-                            }
+                            finals.Add(check);
+                            if (stem.Length - check.Length > 3) finals.Add(stem.Substring(check.Length));
                         }
+
+                        i++;
                     }
                 }
             }

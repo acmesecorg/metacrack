@@ -7,8 +7,8 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog gun-users.parsed.txt c:\\breach\\output\\ --xref --xref-only",
-      "workingDirectory": "C:\\Breach\\GunUsers (3200)"
+      "commandLineArgs": "sql reddoorz.com.sql --columns 1 6 --meta 7 8",
+      "workingDirectory": "C:\\Breach\\AnimalJam (27200)"
     },
     "Export": {
       "commandName": "Project",
@@ -17,8 +17,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup 10000.15000.left c:\\breach\\output --hash 10000 --filter ..\\best69.rule --infer",
-      "workingDirectory": "C:\\Breach\\Dubsmash (10000)"
+      "commandLineArgs": "lookup reddoorz.left5.txt c:\\breach\\output --hash 3200 --filter ..\\best69.rule --infer",
+      "workingDirectory": "C:\\Breach\\RedDoorz (3200)"
     },
     "Map": {
       "commandName": "Project",
@@ -27,8 +27,8 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate 6.email.plain.found --hash 400",
-      "workingDirectory": "D:\\crackon\\agent glitch"
+      "commandLineArgs": "validate reddoorz.left.map.part6.hash --hash 3200 --iterations 10 --column 0",
+      "workingDirectory": "C:\\Breach\\RedDoorz (3200)"
     },
     "Export with Remove": {
       "commandName": "Project",
@@ -37,13 +37,13 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql aimware.sql --table forum_users --Start 1277461 --End 1524453 --columns 5 2 3 --meta 1",
-      "workingDirectory": "D:\\Aimware (2811)"
+      "commandLineArgs": "sql adecco.sql --table candidatos_by_email --columnnames email password --metanames primer_apellido primer_nombre",
+      "workingDirectory": "C:\\Breach\\Adecco (3200)"
     },
     "Rank": {
       "commandName": "Project",
-      "commandLineArgs": "rank dailymotion-hashes-left.temp.txt",
-      "workingDirectory": "d:\\"
+      "commandLineArgs": "rank dubsmash-email.debug --debug --count 2",
+      "workingDirectory": "C:\\Breach\\Dubsmash (10000)"
     },
     "Parse": {
       "commandName": "Project",
@@ -57,8 +57,8 @@
     },
     "Catalog Stem": {
       "commandName": "Project",
-      "commandLineArgs": "catalog homechef-meta.txt d:\\meta --prefix meta --columns 1 --stem-email --stem-names names.dict --tokenize",
-      "workingDirectory": "D:\\Input"
+      "commandLineArgs": "catalog animaljam.left2.txt c:\\breach\\meta --prefix animaljam --stem-email-only --stem-names ../firstnames.dict",
+      "workingDirectory": "C:\\Breach\\AnimalJam (27200)"
     },
     "Cut": {
       "commandName": "Project",
