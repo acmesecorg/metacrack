@@ -8,7 +8,12 @@ namespace Metacrack
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The path to the file(s) containing the hash:plains.")]
         public string InputPath { get; set; }
 
-        [Option("Count", Default = 10)]
+        [Option("count", Default = 10)]
         public int Count { get; set; }
+
+
+        [Option("debug")]
+        public bool Debug { get; set; }
+
     }
 }
