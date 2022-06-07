@@ -25,7 +25,7 @@
                     {
                         var line = reader.ReadLine();
 
-                        if (options.Debug)
+                        if (options.DebugMode == 1)
                         {
                             if (dict.ContainsKey(line))
                             {
@@ -34,6 +34,32 @@
                             else
                             {
                                 dict[line] = 1;
+                            }
+                        }
+                        else if (options.DebugMode == 4)
+                        {
+                            //Deal with ::: where : is a valid value
+                            var splits = line.Split(':');
+                            var rule = "";
+                            if (splits.Length == 4)
+                            {
+                                rule = ":";
+                            }
+                            else if(splits.Length == 3)
+                            {
+                                rule = splits[1];
+                            }
+
+                            if (rule != "")
+                            {
+                                if (dict.ContainsKey(rule))
+                                {
+                                    dict[rule]++;
+                                }
+                                else
+                                {
+                                    dict[rule] = 1;
+                                }
                             }
                         }
                         else
@@ -57,7 +83,7 @@
                 }
 
                 //Now sort the dictionary and write out the results
-                if (options.Debug)
+                if (options.DebugMode > 0)
                 {
                     var total = dict.Keys.Count();
                     WriteMessage($"Writing out rules {fileInfo.Name} ({total} entries)");

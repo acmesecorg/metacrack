@@ -11,9 +11,8 @@ namespace Metacrack
         [Option("count", Default = 10)]
         public int Count { get; set; }
 
-
-        [Option("debug")]
-        public bool Debug { get; set; }
+        [Option("debug-mode")]
+        public int DebugMode { get; set; }
 
     }
 }

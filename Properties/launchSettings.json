@@ -42,8 +42,8 @@
     },
     "Rank": {
       "commandName": "Project",
-      "commandLineArgs": "rank dubsmash-email.debug --debug --count 2",
-      "workingDirectory": "C:\\Breach\\Dubsmash (10000)"
+      "commandLineArgs": "rank adecco-passwords.log --count 10 --debug-mode 4",
+      "workingDirectory": "C:\\Breach\\Adecco (3200)"
     },
     "Parse": {
       "commandName": "Project",
