@@ -42,7 +42,7 @@ namespace Metacrack
     public abstract class PluginBase
     {
         public static readonly string[] ValidFields = { "p", "password", "u", "username", "n", "name", "d", "date", "i", "number", "v", "value" };
-        public static readonly string[] Hex = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+        public static readonly char[] Hex = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
         public const int MaxSessionsDefault = 20;
 
         //Cache this for better performance. Since it is static, we dont worry so much about disposal

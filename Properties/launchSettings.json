@@ -7,8 +7,8 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog  hautelook.meta.txt d:\\\\meta --prefix hautelook --columns 1 2",
-      "workingDirectory": "C:\\Users\\James\\Desktop"
+      "commandLineArgs": "catalog additions-may2022.txt test.db",
+      "workingDirectory": "C:\\Breach\\test"
     },
     "Export": {
       "commandName": "Project",

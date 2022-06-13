@@ -4,7 +4,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Parse</ActiveDebugProfile>
+    <ActiveDebugProfile>Catalog</ActiveDebugProfile>
     <_LastSelectedProfileId>C:\Users\James\Documents\GitHub\Metacrack\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
