@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Metacrack.Model;
 using SQLite;
 
@@ -12,6 +13,7 @@ namespace Metacrack.Plugins
         public static void Process(CatalogOptions options)
         {
             //Validate and display arguments
+            var memoryLines = 6000000 * 4; //20 millon = 3gb, so roughly 4GB
             var currentDirectory = Directory.GetCurrentDirectory();
             var fileEntries = Directory.GetFiles(currentDirectory, options.InputPath);
 
@@ -42,7 +44,7 @@ namespace Metacrack.Plugins
             WriteMessage($"Writing data to {outputPath}");
 
             //Determine input columns
-            int[] columns = (options.Columns.Count() == 0) ? new int[] {1} : Array.ConvertAll(options.Columns.ToArray(), s => int.Parse(s));
+            int[] columns = (options.Columns.Count() == 0) ? new int[] { 1 } : Array.ConvertAll(options.Columns.ToArray(), s => int.Parse(s));
 
             WriteMessage($"Using input columns: {String.Join(',', columns)}");
 
@@ -105,128 +107,184 @@ namespace Metacrack.Plugins
             }
 
             //Open up sqlite
-            var db = new SQLiteConnection(outputPath);
-            var entityResult = db.CreateTable<Entity>();
-
-            WriteMessage((entityResult == CreateTableResult.Created) ? "Created new meta data table": "Found existing meta data table");
-
-            //Get input files size
-            var fileEntriesSize = GetFileEntriesSize(fileEntries);
-
-            WriteMessage($"Found {fileEntries.Count()} text file entries ({FormatSize(fileEntriesSize)}) in all folders.");
-
-            progressTotal = 0L;
-            lineCount = 0L;
-            var validCount = 0L;
-            var fileCount = 0;
-
-            WriteMessage($"Started adding values at {DateTime.Now.ToShortTimeString()}");
-
-            //Process a file
-            foreach (var lookupPath in fileEntries)
+            using (var db = new SQLiteConnection(outputPath))
             {
-                //Create a list of updates and inserts in memory per file
-                var inserts = new Dictionary<long, Entity>();
-                var updates = new Dictionary<long, Entity>();
+                WriteMessage($"Using Sqlite version {db.LibVersionNumber} .");
 
-                fileCount++;
 
-                using (var reader = new StreamReader(lookupPath))
+                var types = Entity.GetTypes();
+                var entityResult = db.CreateTable<Entity0>();
+
+                //Loop through and create other tables
+                foreach (var type in types)
                 {
-                    while (!reader.EndOfStream)
-                    {
-                        lineCount++;
-
-                        var line = reader.ReadLine().AsSpan();
-                        var splits = line.SplitByChar(':');
-                        var entity = default(Entity);
-                        var fieldIndex = 0;
-
-                        progressTotal += line.Length;
-
-                        foreach (var (split,index) in splits)
-                        {
-                            //Get the email, stem it and validate it 
-                            if (index == 0)
-                            {
-                                if (ValidateEmail(split, out var emailStem))
-                                {
-                                    validCount++;
-
-                                    var rowId = emailStem.ToRowId();
-
-                                    //Determine if we already have an entity for this file
-                                    //If we do, it will already be in the inserts and updates, and we will just update values
-                                    if (!inserts.TryGetValue(rowId, out entity) && !updates.TryGetValue(rowId, out entity))
-                                    {
-                                        //Otherwise check if we have en entity in the database (if it existed first)
-                                        entity = (entityResult == CreateTableResult.Created) ? default : db.Table<Entity>().Where(e => e.RowId == rowId).FirstOrDefault();
-
-                                        //Not found in the database, so create a new one
-                                        if (entity == null)
-                                        {
-                                            entity = new Entity();
-                                            entity.RowId = rowId;
-
-                                            inserts.Add(rowId, entity);
-                                        }
-                                        else
-                                        {
-                                            updates.Add(rowId, entity);
-                                        }
-                                    }
-
-                                    //Stem email if required
-                                    if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, entity);
-                                }
-                                else
-                                {
-                                    //Dont continue getting values
-                                    break;
-                                }
-                            }
-                            //Else map the index to the correct entity type and perform and functions
-                            else if (!options.StemEmailOnly && columns.Contains(index))
-                            {
-                                if (options.Tokenize)
-                                {
-                                    var tokens = split.SplitByChar(' ');
-                                    foreach (ReadOnlySpan<char> token in tokens)
-                                    {
-                                        //We trim the token, but we dont change capitalisation. We leave that to the lookup
-                                        var trimToken = token.Trim();
-                                        if (trimToken.Length > 0) entity.SetValue(trimToken, fields[fieldIndex]);
-                                    }
-                                }
-                                else
-                                {
-                                    entity.SetValue(split, fields[fieldIndex]);
-                                }
-                                fieldIndex++;
-                            }
-
-                            //Shortcut if we have parsed all the data we need to for this line
-                            if (fieldIndex >= columns.Count()) break;
-                        }
-
-                        if (lineCount % 10000 == 0) WriteProgress($"Adding values", progressTotal, fileEntriesSize);
-                    }
+                    db.CreateTable(type);
                 }
 
-                WriteMessage($"Writing values to catalog.");
+                WriteMessage((entityResult == CreateTableResult.Created) ? "Created new meta data table": "Found existing meta data table");
 
-                //Write out the inserts and updates, and set the file creation type to something other than created
+                //Get input files size
+                var fileEntriesSize = GetFileEntriesSize(fileEntries);
+
+                WriteMessage($"Found {fileEntries.Count()} text file entries ({FormatSize(fileEntriesSize)}) in all folders.");
+
+                progressTotal = 0L;
+                lineCount = 0L;
+                var validCount = 0L;
+                var fileCount = 0;
+
+                WriteMessage($"Started adding values at {DateTime.Now.ToShortTimeString()}");
+
+                //Process a file
+                foreach (var lookupPath in fileEntries)
+                {
+                    //Create a list of updates and inserts in memory per file
+                    var insertBuckets = new Dictionary<char, Dictionary<long, Entity>>();
+                    var updateBuckets = new Dictionary<char, Dictionary<long, Entity>>();
+
+                    foreach (var hex in Hex)
+                    {
+                        insertBuckets.Add(hex, new Dictionary<long, Entity>());
+                        updateBuckets.Add(hex, new Dictionary<long, Entity>());
+                    }
+
+                    fileCount++;
+
+                    using (var reader = new StreamReader(lookupPath))
+                    {
+                        while (!reader.EndOfStream)
+                        {
+                            lineCount++;
+
+                            var line = reader.ReadLine().AsSpan();
+                            var splits = line.SplitByChar(':');
+                            var entity = default(Entity);
+                            var fieldIndex = 0;
+
+                            progressTotal += line.Length;
+
+                            foreach (var (split,index) in splits)
+                            {
+                                //Get the email, stem it and validate it 
+                                if (index == 0)
+                                {
+                                    if (ValidateEmail(split, out var emailStem))
+                                    {
+                                        validCount++;
+
+                                        var rowChar = emailStem.ToRowCharId();
+                                        var bucket = rowChar.Char;
+                                        var rowId = rowChar.Id;
+
+                                        var inserts = insertBuckets[bucket];
+                                        var updates = updateBuckets[bucket];
+
+                                        //Determine if we already have an entity for this file
+                                        //If we do, it will already be in the inserts and updates, and we will just update values
+                                        if (!inserts.TryGetValue(rowId, out entity) && !updates.TryGetValue(rowId, out entity))
+                                        {
+                                            //Otherwise check if we have en entity in the database (if it existed first)
+                                            //TODO: lookup types in Entity too
+                                            entity = (entityResult == CreateTableResult.Created) ? default : db.Table<Entity0>().Where(e => e.RowId == rowId).FirstOrDefault();
+
+                                            //Not found in the database, so create a new one
+                                            if (entity == null)
+                                            {
+                                                entity = Entity.Create(bucket);
+                                                entity.RowId = rowId;
+
+                                                inserts.Add(rowId, entity);
+                                            }
+                                            else
+                                            {
+                                                updates.Add(rowId, entity);
+                                            }
+                                        }
+
+                                        //Stem email if required
+                                        if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, entity);
+                                    }
+                                    else
+                                    {
+                                        //Dont continue getting values
+                                        break;
+                                    }
+                                }
+                                //Else map the index to the correct entity type and perform and functions
+                                else if (!options.StemEmailOnly && columns.Contains(index))
+                                {
+                                    if (options.Tokenize)
+                                    {
+                                        var tokens = split.SplitByChar(' ');
+                                        foreach (ReadOnlySpan<char> token in tokens)
+                                        {
+                                            //We trim the token, but we dont change capitalisation. We leave that to the lookup
+                                            var trimToken = token.Trim();
+                                            if (trimToken.Length > 0) entity.SetValue(trimToken, fields[fieldIndex]);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        entity.SetValue(split, fields[fieldIndex]);
+                                    }
+                                    fieldIndex++;
+                                }
+
+                                //Shortcut if we have parsed all the data we need to for this line
+                                if (fieldIndex >= columns.Count()) break;
+                            }
+
+                            if (lineCount % 10000 == 0) WriteProgress($"Adding values", progressTotal, fileEntriesSize);
+
+                            //Write to database after we process a certain number of lines (100 million or so)
+                            if (lineCount % memoryLines == 0)
+                            {
+                                //Writes and clears the buckets
+                                WriteBuckets(db, insertBuckets, updateBuckets);
+
+                                entityResult = CreateTableResult.Migrated;
+                            }
+                        }
+                    }
+
+                    WriteMessage($"Writing final values to catalog.");
+                    WriteBuckets(db, insertBuckets, updateBuckets);
+
+                    //Update the files percentage
+                    WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
+                }
+
+                WriteMessage($"Processed {validCount} lines out of {lineCount}");
+                WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");
+            }
+        }
+
+        private static void WriteBuckets(SQLiteConnection db, Dictionary<char, Dictionary<long, Entity>> insertBuckets, Dictionary<char, Dictionary<long, Entity>> updateBuckets)
+        {
+            //Write out the inserts and updates, and set the file creation type to something other than created
+            var count = 0;
+
+            //Sqlite doesnt handle concurrent writes well
+            //Instead we keep the table size down by splitting tables, which still makes updates quicker
+            foreach (var hex in Hex)
+            {
+                WriteProgress($"Writing bucket {hex}", count, 15);
+
+                var inserts = insertBuckets[hex];
+                var updates = updateBuckets[hex];
+
+                //If we are looping, then we always need to do an update
                 if (updates.Count > 0) db.UpdateAll(updates.Values);
-                if (inserts.Count > 0) db.InsertAll(inserts.Values);
+                if (inserts.Count > 0) db.UpdateAll(inserts.Values);
 
-                entityResult = CreateTableResult.Migrated;
+                updates.Clear();
+                inserts.Clear();
 
-                //Update the percentage
-                WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
+                count++;
             }
 
-            WriteMessage($"Processed {validCount} lines out of {lineCount}");
-            WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");
+            //Lets also allow managed code to collect this memory
+            GC.Collect();
         }
     }
 }

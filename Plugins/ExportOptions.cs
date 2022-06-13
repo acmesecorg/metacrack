@@ -23,5 +23,9 @@ namespace Metacrack
 
         [Option("remove-word", Default = "", HelpText = "The path to the file containing associated words to be removed. Use in conjunction with --remove.")]
         public string RemoveWordsPath { get; set; }
+
+        [Option("shuck", Default = "", HelpText = "The path to the word file that will be used to calculate shuck pairs to convert founds back to plains.")]
+        public string ShuckPath { get; set; }
+
     }
 }

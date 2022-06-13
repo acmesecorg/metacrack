@@ -13,6 +13,7 @@ namespace Metacrack
         public int Mode;
         public int Columns;
         public int Length;
+        public int MaxLength;
         public bool IsHex;
         public string Prefix;
 
@@ -22,20 +23,34 @@ namespace Metacrack
             Columns = columns;
             Length = length;    
             IsHex = isHex;  
-            Prefix = prefix;    
+            Prefix = prefix;
+
+            MaxLength = length;
+        }
+
+        public HashInfo(int mode, int columns, int length, int maxlength, bool isHex, string prefix = null)
+        {
+            Mode = mode;
+            Columns = columns;
+            Length = length;
+            MaxLength = maxlength;
+            IsHex = isHex;
+            Prefix = prefix;            
         }
     }
 
     public abstract class PluginBase
     {
         public static readonly string[] ValidFields = { "p", "password", "u", "username", "n", "name", "d", "date", "i", "number", "v", "value" };
-        public static readonly string[] Hex = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
+        public static readonly char[] Hex = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
         public const int MaxSessionsDefault = 20;
 
         //Cache this for better performance. Since it is static, we dont worry so much about disposal
         private static SHA1 _sha1;
         private static long _sharedProgressTotal;
         private static long _sharedProgress;
+
+        private static MD5 _md5;
 
         public static List<List<string>> GetRules(string path)
         {
@@ -160,7 +175,8 @@ namespace Metacrack
             if (info.Length == 0) return true;
 
             //Validate length
-            if (info.Length != hash.Length) return false;
+            if (hash.Length < info.Length) return false;
+            if (hash.Length > info.MaxLength) return false;
 
             //Validate hex
             if (info.IsHex)
@@ -219,9 +235,14 @@ namespace Metacrack
         {
             //8743b52063cd84097a65d1633f5c74f5
             if (mode == 0) return new HashInfo(mode, 1, 32, true);
+            if (mode == 11) return new HashInfo(mode, 2, 32, true);
+            if (mode == 20) return new HashInfo(mode, 2, 32, true);
 
             //b89eaac7e61417341b710b727768294d0e6a277b
-            if (mode == 100) return new HashInfo(mode, 2, 40, true);
+            if (mode == 100) return new HashInfo(mode, 1, 40, true);
+
+            //2fc5a684737ce1bf7b3b239df432416e0dd07357:2014
+            if (mode == 110) return new HashInfo(mode, 2, 40, true);
 
             //$P$984478476IagS59wHZvyQMArzfx58u.
             if (mode == 400) return new HashInfo(mode, 1, 34, false);
@@ -240,7 +261,7 @@ namespace Metacrack
             if (mode == 2611) return new HashInfo(mode, 2, 32, true);
 
             //pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=
-            if (mode == 10000) return new HashInfo(mode, 1, 77, false);
+            if (mode == 10000) return new HashInfo(mode, 1, 77, 79, false);
 
             if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2");
 
@@ -270,6 +291,32 @@ namespace Metacrack
                 if (!isHex) return false;
             }
             return true;
+        }
+        
+        public static byte[] FromHex(string hex)
+        {
+            if (hex.Length % 2 == 1)
+                throw new Exception("The binary key cannot have an odd number of digits");
+
+            byte[] arr = new byte[hex.Length >> 1];
+
+            for (int i = 0; i < hex.Length >> 1; ++i)
+            {
+                arr[i] = (byte)((GetHexVal(hex[i << 1]) << 4) + (GetHexVal(hex[(i << 1) + 1])));
+            }
+
+            return arr;
+        }
+
+        public static int GetHexVal(char hex)
+        {
+            int val = (int)hex;
+            //For uppercase A-F letters:
+            //return val - (val < 58 ? 48 : 55);
+            //For lowercase a-f letters:
+            //return val - (val < 58 ? 48 : 87);
+            //Or the two combined, but a bit slower:
+            return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
 
         public static HashSet<String> GetTokens(string value)
@@ -429,6 +476,22 @@ namespace Metacrack
 
                 entity.AddNames(finals.ToString());
             }
+        }
+
+        public static string HashMd5(string input)
+        {
+            if (_md5 == null) _md5 = MD5.Create();
+
+            byte[] inputBytes = Encoding.UTF8.GetBytes(input);
+            byte[] hashBytes = _md5.ComputeHash(inputBytes);
+
+            // Convert the byte array to hexadecimal string
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < hashBytes.Length; i++)
+            {
+                sb.Append(hashBytes[i].ToString("X2"));
+            }
+            return sb.ToString().ToLower();
         }
 
         public static string FormatSize(long bytes)

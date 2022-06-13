@@ -1,12 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.Json;
 
 namespace Metacrack
 {
     public class ParsePlugin : PluginBase
     {
+        internal class JsonParse
+        {
+            public string email { get; set; }
+            public string password { get; set; }
+        }
+
         public static void Process(ParseOptions options)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
@@ -175,6 +183,36 @@ namespace Metacrack
                                 output.Add($"{splits[0]}:{final}");
                             }
                             else
+                            {
+                                notparsed.Add(line);
+                            }
+                        }
+                        else if (options.ParseType == "hextochar")
+                        {
+                            var splits = line.Split(':');
+
+                            if (splits.Length == 2)
+                            {
+                                var hash = splits[1];
+
+                                var final = Encoding.UTF8.GetString(FromHex(splits[1]));
+
+                                output.Add($"{splits[0]}:{final}");
+                            }
+                            else
+                            {
+                                notparsed.Add(line);
+                            }
+                        }
+                        else if (options.ParseType == "json")
+                        {
+                            //Deserialize the line
+                            try
+                            {
+                                var model = JsonSerializer.Deserialize<JsonParse>(line);
+                                output.Add($"{model.email}:{model.password}");
+                            }
+                            catch
                             {
                                 notparsed.Add(line);
                             }
