@@ -90,19 +90,47 @@
 
                     var lines = new List<string>();
 
-                    var sorted = dict.OrderByDescending(x => x.Value);
+                    var sorted = dict.OrderByDescending(x => x.Value).Take(options.Count);
+                    
+
+                    WriteMessage($"Results for: {fileInfo.Name} ({total} entries)");
+
+                    //Loop through and count longest word
+                    var longest = 0;
+                    var longestValue = 0;
 
                     foreach (var pair in sorted)
                     {
-                        if (pair.Value >= options.Count) lines.Add(pair.Key);                       
+                        if (pair.Key.Length > longest) longest = pair.Key.Length;
+                        if (pair.Value.ToString().Length > longestValue) longestValue = pair.Value.ToString().Length;
+                    }
+
+                    //Add an extra space so that our output aligns in the console with one space
+                    longest++;
+
+                    foreach (var pair in sorted)
+                    {
+                        var percent = (int)((double)pair.Value / total * 100);
+
+                        WriteMessage($"{pair.Key}{new string(' ', longest - pair.Key.Length + longestValue - pair.Value.ToString().Length)}{pair.Value} ({percent}%)");
+                    }
+
+                    //Write out to file
+                    sorted = dict.OrderByDescending(x => x.Value);
+
+                    foreach (var pair in sorted)
+                    {
+                        if (pair.Value >= options.Keep) lines.Add(pair.Key);                       
                     }
 
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var filePathName = $"{currentDirectory}\\{fileName}";
 
-                    if (lines.Count > 0) File.AppendAllLines($"{filePathName}.{options.Count}.rule", lines);
-
-                    WriteMessage($"Wrote out {lines.Count} rules to {filePathName}.rule");
+                    if (lines.Count > 0)
+                    {
+                        File.AppendAllLines($"{filePathName}.{options.Keep}.rule", lines);
+                        WriteMessage($"Wrote out {lines.Count} rules to {filePathName}.{options.Keep}.rule");
+                    }
                 }
                 else
                 {

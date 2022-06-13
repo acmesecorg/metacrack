@@ -8,7 +8,7 @@
     "Catalog": {
       "commandName": "Project",
       "commandLineArgs": "sql reddoorz.com.sql --columns 1 6 --meta 7 8",
-      "workingDirectory": "C:\\Breach\\AnimalJam (27200)"
+      "workingDirectory": "C:\\Breach\\Patreon (3200)"
     },
     "Export": {
       "commandName": "Project",
@@ -42,8 +42,8 @@
     },
     "Rank": {
       "commandName": "Project",
-      "commandLineArgs": "rank adecco-passwords.log --count 10 --debug-mode 4",
-      "workingDirectory": "C:\\Breach\\Adecco (3200)"
+      "commandLineArgs": "rank patreon-password.log --count 10  --keep 30 --debug-mode 4",
+      "workingDirectory": "C:\\Breach\\Patreon (3200)"
     },
     "Parse": {
       "commandName": "Project",
