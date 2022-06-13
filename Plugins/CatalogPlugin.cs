@@ -113,7 +113,10 @@ namespace Metacrack.Plugins
 
 
                 var types = Entity.GetTypes();
+                var tableQueries = new Dictionary<char, TableQuery<Entity>>();
+
                 var entityResult = db.CreateTable<Entity0>();
+                var isNew = entityResult == CreateTableResult.Created;
 
                 //Loop through and create other tables
                 foreach (var type in types)
@@ -183,9 +186,8 @@ namespace Metacrack.Plugins
                                         //If we do, it will already be in the inserts and updates, and we will just update values
                                         if (!inserts.TryGetValue(rowId, out entity) && !updates.TryGetValue(rowId, out entity))
                                         {
-                                            //Otherwise check if we have en entity in the database (if it existed first)
-                                            //TODO: lookup types in Entity too
-                                            entity = (entityResult == CreateTableResult.Created) ? default : db.Table<Entity0>().Where(e => e.RowId == rowId).FirstOrDefault();
+                                            //Otherwise check if we have an entity in the database (if it existed first)
+                                            entity = (isNew) ? default : Entity.GetEntity(db, bucket, rowId);
 
                                             //Not found in the database, so create a new one
                                             if (entity == null)
@@ -240,15 +242,16 @@ namespace Metacrack.Plugins
                             if (lineCount % memoryLines == 0)
                             {
                                 //Writes and clears the buckets
-                                WriteBuckets(db, insertBuckets, updateBuckets);
+                                WriteBuckets(db, insertBuckets, updateBuckets, isNew);
 
                                 entityResult = CreateTableResult.Migrated;
+                                isNew = false;
                             }
                         }
                     }
 
                     WriteMessage($"Writing final values to catalog.");
-                    WriteBuckets(db, insertBuckets, updateBuckets);
+                    WriteBuckets(db, insertBuckets, updateBuckets, isNew);
 
                     //Update the files percentage
                     WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
@@ -259,7 +262,7 @@ namespace Metacrack.Plugins
             }
         }
 
-        private static void WriteBuckets(SQLiteConnection db, Dictionary<char, Dictionary<long, Entity>> insertBuckets, Dictionary<char, Dictionary<long, Entity>> updateBuckets)
+        private static void WriteBuckets(SQLiteConnection db, Dictionary<char, Dictionary<long, Entity>> insertBuckets, Dictionary<char, Dictionary<long, Entity>> updateBuckets, bool isNew)
         {
             //Write out the inserts and updates, and set the file creation type to something other than created
             var count = 0;
@@ -274,8 +277,16 @@ namespace Metacrack.Plugins
                 var updates = updateBuckets[hex];
 
                 //If we are looping, then we always need to do an update
-                if (updates.Count > 0) db.UpdateAll(updates.Values);
-                if (inserts.Count > 0) db.UpdateAll(inserts.Values);
+                if (isNew)
+                {
+                    if (updates.Count > 0) db.UpdateAll(updates.Values);
+                    if (inserts.Count > 0) db.InsertAll(inserts.Values);
+                }
+                else
+                {
+                    if (updates.Count > 0) db.UpdateAll(updates.Values);
+                    if (inserts.Count > 0) db.UpdateAll(inserts.Values);
+                }
 
                 updates.Clear();
                 inserts.Clear();
