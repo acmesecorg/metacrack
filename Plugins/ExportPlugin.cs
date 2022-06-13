@@ -14,7 +14,7 @@ namespace Metacrack
 
             if (lookupFileEntries.Length == 0)
             {
-                WriteMessage($"Lookup file(s) {options.LookupPath} was not found.");
+                WriteMessage($"Lookup file(s) for {options.LookupPath} not found.");
                 return;
             }
 
@@ -153,38 +153,9 @@ namespace Metacrack
 
                         progressTotal += line.Length;
 
-                        //Found mode
-                        if (options.FoundMode)
-                        {
-                            if (splits.Length == 1 || splits.Length == 2)
-                            {
-                                var originalHash = splits[0];
-                                var hash = splits[0].ToLower();
-
-                                //Check for salt
-                                if (splits.Length == 2 && !options.NoSalt)
-                                {
-                                    hash = $"{hash}:{splits[1]}";
-                                    originalHash = $"{originalHash}:{splits[1]}";
-                                }
-
-                                if (lookups.TryGetValue(hash, out string plain))
-                                {
-                                    founds++;
-
-                                    //Write out the founds on a per file basis
-                                    found.Add($"{originalHash}:{plain}");
-                                }
-                                else
-                                {
-                                    lefts++;
-                                }
-
-                            }
-                        }
 
                         //Username + hash ( + salt)
-                        else if (splits.Length == 2 || splits.Length == 3)
+                        if (splits.Length == 2 || splits.Length == 3)
                         {
                             var user = splits[0];
                             var originalHash = splits[1];
@@ -196,17 +167,6 @@ namespace Metacrack
                             {
                                 hash = $"{hash}:{splits[2]}";
                                 originalHash = $"{originalHash}:{splits[2]}";
-                            }
-
-                            //Check hash for base64 encoding
-                            if (options.Base64)
-                            {
-                                if (hash.EndsWith("="))
-                                {
-                                    var bytes = Convert.FromBase64String(originalHash);
-                                    hash = BitConverter.ToString(bytes).Replace("-", "").ToLower();
-                                    originalHash = hash;
-                                }
                             }
 
                             if (lookups.TryGetValue(hash, out string plain))
