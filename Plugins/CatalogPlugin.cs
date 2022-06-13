@@ -106,15 +106,14 @@ namespace Metacrack.Plugins
                 }
             }
 
+            var connectString = new SQLiteConnectionString(outputPath, SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.NoMutex, true);
+
             //Open up sqlite
-            using (var db = new SQLiteConnection(outputPath))
+            using (var db = new SQLiteConnection(connectString))
             {
                 WriteMessage($"Using Sqlite version {db.LibVersionNumber} .");
 
-
                 var types = Entity.GetTypes();
-                var tableQueries = new Dictionary<char, TableQuery<Entity>>();
-
                 var entityResult = db.CreateTable<Entity0>();
                 var isNew = entityResult == CreateTableResult.Created;
 
@@ -275,12 +274,13 @@ namespace Metacrack.Plugins
 
                 var inserts = insertBuckets[hex];
                 var updates = updateBuckets[hex];
+                var type = Entity.GetTypes()[count];
 
                 //If we are looping, then we always need to do an update
                 if (isNew)
                 {
-                    if (updates.Count > 0) db.UpdateAll(updates.Values);
-                    if (inserts.Count > 0) db.InsertAll(inserts.Values);
+                    if (updates.Count > 0) db.UpdateAll(updates.Values, true);
+                    if (inserts.Count > 0) db.InsertAll(inserts.Values, type, true);
                 }
                 else
                 {
