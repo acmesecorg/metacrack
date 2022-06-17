@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Security.Cryptography;
+using System.Text;
 
 namespace Metacrack
 {
@@ -194,6 +195,23 @@ namespace Metacrack
                             }
                         }
 
+                        else if (options.ParseType == "vodafone")
+                        {
+                            var splits = line.Split(':');
+
+                            if (splits.Length == 2)
+                            {
+                                var hash = splits[1];
+
+                                var final = hash.Substring(0,60);
+
+                                output.Add($"{splits[0]}:{final}");
+                            }
+                            else
+                            {
+                                notparsed.Add(line);
+                            }
+                        }
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
@@ -215,5 +233,28 @@ namespace Metacrack
                 if (notparsed.Count > 0) File.AppendAllLines(outputNotParsedPath, notparsed);
             }
         }
+
+        //private static string DoAdobeKeyFinder(string encryptedBase64, string password)
+        //{
+        //    TripleDESCryptoServiceProvider desCryptoProvider = new TripleDESCryptoServiceProvider();
+        //    MD5CryptoServiceProvider hashMD5Provider = new MD5CryptoServiceProvider();
+
+        //    byte[] byteHash;
+        //    byte[] byteBuff;
+
+        //    desCryptoProvider.Mode = CipherMode.ECB; //CBC, CFB
+
+            
+
+        //    byteHash = hashMD5Provider.ComputeHash(Encoding.UTF8.GetBytes(key));
+
+        //    desCryptoProvider.Key = byteHash;
+            
+
+        //    byteBuff = Encoding.UTF8.GetBytes(password);
+
+        //    byte[] encoded = desCryptoProvider.CreateEncryptor().TransformFinalBlock(byteBuff, 0, byteBuff.Length);
+        //    return encoded;
+        //}
     }
 }
