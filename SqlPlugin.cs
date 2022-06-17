@@ -61,11 +61,12 @@ namespace Metacrack
 
                 fileOutput.Clear();
                 metaOutput.Clear();
-                lineCount = 0;               
+                lineCount = 0;
+
+                var buffer = new StringBuilder();
 
                 using (var reader = new StreamReader(sqlPath))
-                {
-                    var buffer = new StringBuilder();
+                {                   
                     var inInsert = false;
 
                     while (!reader.EndOfStream)
@@ -147,9 +148,6 @@ namespace Metacrack
                             line = line.Replace("\\%", "%");
                             line = line.Replace("\\_", "_");
 
-                            
-
-
                             buffer.AppendLine(line);
                         }
 
@@ -157,6 +155,9 @@ namespace Metacrack
                         if (lineCount % 100 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
                     }
                 }
+
+                //We need to process the last buffer
+                if (buffer.Length > 0) ProcessBuffer(options, buffer, statementLineCount, columns, metas, fileOutput, metaOutput);
 
                 //Write out file
                 WriteMessage($"Finished writing to {fileName}.parsed.txt at {DateTime.Now.ToShortTimeString()}.");

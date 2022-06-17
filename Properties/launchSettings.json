@@ -6,9 +6,7 @@
       "distributionName": ""
     },
     "Catalog": {
-      "commandName": "Project",
-      "commandLineArgs": "sql reddoorz.com.sql --columns 1 6 --meta 7 8",
-      "workingDirectory": "C:\\Breach\\Patreon (3200)"
+      "commandName": "Project"
     },
     "Export": {
       "commandName": "Project",
@@ -27,8 +25,8 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate reddoorz.left.map.part6.hash --hash 3200 --iterations 10 --column 0",
-      "workingDirectory": "C:\\Breach\\RedDoorz (3200)"
+      "commandLineArgs": "validate vodafone.parse.txt --hash 3200 --iterations 8 --email",
+      "workingDirectory": "C:\\Breach\\Vodafone"
     },
     "Export with Remove": {
       "commandName": "Project",
@@ -37,8 +35,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql adecco.sql --table candidatos_by_email --columnnames email password --metanames primer_apellido primer_nombre",
-      "workingDirectory": "C:\\Breach\\Adecco (3200)"
+      "commandLineArgs": "sql Vodaphone_2013-Users.sql --columns 5 3",
+      "workingDirectory": "C:\\Breach\\Vodafone"
     },
     "Rank": {
       "commandName": "Project",
@@ -47,8 +45,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse 6.left --type ctc",
-      "workingDirectory": "D:\\crackon\\agent glitch"
+      "commandLineArgs": "parse vodafone.txt --type vodafone",
+      "workingDirectory": "C:\\Breach\\Vodafone"
     },
     "Split": {
       "commandName": "Project",
