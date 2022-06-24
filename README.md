@@ -21,7 +21,7 @@ Metacrack is licensed under the MIT license. Refer to [license.txt](https://gith
  
 | Platform | Link |
 | --- | --- |
-| win-x64 | [meta win-x64 1.2.1.7z](https://github.com/acmesecorg/metacrack/blob/main/Builds/meta%20win-x64%201.2.1.7z)|
+| win-x64 | [meta-win-x64-1.2.2.7z](https://github.com/acmesecorg/metacrack/raw/main/Builds/meta-win-x64-1.2.2.7z)|
   
   
 ## Usage and features
