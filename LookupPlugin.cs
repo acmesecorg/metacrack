@@ -109,7 +109,7 @@ namespace Metacrack
 
             //We only want to iterate through a file once, so we have lists of files and lists of their contents in buckets by hex key
             var lookups = new List<FileLookup>();
-            var variation = ".";
+            var variation = "";
 
             if (options.Stem) variation = ".stem";
             if (options.StemOnly) variation = ".stemonly";
