@@ -109,6 +109,22 @@ namespace Metacrack
             return string.Join(".", result);
         }
 
+        public static bool TryParse(string value, out int final)
+        {
+            var orders = 1;
+
+            while (value.Contains('k'))
+            {
+                value = value.ReplaceFirst("k", "");
+                orders *= 1000;
+            }
+
+            var result = double.TryParse(value, out double dbl);
+            final = (int) (dbl *= orders);
+
+            return result;
+        }
+
         public static bool ValidateEmail(string email, out string emailStem)
         {
             emailStem = null;

@@ -50,8 +50,8 @@
     },
     "Split": {
       "commandName": "Project",
-      "commandLineArgs": "split",
-      "workingDirectory": "D:\\"
+      "commandLineArgs": "split 10000.15000.left2.txt 2.5kk",
+      "workingDirectory": "C:\\Breach\\Dubsmash (10000)"
     },
     "Catalog Stem": {
       "commandName": "Project",
