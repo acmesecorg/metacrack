@@ -16,6 +16,13 @@ Help for each verb can be viewed by typing `meta <plugin> --help`. It is also po
 ## License
 Metacrack is licensed under the MIT license. Refer to [license.txt](https://github.com/metacrackorg/metacrack/blob/main/LICENSE) for more information.
 
+## Latest builds 
+
+ 
+| Platform | Link |
+| --- | --- |
+| win-x64 | [meta win-x64 1.2.1.7z](https://github.com/acmesecorg/metacrack/blob/main/Builds/meta%20win-x64%201.2.1.7z)|
+  
   
 ## Usage and features
 
