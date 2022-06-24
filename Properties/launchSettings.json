@@ -40,8 +40,8 @@
     },
     "Rank": {
       "commandName": "Project",
-      "commandLineArgs": "rank patreon-password.log --count 10  --keep 30 --debug-mode 4",
-      "workingDirectory": "C:\\Breach\\Patreon (3200)"
+      "commandLineArgs": "rank bb.plains.txt --count 12kk --output rank.txt",
+      "workingDirectory": "C:\\Breach\\BigBasket (124)\\Run1"
     },
     "Parse": {
       "commandName": "Project",

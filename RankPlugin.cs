@@ -13,6 +13,10 @@
                 return;
             }
 
+            var size = GetFileEntriesSize(fileEntries);
+            var progressTotal = 0L;
+            var lineCount = 0L;
+
             foreach (var filePath in fileEntries)
             {
                 var fileInfo = new FileInfo(filePath);
@@ -23,7 +27,10 @@
                 {
                     while (!reader.EndOfStream)
                     {
+                        lineCount++;
+
                         var line = reader.ReadLine();
+                        progressTotal += line.Length + 1;
 
                         if (options.DebugMode == 1)
                         {
@@ -79,8 +86,13 @@
                                 }
                             }
                         }
+
+                        if (lineCount % 1000 == 0) WriteProgress($"Calculating", progressTotal, size);
                     }
                 }
+
+                TryParse(options.Count, out int count);
+                TryParse(options.Keep, out int keep);
 
                 //Now sort the dictionary and write out the results
                 if (options.DebugMode > 0)
@@ -90,7 +102,7 @@
 
                     var lines = new List<string>();
 
-                    var sorted = dict.OrderByDescending(x => x.Value).Take(options.Count);
+                    var sorted = dict.OrderByDescending(x => x.Value).Take(count);
                     
 
                     WriteMessage($"Results for: {fileInfo.Name} ({total} entries)");
@@ -120,7 +132,7 @@
 
                     foreach (var pair in sorted)
                     {
-                        if (pair.Value >= options.Keep) lines.Add(pair.Key);                       
+                        if (pair.Value >= keep) lines.Add(pair.Key);                       
                     }
 
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
@@ -129,12 +141,20 @@
                     if (lines.Count > 0)
                     {
                         File.AppendAllLines($"{filePathName}.{options.Keep}.rule", lines);
-                        WriteMessage($"Wrote out {lines.Count} rules to {filePathName}.{options.Keep}.rule");
+                        WriteMessage($"Wrote out {lines.Count} rules to {filePathName}.{keep}.rule");
+                    }
+                    
+                    //Write out keys
+                    if (options.OutputPath != null)
+                    {
+                        var outputPath = Path.Combine(currentDirectory, options.OutputPath);
+                        File.AppendAllLines(outputPath, dict.Keys);
+                        WriteMessage($"Wrote out {dict.Keys.Count} values to {options.OutputPath}");
                     }
                 }
                 else
                 {
-                    var sorted = dict.OrderByDescending(x => x.Value).Take(options.Count);
+                    var sorted = dict.OrderByDescending(x => x.Value).Take(count);
                     var total = dict.Keys.Count();
 
                     WriteMessage($"Results for: {fileInfo.Name} ({total} entries)");
@@ -152,11 +172,22 @@
                     //Add an extra space so that our output aligns in the console with one space
                     longest++;
 
-                    foreach (var pair in sorted)
+                    if (count < 1000)
                     {
-                        var percent = (int)((double)pair.Value / total * 100);
+                        foreach (var pair in sorted)
+                        {
+                            var percent = (int)((double)pair.Value / total * 100);
 
-                        WriteMessage($"{pair.Key}{new string(' ', longest - pair.Key.Length + longestValue - pair.Value.ToString().Length)}{pair.Value} ({percent}%)");
+                            WriteMessage($"{pair.Key}{new string(' ', longest - pair.Key.Length + longestValue - pair.Value.ToString().Length)}{pair.Value} ({percent}%)");
+                        }
+                    }
+
+                    //Write out keys
+                    if (options.OutputPath != null)
+                    {
+                        var outputPath = Path.Combine(currentDirectory, options.OutputPath);
+                        File.AppendAllLines(outputPath, dict.Keys);
+                        WriteMessage($"Wrote out {dict.Keys.Count} values to {options.OutputPath}");
                     }
                 }
             }

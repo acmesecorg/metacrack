@@ -4,7 +4,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Split</ActiveDebugProfile>
+    <ActiveDebugProfile>Rank</ActiveDebugProfile>
     <_LastSelectedProfileId>C:\Users\James\Documents\GitHub\Metacrack\Properties\PublishProfiles\FolderProfile.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
 </Project>
