@@ -35,8 +35,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql Vodaphone_2013-Users.sql --columns 5 3",
-      "workingDirectory": "C:\\Breach\\Vodafone"
+      "commandLineArgs": "sql bb.sql --table member_member --columns 22",
+      "workingDirectory": "C:\\Breach\\BigBasket (124)"
     },
     "Rank": {
       "commandName": "Project",

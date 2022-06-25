@@ -75,6 +75,8 @@
 
                 //Write final block
                 if (output.Count() > 0) File.AppendAllLines($"{filePathName}.part{part}{fileInfo.Extension}", output);
+
+                WriteMessage($"Split {options.InputPath} into {part} parts.");
             } 
         }
     }
