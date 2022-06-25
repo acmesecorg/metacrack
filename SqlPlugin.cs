@@ -217,10 +217,13 @@ namespace Metacrack
 
                                     foreach (var column in columns)
                                     {
-                                        var literal = rowValues.ColumnValues[column] as Literal;
+                                        if (column <= rowValues.ColumnValues.Count)
+                                        {
+                                            var literal = rowValues.ColumnValues[column] as Literal;
 
-                                        //Convert NULL to empty string
-                                        outputs.Add((literal.Value == "NULL") ? "" : literal.Value);
+                                            //Convert NULL to empty string
+                                            outputs.Add((literal.Value == "NULL") ? "" : literal.Value);
+                                        }
                                     }
 
                                     foreach (var meta in metas)
@@ -232,7 +235,7 @@ namespace Metacrack
                                     }
 
                                     //Ignore empty outputs and empty passwords
-                                    if (outputs.Count > 0 && !string.IsNullOrEmpty(outputs[1]))
+                                    if (outputs.Count > 0 && !string.IsNullOrEmpty(outputs[0]))
                                     {
                                         //Force to lowercase only the first output (email)
                                         outputs[0] = outputs[0].ToLower();
