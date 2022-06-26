@@ -28,7 +28,7 @@
                 }
                 else
                 {
-                    WriteMessage("No map path specified. Creating blank worldlist.");
+                    WriteMessage("No map path specified. Creating blank wordlist.");
                     version = "blank";
                 }
             }

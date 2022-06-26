@@ -25,7 +25,7 @@ namespace Metacrack
                 return;
             }
 
-            //PArse out any special modes
+            //Parse out any special modes
             var modes = options.Modes.Select(s => s.ToLowerInvariant());
             var canForceNew = options.Modes.Contains("force-insert");
 
