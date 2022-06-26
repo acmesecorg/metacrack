@@ -35,8 +35,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql bb.sql --table member_member --columns 22",
-      "workingDirectory": "C:\\Breach\\BigBasket (124)"
+      "commandLineArgs": "sql R2Games.sql --table vb_user --columns 7 5 48 --modes force-insert",
+      "workingDirectory": "C:\\Breach\\R2Games"
     },
     "Rank": {
       "commandName": "Project",
