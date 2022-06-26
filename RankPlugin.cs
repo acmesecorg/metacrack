@@ -1,4 +1,6 @@
-﻿namespace Metacrack
+﻿using System.Text;
+
+namespace Metacrack
 {
     public class RankPlugin : PluginBase
     {
@@ -12,6 +14,12 @@
                 WriteMessage($"Lookup file(s) {options.InputPath} not found.");
                 return;
             }
+
+            //Parse out any special modes
+            var outputMode = options.OutputMode.ToLowerInvariant();
+            var outputAsRules = outputMode == "rule";
+
+            if (outputAsRules) WriteMessage($"Outputting rule file.");
 
             var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
@@ -101,10 +109,8 @@
                     WriteMessage($"Writing out rules {fileInfo.Name} ({total} entries)");
 
                     var lines = new List<string>();
-
                     var sorted = dict.OrderByDescending(x => x.Value).Take(count);
                     
-
                     WriteMessage($"Results for: {fileInfo.Name} ({total} entries)");
 
                     //Loop through and count longest word
@@ -186,8 +192,32 @@
                     if (options.OutputPath != null)
                     {
                         var outputPath = Path.Combine(currentDirectory, options.OutputPath);
-                        File.AppendAllLines(outputPath, dict.Keys);
-                        WriteMessage($"Wrote out {dict.Keys.Count} values to {options.OutputPath}");
+
+                        if (outputAsRules)
+                        {
+                            var rules = new List<string>();
+
+                            //Loop through each word and write it out as a rule
+                            foreach (var pair in sorted)
+                            {
+                                var builder = new StringBuilder();
+                                foreach (var k in pair.Key)
+                                {
+                                    builder.Append('$');
+                                    builder.Append(k);
+                                }
+
+                                rules.Add(builder.ToString());
+                            }
+
+                            File.AppendAllLines(outputPath, rules);
+                            WriteMessage($"Wrote out {rules.Count} rules to {options.OutputPath}");
+                        }
+                        else
+                        {
+                            File.AppendAllLines(outputPath, dict.Keys);
+                            WriteMessage($"Wrote out {dict.Keys.Count} values to {options.OutputPath}");
+                        }
                     }
                 }
             }

@@ -20,6 +20,7 @@ namespace Metacrack
         [Option("output")]
         public string OutputPath { get; set; }
 
-
+        [Option("output-mode", HelpText = "Determines the format of the output")]
+        public string OutputMode { get; set; }
     }
 }

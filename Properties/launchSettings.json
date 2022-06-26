@@ -40,8 +40,8 @@
     },
     "Rank": {
       "commandName": "Project",
-      "commandLineArgs": "rank bb.plains.txt --count 12kk --output rank.txt",
-      "workingDirectory": "C:\\Breach\\BigBasket (124)\\Run1"
+      "commandLineArgs": "rank 10000.15000.left.plains.txt --output-mode rule --output test.rule",
+      "workingDirectory": "C:\\Breach\\Dubsmash (10000)\\Run2"
     },
     "Parse": {
       "commandName": "Project",
