@@ -116,17 +116,16 @@ namespace Metacrack.Plugins
             {
                 WriteMessage($"Using Sqlite version {db.LibVersionNumber} .");
 
-                var entityResult = db.CreateTable<Entity>();
                 var isNew = true; 
 
                 //Loop through and create other tables
                 foreach (var hex in Hex)
                 {
-                    entityResult = SqliteHelper.CreateTable(db, typeof(Entity), hex);
+                    var entityResult = SqliteHelper.CreateTable(db, typeof(Entity), hex);
                     if (entityResult != CreateTableResult.Created) isNew = false;
                 }
 
-                WriteMessage((entityResult == CreateTableResult.Created) ? "Created new meta data table": "Found existing meta data table");
+                WriteMessage((isNew) ? "Creating new meta data tables": "Found existing meta data table(s)");
 
                 //Get input files size
                 var fileEntriesSize = GetFileEntriesSize(fileEntries);
@@ -246,7 +245,6 @@ namespace Metacrack.Plugins
                                 //Writes and clears the buckets
                                 WriteBuckets(db, insertBuckets, updateBuckets, isNew);
 
-                                entityResult = CreateTableResult.Migrated;
                                 isNew = false;
                             }
                         }
