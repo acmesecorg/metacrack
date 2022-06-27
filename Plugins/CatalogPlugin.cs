@@ -116,14 +116,14 @@ namespace Metacrack.Plugins
             {
                 WriteMessage($"Using Sqlite version {db.LibVersionNumber} .");
 
-                var types = Entity.GetTypes();
-                var entityResult = db.CreateTable<Entity0>();
-                var isNew = entityResult == CreateTableResult.Created;
+                var entityResult = db.CreateTable<Entity>();
+                var isNew = true; 
 
                 //Loop through and create other tables
                 foreach (var hex in Hex)
                 {
-                    SqliteHelper.CreateTable(db, typeof(Entity), hex);
+                    entityResult = SqliteHelper.CreateTable(db, typeof(Entity), hex);
+                    if (entityResult != CreateTableResult.Created) isNew = false;
                 }
 
                 WriteMessage((entityResult == CreateTableResult.Created) ? "Created new meta data table": "Found existing meta data table");
@@ -189,12 +189,12 @@ namespace Metacrack.Plugins
                                         if (!inserts.TryGetValue(rowId, out entity) && !updates.TryGetValue(rowId, out entity))
                                         {
                                             //Otherwise check if we have an entity in the database (if it existed first)
-                                            entity = (isNew) ? default : Entity.GetEntity(db, bucket, rowId);
+                                            entity = (isNew) ? default : db.Table<Entity>().Where(e => e.RowId == rowId).FirstOrDefault();
 
                                             //Not found in the database, so create a new one
                                             if (entity == null)
                                             {
-                                                entity = Entity.Create(bucket);
+                                                entity = new Entity();
                                                 entity.RowId = rowId;
 
                                                 inserts.Add(rowId, entity);
@@ -277,7 +277,6 @@ namespace Metacrack.Plugins
 
                 var inserts = insertBuckets[hex];
                 var updates = updateBuckets[hex];
-                var type = Entity.GetTypes()[count];
 
                 //If we are looping, then we always need to do an update
                 if (isNew)

@@ -7,7 +7,7 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog additions-may2022.part2.txt test.db",
+      "commandLineArgs": "catalog additions-may2022.txt test.db",
       "workingDirectory": "C:\\Breach\\test"
     },
     "Export": {
