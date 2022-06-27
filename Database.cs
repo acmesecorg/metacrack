@@ -2,9 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-
+using Metacrack.Model;
 using SQLite;
 using static SQLite.SQLiteConnection;
 using Sqlite3Statement = SQLitePCL.sqlite3_stmt;
@@ -12,9 +13,15 @@ using Sqlite3Statement = SQLitePCL.sqlite3_stmt;
 
 namespace Metacrack
 {
-    public static class SqliteHelper
+    public class Database: IDisposable 
     {
         private static IntPtr _negativePointer = new IntPtr(-1);
+        private static Type _lastMapType;
+        private static TableMapping _lastMap;
+
+        private SQLiteConnection _db;
+        private char _hex;
+        private bool _disposedValue;
 
         private struct IndexInfo
         {
@@ -30,13 +37,25 @@ namespace Metacrack
             public string ColumnName;
         }
 
-        public static CreateTableResult CreateTable(SQLiteConnection db, Type ty, char hex, CreateFlags createFlags = CreateFlags.None)
+        public Database(string outputPath)
         {
-            var map = db.GetMapping(ty, createFlags);
+            var connectString = new SQLiteConnectionString(outputPath, SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.NoMutex, true);
+            _db = new SQLiteConnection(connectString);
+        }
+
+        //Set the table name modifier which is appended to the table name for all database operations
+        public void SetModifier(char hex)
+        {
+            _hex = hex;
+        }
+
+        public CreateTableResult CreateTable<T>(CreateFlags createFlags = CreateFlags.None)
+        {
+            var map = _db.GetMapping(typeof(T), createFlags);
 
             // Check if the table exists
             var result = CreateTableResult.Created;
-            var existingCols = db.GetTableInfo(map.TableName + hex);
+            var existingCols = _db.GetTableInfo(map.TableName + _hex);
 
             // Create or migrate it
             if (existingCols.Count == 0)
@@ -49,8 +68,8 @@ namespace Metacrack
                 var @using = fts3 ? "using fts3 " : fts4 ? "using fts4 " : string.Empty;
 
                 // Build query.
-                var query = "create " + @virtual + "table if not exists \"" + map.TableName + hex + "\" " + @using + "(\n";
-                var decls = map.Columns.Select(p => Orm.SqlDecl(p, db.StoreDateTimeAsTicks, db.StoreTimeSpanAsTicks));
+                var query = "create " + @virtual + "table if not exists \"" + map.TableName + _hex + "\" " + @using + "(\n";
+                var decls = map.Columns.Select(p => Orm.SqlDecl(p, _db.StoreDateTimeAsTicks, _db.StoreTimeSpanAsTicks));
                 var decl = string.Join(",\n", decls.ToArray());
                 query += decl;
                 query += ")";
@@ -59,12 +78,12 @@ namespace Metacrack
                     query += " without rowid";
                 }
 
-                db.Execute(query);
+                _db.Execute(query);
             }
             else
             {
                 result = CreateTableResult.Migrated;
-                MigrateTable(db, map, existingCols);
+                MigrateTable(map, existingCols);
             }
 
             var indexes = new Dictionary<string, IndexInfo>();
@@ -101,24 +120,24 @@ namespace Metacrack
             {
                 var index = indexes[indexName];
                 var columns = index.Columns.OrderBy(i => i.Order).Select(i => i.ColumnName).ToArray();
-                db.CreateIndex(indexName, index.TableName, columns, index.Unique);
+                _db.CreateIndex(indexName, index.TableName, columns, index.Unique);
             }
 
             return result;
         }
 
-        public static void InsertAll(SQLiteConnection db, IEnumerable objects, Type type, char hex)
+        public void InsertAll<T>(IEnumerable objects)
         {
-            var map = db.GetMapping(Orm.GetType(type));
-            var insertStatement = GetInsertCommand(db, map, hex);
+            var map = _db.GetMapping(Orm.GetType(typeof(T)));
+            var insertStatement = GetInsertCommand(map);
 
             try
             {
-                db.RunInTransaction(() =>
+                _db.RunInTransaction(() =>
                 {
                     foreach (var r in objects)
                     {
-                        Insert(db, r, map, insertStatement);
+                        Insert(r, map, insertStatement);
                     }
                 });
             }
@@ -128,17 +147,17 @@ namespace Metacrack
             }
         }
 
-        public static void UpdateAll(SQLiteConnection db, IEnumerable objects, Type type, char hex)
+        public void UpdateAll<T>(IEnumerable objects)
         {
-            var map = db.GetMapping(Orm.GetType(type));
+            var map = _db.GetMapping(Orm.GetType(typeof(T)));
 
             try
             {
-                db.RunInTransaction(() =>
+                _db.RunInTransaction(() =>
                 {
                     foreach (var r in objects)
                     {
-                        Update(db, r, map, hex);
+                        Update(r, map);
                     }
                 });
             }
@@ -148,7 +167,23 @@ namespace Metacrack
             }
         }
 
-        private static void Insert(SQLiteConnection db, object obj, TableMapping map, Sqlite3Statement insertStatement)
+        public List<T> Select<T>(object id)
+        {
+            var map = _lastMap;
+
+            if (typeof(T) != _lastMapType)
+            {
+                _lastMapType = typeof(T);
+                _lastMap = _db.GetMapping(Orm.GetType(_lastMapType));
+                map = _lastMap;
+            }
+
+            var cmdText = "select * from \"" + map.TableName + _hex + "\" where " + map.PK.Name + "=?";
+            var command =  _db.CreateCommand(cmdText, new object[] { id });
+            return command.ExecuteQuery<T>();
+        }
+
+        private void Insert(object obj, TableMapping map, Sqlite3Statement insertStatement)
         {
             var cols = map.InsertColumns;
             var vals = new object[cols.Length];
@@ -162,11 +197,11 @@ namespace Metacrack
             // A SQLite prepared statement can be bound for only one operation at a time.
             try
             {
-                ExecuteNonQuery(db, insertStatement, vals);
+                ExecuteNonQuery(insertStatement, vals);
             }
             catch (SQLiteException ex)
             {
-                if (SQLite3.ExtendedErrCode(db.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
+                if (SQLite3.ExtendedErrCode(_db.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
                 {
                     throw NotNullConstraintViolationException.New(ex.Result, ex.Message, map, obj);
                 }
@@ -174,7 +209,7 @@ namespace Metacrack
             }
         }
 
-        private static void Update(SQLiteConnection db, object obj, TableMapping map, char hex)
+        private void Update(object obj, TableMapping map)
         {
             var pk = map.PK;
 
@@ -201,18 +236,18 @@ namespace Metacrack
             }
             ps.Add(pk.GetValue(obj));
 
-            var q = string.Format("update \"{0}\" set {1} where \"{2}\" = ? ", map.TableName + hex, 
+            var q = string.Format("update \"{0}\" set {1} where \"{2}\" = ? ", map.TableName + _hex, 
                 string.Join(",", (from c in cols                                                                                                                
                     select "\"" + c.Name + "\" = ? ").ToArray()), pk.Name);
 
             try
             {
-                db.Execute(q, ps.ToArray());
+                _db.Execute(q, ps.ToArray());
             }
             catch (SQLiteException ex)
             {
 
-                if (ex.Result == SQLite3.Result.Constraint && SQLite3.ExtendedErrCode(db.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
+                if (ex.Result == SQLite3.Result.Constraint && SQLite3.ExtendedErrCode(_db.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
                 {
                     throw NotNullConstraintViolationException.New(ex, map, obj);
                 }
@@ -221,19 +256,19 @@ namespace Metacrack
             }
         }
 
-        private static Sqlite3Statement GetInsertCommand(SQLiteConnection db, TableMapping map, char hex)
+        private Sqlite3Statement GetInsertCommand(TableMapping map)
         {
             var cols = map.InsertColumns;
-            var insertSql = string.Format("insert into \"{0}\"({1}) values ({2})", map.TableName + hex,
+            var insertSql = string.Format("insert into \"{0}\"({1}) values ({2})", map.TableName + _hex,
                                 string.Join(",", (from c in cols
                                                   select "\"" + c.Name + "\"").ToArray()),
                                 string.Join(",", (from c in cols
                                                   select "?").ToArray()));
 
-            return SQLite3.Prepare2(db.Handle, insertSql);
+            return SQLite3.Prepare2(_db.Handle, insertSql);
         }
 
-        private static int ExecuteNonQuery(SQLiteConnection db, Sqlite3Statement statement, object[] source)
+        private int ExecuteNonQuery(Sqlite3Statement statement, object[] source)
         {
             var r = SQLite3.Result.OK;
 
@@ -242,7 +277,7 @@ namespace Metacrack
             {
                 for (int i = 0; i < source.Length; i++)
                 {
-                    BindParameter(statement, i + 1, source[i], db.StoreDateTimeAsTicks, db.DateTimeStringFormat, db.StoreTimeSpanAsTicks);
+                    BindParameter(statement, i + 1, source[i], _db.StoreDateTimeAsTicks, _db.DateTimeStringFormat, _db.StoreTimeSpanAsTicks);
                 }
             }
 
@@ -250,29 +285,29 @@ namespace Metacrack
 
             if (r == SQLite3.Result.Done)
             {
-                int rowsAffected = SQLite3.Changes(db.Handle);
+                int rowsAffected = SQLite3.Changes(_db.Handle);
                 SQLite3.Reset(statement);
                 return rowsAffected;
             }
             else if (r == SQLite3.Result.Error)
             {
-                string msg = SQLite3.GetErrmsg(db.Handle);
+                string msg = SQLite3.GetErrmsg(_db.Handle);
                 SQLite3.Reset(statement);
                 throw SQLiteException.New(r, msg);
             }
-            else if (r == SQLite3.Result.Constraint && SQLite3.ExtendedErrCode(db.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
+            else if (r == SQLite3.Result.Constraint && SQLite3.ExtendedErrCode(_db.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
             {
                 SQLite3.Reset(statement);
-                throw NotNullConstraintViolationException.New(r, SQLite3.GetErrmsg(db.Handle));
+                throw NotNullConstraintViolationException.New(r, SQLite3.GetErrmsg(_db.Handle));
             }
             else
             {
                 SQLite3.Reset(statement);
-                throw SQLiteException.New(r, SQLite3.GetErrmsg(db.Handle));
+                throw SQLiteException.New(r, SQLite3.GetErrmsg(_db.Handle));
             }
         }
 
-        private static void BindParameter(Sqlite3Statement stmt, int index, object value, bool storeDateTimeAsTicks, string dateTimeStringFormat, bool storeTimeSpanAsTicks)
+        private void BindParameter(Sqlite3Statement stmt, int index, object value, bool storeDateTimeAsTicks, string dateTimeStringFormat, bool storeTimeSpanAsTicks)
         {
             if (value == null)
             {
@@ -357,7 +392,7 @@ namespace Metacrack
             }
         }
 
-        private static void MigrateTable(SQLiteConnection db, TableMapping map, List<ColumnInfo> existingCols)
+        private void MigrateTable(TableMapping map, List<ColumnInfo> existingCols)
         {
             var toBeAdded = new List<TableMapping.Column>();
 
@@ -379,9 +414,28 @@ namespace Metacrack
 
             foreach (var p in toBeAdded)
             {
-                var addCol = "alter table \"" + map.TableName + "\" add column " + Orm.SqlDecl(p, db.StoreDateTimeAsTicks, db.StoreTimeSpanAsTicks);
-                db.Execute(addCol);
+                var addCol = "alter table \"" + map.TableName + "\" add column " + Orm.SqlDecl(p, _db.StoreDateTimeAsTicks, _db.StoreTimeSpanAsTicks);
+                _db.Execute(addCol);
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    _db?.Dispose();
+                }
+                _disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

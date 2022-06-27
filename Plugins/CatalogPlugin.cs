@@ -6,8 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Metacrack.Model;
 using SQLite;
-using static SQLite.SQLiteConnection;
-using Sqlite3Statement = SQLitePCL.sqlite3_stmt;
 
 namespace Metacrack.Plugins
 {
@@ -109,23 +107,23 @@ namespace Metacrack.Plugins
                 }
             }
 
-            var connectString = new SQLiteConnectionString(outputPath, SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.NoMutex, true);
+
 
             //Open up sqlite
-            using (var db = new SQLiteConnection(connectString))
+            using (var db = new Database(outputPath))
             {
-                WriteMessage($"Using Sqlite version {db.LibVersionNumber} .");
+                var isNew = true;
 
-                var isNew = true; 
-
-                //Loop through and create other tables
+                //Loop through and create tables
                 foreach (var hex in Hex)
                 {
-                    var entityResult = SqliteHelper.CreateTable(db, typeof(Entity), hex);
+                    db.SetModifier(hex);
+
+                    var entityResult = db.CreateTable<Entity>();
                     if (entityResult != CreateTableResult.Created) isNew = false;
                 }
 
-                WriteMessage((isNew) ? "Creating new meta data tables": "Found existing meta data table(s)");
+                WriteMessage((isNew) ? "Creating new meta data tables" : "Found existing meta data table(s)");
 
                 //Get input files size
                 var fileEntriesSize = GetFileEntriesSize(fileEntries);
@@ -167,7 +165,7 @@ namespace Metacrack.Plugins
 
                             progressTotal += line.Length;
 
-                            foreach (var (split,index) in splits)
+                            foreach (var (split, index) in splits)
                             {
                                 //Get the email, stem it and validate it 
                                 if (index == 0)
@@ -188,7 +186,8 @@ namespace Metacrack.Plugins
                                         if (!inserts.TryGetValue(rowId, out entity) && !updates.TryGetValue(rowId, out entity))
                                         {
                                             //Otherwise check if we have an entity in the database (if it existed first)
-                                            entity = (isNew) ? default : db.Table<Entity>().Where(e => e.RowId == rowId).FirstOrDefault();
+                                            db.SetModifier(bucket);
+                                            entity = (isNew) ? default : db.Select<Entity>(rowId).FirstOrDefault();
 
                                             //Not found in the database, so create a new one
                                             if (entity == null)
@@ -262,7 +261,7 @@ namespace Metacrack.Plugins
             }
         }
 
-        private static void WriteBuckets(SQLiteConnection db, Dictionary<char, Dictionary<long, Entity>> insertBuckets, Dictionary<char, Dictionary<long, Entity>> updateBuckets, bool isNew)
+        private static void WriteBuckets(Database db, Dictionary<char, Dictionary<long, Entity>> insertBuckets, Dictionary<char, Dictionary<long, Entity>> updateBuckets, bool isNew)
         {
             //Write out the inserts and updates, and set the file creation type to something other than created
             var count = 0;
@@ -273,19 +272,21 @@ namespace Metacrack.Plugins
             {
                 WriteProgress($"Writing bucket {hex}", count, 15);
 
+                db.SetModifier(hex);
+
                 var inserts = insertBuckets[hex];
                 var updates = updateBuckets[hex];
 
                 //If we are looping, then we always need to do an update
                 if (isNew)
                 {
-                    if (updates.Count > 0) SqliteHelper.UpdateAll(db, updates.Values, typeof(Entity), hex);
-                    if (inserts.Count > 0) SqliteHelper.InsertAll(db, inserts.Values, typeof(Entity), hex);
+                    if (updates.Count > 0) db.UpdateAll<Entity>(updates.Values);
+                    if (inserts.Count > 0) db.InsertAll<Entity>(inserts.Values);
                 }
                 else
                 {
-                    if (updates.Count > 0) SqliteHelper.UpdateAll(db, updates.Values, typeof(Entity), hex);
-                    if (inserts.Count > 0) SqliteHelper.InsertAll(db, inserts.Values, typeof(Entity), hex);
+                    if (updates.Count > 0) db.UpdateAll<Entity>(updates.Values);
+                    if (inserts.Count > 0) db.InsertAll<Entity>(inserts.Values);
                 }
 
                 updates.Clear();
