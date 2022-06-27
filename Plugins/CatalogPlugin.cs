@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Metacrack.Model;
 using SQLite;
-
+using static SQLite.SQLiteConnection;
 using Sqlite3Statement = SQLitePCL.sqlite3_stmt;
 
 namespace Metacrack.Plugins
@@ -121,9 +121,9 @@ namespace Metacrack.Plugins
                 var isNew = entityResult == CreateTableResult.Created;
 
                 //Loop through and create other tables
-                foreach (var type in types)
+                foreach (var hex in Hex)
                 {
-                    db.CreateTable(type);
+                    SqliteHelper.CreateTable(db, typeof(Entity), hex);
                 }
 
                 WriteMessage((entityResult == CreateTableResult.Created) ? "Created new meta data table": "Found existing meta data table");
@@ -282,13 +282,13 @@ namespace Metacrack.Plugins
                 //If we are looping, then we always need to do an update
                 if (isNew)
                 {
-                    if (updates.Count > 0) db.UpdateAll(updates.Values, true);
-                    if (inserts.Count > 0) db.InsertAll(inserts.Values, type, true);
+                    if (updates.Count > 0) SqliteHelper.UpdateAll(db, updates.Values, typeof(Entity), hex);
+                    if (inserts.Count > 0) SqliteHelper.InsertAll(db, inserts.Values, typeof(Entity), hex);
                 }
                 else
                 {
-                    if (updates.Count > 0) db.UpdateAll(updates.Values);
-                    if (inserts.Count > 0) db.UpdateAll(inserts.Values);
+                    if (updates.Count > 0) SqliteHelper.UpdateAll(db, updates.Values, typeof(Entity), hex);
+                    if (inserts.Count > 0) SqliteHelper.InsertAll(db, inserts.Values, typeof(Entity), hex);
                 }
 
                 updates.Clear();
@@ -299,299 +299,6 @@ namespace Metacrack.Plugins
 
             //Lets also allow managed code to collect this memory
             GC.Collect();
-        }
-
-        private static void InsertAll(SQLiteConnection db, System.Collections.IEnumerable objects)
-        {
-            var map = db.GetMapping(Orm.GetType(new Entity()));
-
-            db.RunInTransaction(() => {
-                foreach (var r in objects)
-                {
-                    Insert(db, r, map);
-                }
-            });
-        }
-
-        public static void Insert(SQLiteConnection db, object obj, TableMapping map)
-        {
-            var cols = map.InsertColumns;
-            var vals = new object[cols.Length];
-
-            for (var i = 0; i < vals.Length; i++)
-            {
-                vals[i] = cols[i].GetValue(obj);
-            }
-
-            var insertCmd = GetInsertCommand(db, map);
-
-            // We lock here to protect the prepared statement returned via GetInsertCommand.
-            // A SQLite prepared statement can be bound for only one operation at a time.
-            try
-            {
-                insertCmd.ExecuteNonQuery(vals);
-            }
-            catch (SQLiteException ex)
-            {
-                if (SQLite3.ExtendedErrCode(db.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
-                {
-                    throw NotNullConstraintViolationException.New(ex.Result, ex.Message, map, obj);
-                }
-                throw;
-            }
-
-            //if (map.HasAutoIncPK)
-            //{
-            //    var id = SQLite3.LastInsertRowid(db.Handle);
-            //    map.SetAutoIncPK(obj, id);
-            //}
-        }
-
-        private static PreparedSqlLiteInsertCommand GetInsertCommand(SQLiteConnection db, TableMapping map)
-        {
-            PreparedSqlLiteInsertCommand prepCmd;
-
-            var key = Tuple.Create(map.MappedType.FullName, "");
-
-            //Get from cache, we will always do this
-            //lock (_insertCommandMap)
-            //{
-            //    if (_insertCommandMap.TryGetValue(key, out prepCmd))
-            //    {
-            //        return prepCmd;
-            //    }
-            //}
-
-            var cols = map.InsertColumns;
-            string insertSql;
-
-            if (cols.Length == 0 && map.Columns.Length == 1 && map.Columns[0].IsAutoInc)
-            {
-                insertSql = string.Format($"insert into \"{map.TableName}\" default values");
-            }
-            else
-            {
-                insertSql = string.Format("insert into \"{0}\"({1}) values ({2})", map.TableName,
-                                   string.Join(",", (from c in cols
-                                                     select "\"" + c.Name + "\"").ToArray()),
-                                   string.Join(",", (from c in cols
-                                                     select "?").ToArray()));
-
-            }
-
-            prepCmd = new PreparedSqlLiteInsertCommand(db, insertSql);
-
-            //lock (_insertCommandMap)
-            //{
-            //    if (_insertCommandMap.TryGetValue(key, out var existing))
-            //    {
-            //        prepCmd.Dispose();
-            //        return existing;
-            //    }
-
-            //    _insertCommandMap.Add(key, prepCmd);
-            //}
-
-            return prepCmd;
-        }
-
-
-        /// <summary>
-        /// Since the insert never changed, we only need to prepare once.
-        /// </summary>
-        class PreparedSqlLiteInsertCommand : IDisposable
-        {
-            bool Initialized;
-
-            SQLiteConnection Connection;
-
-            string CommandText;
-
-            Sqlite3Statement Statement;
-            static readonly Sqlite3Statement NullStatement = default(Sqlite3Statement);
-
-            public PreparedSqlLiteInsertCommand(SQLiteConnection conn, string commandText)
-            {
-                Connection = conn;
-                CommandText = commandText;
-            }
-
-            public int ExecuteNonQuery(object[] source)
-            {
-                if (Initialized && Statement == NullStatement)
-                {
-                    throw new ObjectDisposedException(nameof(PreparedSqlLiteInsertCommand));
-                }
-
-                if (Connection.Trace)
-                {
-                    Connection.Tracer?.Invoke("Executing: " + CommandText);
-                }
-
-                var r = SQLite3.Result.OK;
-
-                if (!Initialized)
-                {
-                    Statement = SQLite3.Prepare2(Connection.Handle, CommandText);
-                    Initialized = true;
-                }
-
-                //bind the values.
-                if (source != null)
-                {
-                    for (int i = 0; i < source.Length; i++)
-                    {
-                        BindParameter(Statement, i + 1, source[i], Connection.StoreDateTimeAsTicks, Connection.DateTimeStringFormat, Connection.StoreTimeSpanAsTicks);
-                    }
-                }
-                r = SQLite3.Step(Statement);
-
-                if (r == SQLite3.Result.Done)
-                {
-                    int rowsAffected = SQLite3.Changes(Connection.Handle);
-                    SQLite3.Reset(Statement);
-                    return rowsAffected;
-                }
-                else if (r == SQLite3.Result.Error)
-                {
-                    string msg = SQLite3.GetErrmsg(Connection.Handle);
-                    SQLite3.Reset(Statement);
-                    throw SQLiteException.New(r, msg);
-                }
-                else if (r == SQLite3.Result.Constraint && SQLite3.ExtendedErrCode(Connection.Handle) == SQLite3.ExtendedResult.ConstraintNotNull)
-                {
-                    SQLite3.Reset(Statement);
-                    throw NotNullConstraintViolationException.New(r, SQLite3.GetErrmsg(Connection.Handle));
-                }
-                else
-                {
-                    SQLite3.Reset(Statement);
-                    throw SQLiteException.New(r, SQLite3.GetErrmsg(Connection.Handle));
-                }
-            }
-
-            static IntPtr NegativePointer = new IntPtr(-1);
-
-            internal static void BindParameter(Sqlite3Statement stmt, int index, object value, bool storeDateTimeAsTicks, string dateTimeStringFormat, bool storeTimeSpanAsTicks)
-            {
-                if (value == null)
-                {
-                    SQLite3.BindNull(stmt, index);
-                }
-                else
-                {
-                    if (value is Int32)
-                    {
-                        SQLite3.BindInt(stmt, index, (int)value);
-                    }
-                    else if (value is String)
-                    {
-                        SQLite3.BindText(stmt, index, (string)value, -1, NegativePointer);
-                    }
-                    else if (value is Byte || value is UInt16 || value is SByte || value is Int16)
-                    {
-                        SQLite3.BindInt(stmt, index, Convert.ToInt32(value));
-                    }
-                    else if (value is Boolean)
-                    {
-                        SQLite3.BindInt(stmt, index, (bool)value ? 1 : 0);
-                    }
-                    else if (value is UInt32 || value is Int64)
-                    {
-                        SQLite3.BindInt64(stmt, index, Convert.ToInt64(value));
-                    }
-                    else if (value is Single || value is Double || value is Decimal)
-                    {
-                        SQLite3.BindDouble(stmt, index, Convert.ToDouble(value));
-                    }
-                    else if (value is TimeSpan)
-                    {
-                        if (storeTimeSpanAsTicks)
-                        {
-                            SQLite3.BindInt64(stmt, index, ((TimeSpan)value).Ticks);
-                        }
-                        else
-                        {
-                            SQLite3.BindText(stmt, index, ((TimeSpan)value).ToString(), -1, NegativePointer);
-                        }
-                    }
-                    else if (value is DateTime)
-                    {
-                        if (storeDateTimeAsTicks)
-                        {
-                            SQLite3.BindInt64(stmt, index, ((DateTime)value).Ticks);
-                        }
-                        else
-                        {
-                            SQLite3.BindText(stmt, index, ((DateTime)value).ToString(dateTimeStringFormat, System.Globalization.CultureInfo.InvariantCulture), -1, NegativePointer);
-                        }
-                    }
-                    else if (value is DateTimeOffset)
-                    {
-                        SQLite3.BindInt64(stmt, index, ((DateTimeOffset)value).UtcTicks);
-                    }
-                    else if (value is byte[])
-                    {
-                        SQLite3.BindBlob(stmt, index, (byte[])value, ((byte[])value).Length, NegativePointer);
-                    }
-                    else if (value is Guid)
-                    {
-                        SQLite3.BindText(stmt, index, ((Guid)value).ToString(), 72, NegativePointer);
-                    }
-                    else if (value is Uri)
-                    {
-                        SQLite3.BindText(stmt, index, ((Uri)value).ToString(), -1, NegativePointer);
-                    }
-                    else if (value is StringBuilder)
-                    {
-                        SQLite3.BindText(stmt, index, ((StringBuilder)value).ToString(), -1, NegativePointer);
-                    }
-                    else if (value is UriBuilder)
-                    {
-                        SQLite3.BindText(stmt, index, ((UriBuilder)value).ToString(), -1, NegativePointer);
-                    }
-                    //else
-                    //{
-                    //    // Now we could possibly get an enum, retrieve cached info
-                    //    var valueType = value.GetType();
-                    //    var enumInfo = EnumCache.GetInfo(valueType);
-                    //    if (enumInfo.IsEnum)
-                    //    {
-                    //        var enumIntValue = Convert.ToInt32(value);
-                    //        if (enumInfo.StoreAsText)
-                    //            SQLite3.BindText(stmt, index, enumInfo.EnumValues[enumIntValue], -1, NegativePointer);
-                    //        else
-                    //            SQLite3.BindInt(stmt, index, enumIntValue);
-                    //    }
-                    //    else
-                    //    {
-                    //        throw new NotSupportedException("Cannot store type: " + Orm.GetType(value));
-                    //    }
-                    //}
-                }
-            }
-
-            public void Dispose()
-            {
-                Dispose(true);
-                GC.SuppressFinalize(this);
-            }
-
-            void Dispose(bool disposing)
-            {
-                var s = Statement;
-                Statement = NullStatement;
-                Connection = null;
-                if (s != NullStatement)
-                {
-                    SQLite3.Finalize(s);
-                }
-            }
-
-            ~PreparedSqlLiteInsertCommand()
-            {
-                Dispose(false);
-            }
         }
     }
 }
