@@ -141,7 +141,7 @@ namespace Metacrack
                 else if (index == 1)
                 {
                     var domainSplits = emailSplit.SplitByChar('.');
-                    if (domainSplits.MoveToEnd() != 2) return false;
+                    if (domainSplits.MoveToEnd() < 2) return false;
 
                     //Append domain
                     emailStemBuilder.Append("@");
