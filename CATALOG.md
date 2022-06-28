@@ -78,7 +78,7 @@ Given the file *names.txt* and running the command following:
 >Alice<br>
 >Bob<br>
 
-`meta catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-emails`
+`meta catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-email`
 &nbsp;<br>
 &nbsp;<br>
 
