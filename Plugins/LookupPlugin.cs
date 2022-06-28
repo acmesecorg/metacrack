@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Metacrack.Model;
 using SQLite;
 
@@ -75,9 +76,24 @@ namespace Metacrack
             if (size > 100000000) updateMod = 10000;
 
             var hashInfo = GetHashInfo(options.HashType);
+            var databases = new Dictionary<char, Database>();
+            
+            //We initially load the row ids and their associated hashes 
+            var identifiers = new Dictionary<char, List<long>>();
+            var hashes = new Dictionary<char, List<string>>();
+
+            foreach (var hex in Hex)
+            {
+                var db = new Database(path, true);
+                db.SetModifier(hex);
+
+                databases.Add(hex, db);
+                identifiers.Add(hex, new List<long>());
+                hashes.Add(hex, new List<string>());    
+            }
 
             //Open database
-            using (var db = new Database(path, true))
+            try
             {
                 foreach (var filePath in fileEntries)
                 {
@@ -86,7 +102,7 @@ namespace Metacrack
                     var fileName = Path.GetFileNameWithoutExtension(filePath);
                     var lineCount = 0L;
                     var writeCount = 0L;
-                    var sessionManager = new SessionManager(fileName, options.Sessions, part);
+                    //var sessionManager = new SessionManager(fileName, options.Sessions, part);
 
                     //Loop through the file
                     //A line must be valid+email:hash valid+email:hash:salt
@@ -129,38 +145,35 @@ namespace Metacrack
                                 //Validate if we have correct column count in hash
                                 if (count != hashInfo.Columns) continue;
 
-                                //Lookup entity
-                                var rowId = validEmail.ToRowId();
-                                var rowChar = validEmail.ToRowCharId();
+                                //Place in a bucket for parallel processing
+                                var rowChar = validEmail.ToRowIdAndChar();
+                                var rowId = rowChar.Id;
                                 var bucket = rowChar.Char;
 
-                                db.SetModifier(bucket);
-
-                                var entity = db.Select<Entity>(rowId).FirstOrDefault();
-
-                                //An entry was found in the table
-                                if (entity != null)
-                                {
-                                    //Get distinct list of words from the entity
-                                    var words = entity.GetValues(fields);
-
-                                    //If there are rules, remove any words returned from 
-                                    //Otherwise just make sure they are distinct
-                                    if (rules != null) words = RulesEngine.FilterByRules(words, rules);
-
-                                    //Limit the words to the maximum
-                                    if (words.Count() > options.HashMaximum) words = words.Take(options.HashMaximum).ToList();
-
-                                    //Write out to buffered disk
-                                    sessionManager.AddWords(hash, words);
-
-                                    writeCount += words.Count;
-                                }
-
+                                identifiers[bucket].Add(rowId);
+                                hashes[bucket].Add(hash.ToString());
+                                
                                 //Update the percentage
-                                if (lineCount % updateMod == 0) WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
+                                if (lineCount % updateMod == 0) WriteProgress($"Reading {fileInfo.Name} into memory", progressTotal, size);
                             }
                         }
+
+                        //Do threaded lookups and writes here
+                        var progressIndicator = new Progress<long>((long value) => WriteMessage($"Got progress value {value}"));
+                        var tasks = new List<Task>();
+
+                        foreach  (var hex in Hex)
+                        {
+                            var task = Task.Run(() => AddValues(progressIndicator, databases[hex], identifiers[hex], hashes[hex], fields, rules, options, $"{fileName}.hex"));
+                            tasks.Add(task);
+                        }
+
+                        while (tasks.Count > 0)
+                        {
+                            var completedTask = Task.WhenAny(tasks.ToArray()).GetAwaiter().GetResult();
+                            tasks.Remove(completedTask);
+                        }
+
                     }
                     catch (SessionException ex)
                     {
@@ -170,14 +183,79 @@ namespace Metacrack
                     finally
                     {
                         //Ensure data is saved
-                        sessionManager.Dispose();
+                        //sessionManager.Dispose();
                     }
 
                     WriteMessage($"Read {lineCount} lines and wrote {writeCount} lines for {fileInfo.Name}.");
                 }
             }
+            finally 
+            {                 
+                foreach (var db in databases.Values)
+                {
+                    db.Dispose();
+                }
+            }
 
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
+        }
+
+        private static async Task<long> AddValues(IProgress<long> progress, Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, string filename)
+        {
+            var writeCount = 0L;
+            var bufferCount = 0L;
+
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var hashPath = Path.Combine(currentDirectory, $"{filename}.hash");
+            var wordPath = Path.Combine(currentDirectory, $"{filename}.word");
+
+            var hashesBuffer = new List<string>();
+            var wordsBuffer = new List<string>();
+
+            for (var i = 0; i < identifiers.Count; i++)
+            {
+                var entity = db.Select<Entity>(identifiers[i]).FirstOrDefault();
+
+                //An entry was found in the table
+                if (entity != null)
+                {
+                    //Get distinct list of words from the entity
+                    var words = entity.GetValues(fields);
+
+                    //If there are rules, remove any words returned from 
+                    //Otherwise just make sure they are distinct
+                    if (rules != null) words = RulesEngine.FilterByRules(words, rules);
+
+                    //Limit the words to the maximum
+                    if (words.Count() > options.HashMaximum) words = words.Take(options.HashMaximum).ToList();
+
+                    var hash = hashes[i];
+
+                    foreach (var word in words)
+                    {
+                        hashesBuffer.Add(hash);
+                        wordsBuffer.Add(word);
+                    }
+
+                    writeCount += words.Count;
+                    bufferCount += words.Count;
+                }
+
+                //Check if we need to append 
+                if (bufferCount > 1000)
+                {
+                    await File.AppendAllLinesAsync(hashPath, hashesBuffer.ToArray());
+                    await File.AppendAllLinesAsync(wordPath, wordsBuffer.ToArray());
+
+                    hashesBuffer.Clear();
+                    wordsBuffer.Clear();
+
+                    progress?.Report(bufferCount);
+                    bufferCount = 0;
+                }
+            }
+
+            return writeCount;
         }
     }
 }

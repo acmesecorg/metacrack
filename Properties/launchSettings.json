@@ -84,6 +84,11 @@
       "commandName": "Project",
       "commandLineArgs": "lookup breach.txt metadata.db -m 3200 -r best64.rule -f p u i",
       "workingDirectory": "C:\\Breach\\test"
+    },
+    "Lookup Stress Test": {
+      "commandName": "Project",
+      "commandLineArgs": "lookup test.left.txt test.db",
+      "workingDirectory": "C:\\Breach\\test"
     }
   }
 }

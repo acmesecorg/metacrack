@@ -1,0 +1,4 @@
+alice.smith@icloud.com:password1:alice74
+alice@hotmail.com:password3:alice
+alice.smith+test@icloud.com:password5:alice2
+alice1974@apple.com:test:test2

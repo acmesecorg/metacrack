@@ -173,7 +173,7 @@ namespace Metacrack.Plugins
                                     {
                                         validCount++;
 
-                                        var rowChar = emailStem.ToRowCharId();
+                                        var rowChar = emailStem.ToRowIdAndChar();
                                         var bucket = rowChar.Char;
                                         var rowId = rowChar.Id;
 

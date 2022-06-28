@@ -16,8 +16,9 @@ namespace Metacrack
     public class Database: IDisposable 
     {
         private static IntPtr _negativePointer = new IntPtr(-1);
-        private static Type _lastMapType;
-        private static TableMapping _lastMap;
+        
+        private Type _lastMapType;
+        private TableMapping _lastMap;
 
         private SQLiteConnection _db;
         private char _hex;
