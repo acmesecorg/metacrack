@@ -7,7 +7,7 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog additions-may2022.txt test.db",
+      "commandLineArgs": "catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-email",
       "workingDirectory": "C:\\Breach\\test"
     },
     "Export": {
@@ -74,6 +74,16 @@
       "commandName": "Project",
       "commandLineArgs": "hash dailyquiz.dict --hash 0",
       "workingDirectory": "D:\\hashcat-6.2.5+8"
+    },
+    "Catalog Test": {
+      "commandName": "Project",
+      "commandLineArgs": "catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-email",
+      "workingDirectory": "C:\\Breach\\test"
+    },
+    "Lookup Test": {
+      "commandName": "Project",
+      "commandLineArgs": "lookup breach.txt metadata.db -m 3200 -r best64.rule -f p u i",
+      "workingDirectory": "C:\\Breach\\test"
     }
   }
 }

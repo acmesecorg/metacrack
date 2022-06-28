@@ -107,8 +107,6 @@ namespace Metacrack.Plugins
                 }
             }
 
-
-
             //Open up sqlite
             using (var db = new Database(outputPath))
             {
@@ -133,6 +131,7 @@ namespace Metacrack.Plugins
                 progressTotal = 0L;
                 lineCount = 0L;
                 var validCount = 0L;
+                var invalidCount = 0L;
                 var fileCount = 0;
 
                 WriteMessage($"Started adding values at {DateTime.Now.ToShortTimeString()}");
@@ -209,6 +208,8 @@ namespace Metacrack.Plugins
                                     else
                                     {
                                         //Dont continue getting values
+                                        invalidCount++;
+                                        ValidateEmail(split, out var emailStem2);
                                         break;
                                     }
                                 }
@@ -256,7 +257,7 @@ namespace Metacrack.Plugins
                     WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
                 }
 
-                WriteMessage($"Processed {validCount} lines out of {lineCount}");
+                WriteMessage($"Processed {validCount} lines out of {lineCount} ({invalidCount} invalid)");
                 WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");
             }
         }

@@ -77,98 +77,104 @@ namespace Metacrack
             var hashInfo = GetHashInfo(options.HashType);
 
             //Open database
-            var db = new SQLiteConnection(path);
-
-            foreach (var filePath in fileEntries)
+            using (var db = new Database(path, true))
             {
-                //Create a version based on the file size, so that the hash and dict are bound together
-                var fileInfo = new FileInfo(filePath);
-                var fileName = Path.GetFileNameWithoutExtension(filePath);
-                var lineCount = 0L;
-                var writeCount = 0L;
-                var sessionManager = new SessionManager(fileName, options.Sessions, part);
-
-                //Loop through the file
-                //A line must be valid+email:hash valid+email:hash:salt
-                try
+                foreach (var filePath in fileEntries)
                 {
-                    using (var reader = new StreamReader(filePath))
+                    //Create a version based on the file size, so that the hash and dict are bound together
+                    var fileInfo = new FileInfo(filePath);
+                    var fileName = Path.GetFileNameWithoutExtension(filePath);
+                    var lineCount = 0L;
+                    var writeCount = 0L;
+                    var sessionManager = new SessionManager(fileName, options.Sessions, part);
+
+                    //Loop through the file
+                    //A line must be valid+email:hash valid+email:hash:salt
+                    try
                     {
-                        while (!reader.EndOfStream)
+                        using (var reader = new StreamReader(filePath))
                         {
-                            var line = reader.ReadLine().AsSpan();
-
-                            lineCount++;
-                            progressTotal += line.Length;
-
-                            var index = line.IndexOf(':');
-
-                            if (index == -1) continue;
-
-                            var email = line.Slice(0, index);
-                            var hash = line.Slice(index + 1);
-
-                            //Check has email and has hash
-                            if (email.Length == 0 || hash.Length == 0) continue;
-
-                            //Validate the email
-                            if (!ValidateEmail(email, out string validEmail)) continue;
-
-                            //Check hash looks correct
-                            var hashParts = hash.SplitByChar(':');
-                            var count = 0;
-
-                            //Loop through hash parts here and validate hash portion, salt portion, and count if not correct vv hashinfo
-                            foreach (var (hashPart, index2) in hashParts)
+                            while (!reader.EndOfStream)
                             {
-                                if (index2 == 0 && !ValidateHash(hashPart, hashInfo)) continue;
-                                if (index2 == 1 && !ValidateSalt(hashPart, hashInfo)) continue;
-                                count++;
+                                var line = reader.ReadLine().AsSpan();
+
+                                lineCount++;
+                                progressTotal += line.Length;
+
+                                var index = line.IndexOf(':');
+
+                                if (index == -1) continue;
+
+                                var email = line.Slice(0, index);
+                                var hash = line.Slice(index + 1);
+
+                                //Check has email and has hash
+                                if (email.Length == 0 || hash.Length == 0) continue;
+
+                                //Validate the email
+                                if (!ValidateEmail(email, out string validEmail)) continue;
+
+                                //Check hash looks correct
+                                var hashParts = hash.SplitByChar(':');
+                                var count = 0;
+
+                                //Loop through hash parts here and validate hash portion, salt portion, and count if not correct vv hashinfo
+                                foreach (var (hashPart, index2) in hashParts)
+                                {
+                                    if (index2 == 0 && !ValidateHash(hashPart, hashInfo)) continue;
+                                    if (index2 == 1 && !ValidateSalt(hashPart, hashInfo)) continue;
+                                    count++;
+                                }
+
+                                //Validate if we have correct column count in hash
+                                if (count != hashInfo.Columns) continue;
+
+                                //Lookup entity
+                                var rowId = validEmail.ToRowId();
+                                var rowChar = validEmail.ToRowCharId();
+                                var bucket = rowChar.Char;
+
+                                db.SetModifier(bucket);
+
+                                var entity = db.Select<Entity>(rowId).FirstOrDefault();
+
+                                //An entry was found in the table
+                                if (entity != null)
+                                {
+                                    //Get distinct list of words from the entity
+                                    var words = entity.GetValues(fields);
+
+                                    //If there are rules, remove any words returned from 
+                                    //Otherwise just make sure they are distinct
+                                    if (rules != null) words = RulesEngine.FilterByRules(words, rules);
+
+                                    //Limit the words to the maximum
+                                    if (words.Count() > options.HashMaximum) words = words.Take(options.HashMaximum).ToList();
+
+                                    //Write out to buffered disk
+                                    sessionManager.AddWords(hash, words);
+
+                                    writeCount += words.Count;
+                                }
+
+                                //Update the percentage
+                                if (lineCount % updateMod == 0) WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
                             }
-
-                            //Validate if we have correct column count in hash
-                            if (count != hashInfo.Columns) continue;
-
-                            //Lookup entity
-                            var rowId = validEmail.ToRowId();
-                            var entity = db.Table<Entity>().Where(e => e.RowId == rowId).FirstOrDefault();
-
-                            //An entry was found in the table
-                            if (entity != null)
-                            {
-                                //Get distinct list of words from the entity
-                                var words = entity.GetValues(fields);
-
-                                //If there are rules, remove any words returned from 
-                                //Otherwise just make sure they are distinct
-                                if (rules != null) words = RulesEngine.FilterByRules(words, rules);
-
-                                //Limit the words to the maximum
-                                if (words.Count() > options.HashMaximum) words = words.Take(options.HashMaximum).ToList();
-
-                                //Write out to buffered disk
-                                sessionManager.AddWords(hash, words);
-
-                                writeCount += words.Count;
-                            }
-
-                            //Update the percentage
-                            if (lineCount % updateMod == 0) WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
                         }
                     }
-                }
-                catch (SessionException ex)
-                {
-                    WriteError(ex.Message);
-                    continue;
-                }
-                finally
-                {
-                    //Ensure data is saved
-                    sessionManager.Dispose();
-                }
+                    catch (SessionException ex)
+                    {
+                        WriteError(ex.Message);
+                        continue;
+                    }
+                    finally
+                    {
+                        //Ensure data is saved
+                        sessionManager.Dispose();
+                    }
 
-                WriteMessage($"Read {lineCount} lines and wrote {writeCount} lines for {fileInfo.Name}.");
+                    WriteMessage($"Read {lineCount} lines and wrote {writeCount} lines for {fileInfo.Name}.");
+                }
             }
 
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
