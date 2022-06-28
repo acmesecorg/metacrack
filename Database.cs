@@ -37,9 +37,10 @@ namespace Metacrack
             public string ColumnName;
         }
 
-        public Database(string outputPath)
+        public Database(string outputPath, bool readOnly = false)
         {
-            var connectString = new SQLiteConnectionString(outputPath, SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.NoMutex, true);
+            var flags = (readOnly) ? SQLiteOpenFlags.ReadOnly | SQLiteOpenFlags.NoMutex : SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.NoMutex;
+            var connectString = new SQLiteConnectionString(outputPath, flags, true);
             _db = new SQLiteConnection(connectString);
         }
 
