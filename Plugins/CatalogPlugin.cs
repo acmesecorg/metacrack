@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Metacrack.Model;
-using SQLite;
 
 namespace Metacrack.Plugins
 {
@@ -41,7 +40,7 @@ namespace Metacrack.Plugins
             if (options.StemEmailOnly) WriteMessage("Stem email only enabled");
 
             //Determine output path
-            var outputPath = Path.Combine(currentDirectory, options.OutputPath);
+            var outputPath = Path.Combine(currentDirectory, options.OutputFolder);
             WriteMessage($"Writing data to {outputPath}");
 
             //Determine input columns
@@ -107,21 +106,12 @@ namespace Metacrack.Plugins
                 }
             }
 
+            var isNew = File.Exists(outputPath);
+
             //Open up sqlite
             using (var db = new Database(outputPath))
             {
-                var isNew = true;
-
-                //Loop through and create tables
-                foreach (var hex in Hex)
-                {
-                    db.SetModifier(hex);
-
-                    var entityResult = db.CreateTable<Entity>();
-                    if (entityResult != CreateTableResult.Created) isNew = false;
-                }
-
-                WriteMessage((isNew) ? "Creating new meta data tables" : "Found existing meta data table(s)");
+                WriteMessage((isNew) ? "Creating new key value store" : "Found existing key value store");
 
                 //Get input files size
                 var fileEntriesSize = GetFileEntriesSize(fileEntries);
@@ -185,8 +175,7 @@ namespace Metacrack.Plugins
                                         if (!inserts.TryGetValue(rowId, out entity) && !updates.TryGetValue(rowId, out entity))
                                         {
                                             //Otherwise check if we have an entity in the database (if it existed first)
-                                            db.SetModifier(bucket);
-                                            entity = (isNew) ? default : db.Select<Entity>(rowId).FirstOrDefault();
+                                            entity = (isNew) ? default : db.Select(bucket, rowId);
 
                                             //Not found in the database, so create a new one
                                             if (entity == null)
@@ -257,6 +246,9 @@ namespace Metacrack.Plugins
                     WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
                 }
 
+                WriteMessage($"Flushing key value store data to disk.");
+                db.Flush();
+
                 WriteMessage($"Processed {validCount} lines out of {lineCount} ({invalidCount} invalid)");
                 WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");
             }
@@ -267,13 +259,9 @@ namespace Metacrack.Plugins
             //Write out the inserts and updates, and set the file creation type to something other than created
             var count = 0;
 
-            //Sqlite doesnt handle concurrent writes well
-            //Instead we keep the table size down by splitting tables, which still makes updates quicker
             foreach (var hex in Hex)
             {
                 WriteProgress($"Writing bucket {hex}", count, 15);
-
-                db.SetModifier(hex);
 
                 var inserts = insertBuckets[hex];
                 var updates = updateBuckets[hex];
@@ -281,13 +269,13 @@ namespace Metacrack.Plugins
                 //If we are looping, then we always need to do an update
                 if (isNew)
                 {
-                    if (updates.Count > 0) db.UpdateAll<Entity>(updates.Values);
-                    if (inserts.Count > 0) db.InsertAll<Entity>(inserts.Values);
+                    if (updates.Count > 0) db.UpdateAll(hex, updates.Values);
+                    if (inserts.Count > 0) db.InsertAll(hex, inserts.Values);
                 }
                 else
                 {
-                    if (updates.Count > 0) db.UpdateAll<Entity>(updates.Values);
-                    if (inserts.Count > 0) db.InsertAll<Entity>(inserts.Values);
+                    if (updates.Count > 0) db.UpdateAll(hex, updates.Values);
+                    if (inserts.Count > 0) db.InsertAll(hex, inserts.Values);
                 }
 
                 updates.Clear();

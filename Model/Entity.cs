@@ -1,23 +1,36 @@
-﻿using System;
+﻿using FASTER.core;
+using ProtoBuf;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
-using SQLite;
 
 namespace Metacrack.Model
 {
-    public partial class Entity
+    [ProtoContract]
+    public class Entity
     {
         private static int ValueLengthMax = 70;
 
-        //Internal SqlLite RowId is a 64bit signed, so use this for best performance
-        [PrimaryKey]
+        [ProtoMember(1)]
         public long RowId { get; set; }
 
+        [ProtoMember(2)]
         public string Passwords { get; set; }
+
+        [ProtoMember(3)]
         public string Usernames { get; set; }
+
+        [ProtoMember(4)]
         public string Names { get; set; }
+
+        [ProtoMember(5)]
         public string Dates { get; set; }
+
+        [ProtoMember(6)]
         public string Numbers { get; set; }
+
+        [ProtoMember(7)]
         public string Values { get; set; }
 
         public void AddPasswords(string values)
@@ -261,6 +274,32 @@ namespace Metacrack.Model
                 AddValues(value);
             }
         }
+    }
+
+    public class EntitySerializer: BinaryObjectSerializer<Entity>
+   {
+         public override void Serialize(ref Entity value)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                Serializer.Serialize(memoryStream, value);
+                var byteArray = memoryStream.ToArray();
+                var length = (Int32) byteArray.Length;
+
+                //Write the length, then the bytes
+                writer.Write(length);
+                writer.Write(byteArray, 0, byteArray.Length);
+            }
+        }
+
+        public override void Deserialize(out Entity value)
+        {
+            var length = reader.ReadInt32();
+            var bytes = reader.ReadBytes(length);
+            var buffer = new ReadOnlySpan<byte>(bytes);
+
+            value = Serializer.Deserialize<Entity>(buffer);
+        }       
     }
 }
 

@@ -7,7 +7,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Metacrack.Model;
-using SQLite;
 
 namespace Metacrack
 {
@@ -43,7 +42,7 @@ namespace Metacrack
 
             //Try to load catalog
             var path = Path.Combine(currentDirectory, options.CatalogPath);
-            if (!File.Exists(path))
+            if (!Directory.Exists(path))
             {
                 WriteError($"Catalog path not found: {path}");
                 return;
@@ -76,7 +75,6 @@ namespace Metacrack
             if (size > 100000000) updateMod = 10000;
 
             var hashInfo = GetHashInfo(options.HashType);
-            var databases = new Dictionary<char, Database>();
             
             //We initially load the row ids and their associated hashes 
             var identifiers = new Dictionary<char, List<long>>();
@@ -84,16 +82,12 @@ namespace Metacrack
 
             foreach (var hex in Hex)
             {
-                var db = new Database(path, true);
-                db.SetModifier(hex);
-
-                databases.Add(hex, db);
                 identifiers.Add(hex, new List<long>());
                 hashes.Add(hex, new List<string>());    
             }
 
             //Open database
-            try
+            using (var db = new Database(path, true))
             {
                 foreach (var filePath in fileEntries)
                 {
@@ -152,7 +146,7 @@ namespace Metacrack
 
                                 identifiers[bucket].Add(rowId);
                                 hashes[bucket].Add(hash.ToString());
-                                
+
                                 //Update the percentage
                                 if (lineCount % updateMod == 0) WriteProgress($"Reading {fileInfo.Name} into memory", progressTotal, size);
                             }
@@ -162,10 +156,10 @@ namespace Metacrack
                         var progressIndicator = new Progress<long>((long value) => WriteMessage($"Got progress value {value}"));
                         var tasks = new List<Task>();
 
-                        foreach  (var hex in Hex)
+                        foreach (var hex in Hex)
                         {
-                            var task = Task.Run(() => AddValues(progressIndicator, databases[hex], identifiers[hex], hashes[hex], fields, rules, options, $"{fileName}.hex"));
-                            tasks.Add(task);
+                            writeCount += AddValues(progressIndicator, db, identifiers[hex], hashes[hex], fields, rules, options, fileName, hex);
+                            //tasks.Add(task);
                         }
 
                         while (tasks.Count > 0)
@@ -174,6 +168,25 @@ namespace Metacrack
                             tasks.Remove(completedTask);
                         }
 
+                        var finalHashPath = Path.Combine(currentDirectory, $"{fileName}.hash");
+                        var finalWordPath = Path.Combine(currentDirectory, $"{fileName}.word");
+
+                        //Combine all the files here
+                        //TODO: make this work for file sizes larger than memory
+                        foreach (var hex in Hex)
+                        {
+                            var hashPath = Path.Combine(currentDirectory, $"{fileName}.{hex}.hash");
+                            var wordPath = Path.Combine(currentDirectory, $"{fileName}.{hex}.word");
+
+                            if (File.Exists(hashPath))
+                            { 
+                                File.AppendAllLines(finalHashPath, File.ReadAllLines(hashPath));
+                                File.AppendAllLines(finalWordPath, File.ReadAllLines(wordPath));
+
+                                File.Delete(hashPath);
+                                File.Delete(wordPath);
+                            }
+                        }
                     }
                     catch (SessionException ex)
                     {
@@ -189,32 +202,26 @@ namespace Metacrack
                     WriteMessage($"Read {lineCount} lines and wrote {writeCount} lines for {fileInfo.Name}.");
                 }
             }
-            finally 
-            {                 
-                foreach (var db in databases.Values)
-                {
-                    db.Dispose();
-                }
-            }
+
 
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
         }
 
-        private static async Task<long> AddValues(IProgress<long> progress, Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, string filename)
+        private static long AddValues(IProgress<long> progress, Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, string filename, char hex)
         {
             var writeCount = 0L;
             var bufferCount = 0L;
 
             var currentDirectory = Directory.GetCurrentDirectory();
-            var hashPath = Path.Combine(currentDirectory, $"{filename}.hash");
-            var wordPath = Path.Combine(currentDirectory, $"{filename}.word");
+            var hashPath = Path.Combine(currentDirectory, $"{filename}.{hex}.hash");
+            var wordPath = Path.Combine(currentDirectory, $"{filename}.{hex}.word");
 
             var hashesBuffer = new List<string>();
             var wordsBuffer = new List<string>();
 
             for (var i = 0; i < identifiers.Count; i++)
             {
-                var entity = db.Select<Entity>(identifiers[i]).FirstOrDefault();
+                var entity = db.Select(hex, identifiers[i]);
 
                 //An entry was found in the table
                 if (entity != null)
@@ -244,8 +251,8 @@ namespace Metacrack
                 //Check if we need to append 
                 if (bufferCount > 1000)
                 {
-                    await File.AppendAllLinesAsync(hashPath, hashesBuffer.ToArray());
-                    await File.AppendAllLinesAsync(wordPath, wordsBuffer.ToArray());
+                    File.AppendAllLines(hashPath, hashesBuffer.ToArray());
+                    File.AppendAllLines(wordPath, wordsBuffer.ToArray());
 
                     hashesBuffer.Clear();
                     wordsBuffer.Clear();
@@ -253,6 +260,20 @@ namespace Metacrack
                     progress?.Report(bufferCount);
                     bufferCount = 0;
                 }
+            }
+
+            //Write final values
+            //Check if we need to append 
+            if (bufferCount > 0)
+            {
+                File.AppendAllLines(hashPath, hashesBuffer.ToArray());
+                File.AppendAllLines(wordPath, wordsBuffer.ToArray());
+
+                hashesBuffer.Clear();
+                wordsBuffer.Clear();
+
+                progress?.Report(bufferCount);
+                bufferCount = 0;
             }
 
             return writeCount;

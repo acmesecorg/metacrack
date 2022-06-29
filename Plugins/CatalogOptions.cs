@@ -13,8 +13,8 @@ namespace Metacrack.Plugins
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The input path and subfolders to process files from.")]
         public string InputPath { get; set; }
 
-        [Value(1, Required = false, Default = "meta.db", MetaName = "OutputPath", HelpText = "The output path to the new or existing database file.")]
-        public string OutputPath { get; set; }
+        [Value(1, Required = false, Default = "meta.db", MetaName = "OutputFolder", HelpText = "The output folder to the new or existing key value store.")]
+        public string OutputFolder { get; set; }
 
         [Option('t', "tokenize", HelpText = "Turns space seperated text into sub values.")]
         public bool Tokenize { get; set; }
