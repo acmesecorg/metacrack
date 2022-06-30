@@ -77,6 +77,26 @@ namespace Metacrack
             return true;
         }
 
+        public static string CreateTempFolder()
+        {
+            var current = Directory.GetCurrentDirectory();
+            var options = new EnumerationOptions { MatchCasing = MatchCasing.CaseInsensitive };
+
+            //Get all folders starting with temp
+            var count = 0;
+            var path = Path.Combine(current, $"\\Temp");
+
+            while (Directory.Exists(path))
+            {
+                path = Path.Combine(current, $"\\Temp{count}");
+                count++;
+            }
+
+            Directory.CreateDirectory(path);
+
+            return path;
+        }
+
         public static string IncrementFilename(string filenameNoExtension, string type)
         {
             var dottype = $".{type}";

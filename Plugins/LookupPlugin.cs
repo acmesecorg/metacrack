@@ -61,6 +61,18 @@ namespace Metacrack
                 return;
             }
 
+            //Try create a temp folder
+            var tempDirectory = "";
+            try
+            {
+                tempDirectory = CreateTempFolder();
+            }
+            catch (Exception ex)
+            {
+                WriteError(ex.Message);
+                return;
+            }
+
             if (options.HashType > 0) WriteMessage($"Validating hash mode {options.HashType}");
 
             //Determine fields
@@ -146,7 +158,7 @@ namespace Metacrack
 
                                     foreach (var hex in Hex)
                                     {
-                                        var task = Task.Run(() => AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, hex));
+                                        var task = Task.Run(() => AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, tempDirectory, hex));
                                         tasks.Add(task);
                                     }
 
@@ -167,7 +179,7 @@ namespace Metacrack
 
                             foreach (var hex in Hex)
                             {
-                                var task = Task.Run(() => AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, hex));
+                                var task = Task.Run(() => AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, tempDirectory, hex));
                                 finalTasks.Add(task);
                             }
 
@@ -188,8 +200,8 @@ namespace Metacrack
                         //TODO: reintroduce session manager if required
                         foreach (var hex in Hex)
                         {
-                            var hashPath = Path.Combine(currentDirectory, $"{fileName}.{hex}.hash");
-                            var wordPath = Path.Combine(currentDirectory, $"{fileName}.{hex}.word");
+                            var hashPath = Path.Combine(tempDirectory, $"{fileName}.{hex}.hash");
+                            var wordPath = Path.Combine(tempDirectory, $"{fileName}.{hex}.word");
 
                             if (File.Exists(hashPath))
                             { 
@@ -217,17 +229,19 @@ namespace Metacrack
             }
 
 
+            //Remove temp directory
+            Directory.Delete(tempDirectory);
+
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
         }
 
-        private static long AddValues(Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, HashInfo hashInfo, string filename, char hex)
+        private static long AddValues(Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, HashInfo hashInfo, string filename, string tempDirectory, char hex)
         {
             var writeCount = 0L;
             var bufferCount = 0L;
 
-            var currentDirectory = Directory.GetCurrentDirectory();
-            var hashPath = Path.Combine(currentDirectory, $"{filename}.{hex}.hash");
-            var wordPath = Path.Combine(currentDirectory, $"{filename}.{hex}.word");
+            var hashPath = Path.Combine(tempDirectory, $"{filename}.{hex}.hash");
+            var wordPath = Path.Combine(tempDirectory, $"{filename}.{hex}.word");
 
             var hashesBuffer = new List<string>();
             var wordsBuffer = new List<string>();

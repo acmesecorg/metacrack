@@ -41,6 +41,13 @@ namespace Metacrack.Model
         //This appears to happen when you are updated values that have already been checkpointed
         public override bool CopyUpdater(ref RowKey key, ref MyInput input, ref Entity oldValue, ref Entity newValue, ref MyOutput output, ref RMWInfo rmwInfo)
         {
+            if (newValue == null)
+            {
+                newValue = input.Value;
+                newValue.CopyFrom(oldValue);
+                return true;
+            }
+
             //Merge input.value and old.value into newValue
             newValue.CopyFrom(oldValue);
             newValue.CopyFrom(input.Value);

@@ -106,7 +106,7 @@ namespace Metacrack.Plugins
                 }
             }
 
-            var isNew = !(File.Exists(outputPath) && Directory.GetFiles(outputPath).Length > 0);
+            var isNew = !(Directory.Exists(outputPath) && Directory.GetFiles(outputPath).Length > 0);
 
             //Open up sqlite
             using (var db = new Database(outputPath))
@@ -143,8 +143,6 @@ namespace Metacrack.Plugins
                     var fileName = Path.GetFileName(lookupPath);
                     fileCount++;
 
-                    var tasks = new List<Task<(char, Entity)>>();
-
                     using (var reader = new StreamReader(lookupPath))
                     {
                         while (!reader.EndOfStream)
@@ -155,33 +153,23 @@ namespace Metacrack.Plugins
 
                             progressTotal += line.Length;
 
-                            tasks.Add(Task.Run(() => ProcessLine(line, options, fields, columns, lookups)));
+                            var result = ProcessLine(line, options, fields, columns, lookups);
+
+                            if (result.Entity == null)
+                            {
+                                invalidCount++;
+                            }
+                            else
+                            {
+                                validCount++;
+                                inputBuckets[result.Bucket].Add(result.Entity);
+                            }
 
                             if (lineCount % 10000 == 0) WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
 
                             //Write to database after we process a certain number of lines (100 million or so)
                             if (lineCount % memoryLines == 0)
                             {
-                                WriteProgress($"Waiting for tasks", progressTotal, fileEntriesSize);
-
-                                //Get the values from the tasks and place them into buckets
-                                Task.WhenAll(tasks).GetAwaiter().GetResult();
-
-                                foreach (var task in tasks)
-                                {
-                                    if (task.Result.Item2 == null)
-                                    {
-                                        invalidCount++;
-                                    }
-                                    else
-                                    {
-                                        inputBuckets[task.Result.Item1].Add(task.Result.Item2);
-                                        validCount++;
-                                    }
-                                }
-
-                                tasks.Clear();
-
                                 //Writes and clears the buckets
                                 WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
 
@@ -194,26 +182,6 @@ namespace Metacrack.Plugins
                             }
                         }
                     }
-
-                    //Flush final tasks into the buckets
-                    WriteProgress($"Waiting for tasks", progressTotal, fileEntriesSize);
-
-                    Task.WhenAll(tasks).GetAwaiter().GetResult();
-
-                    foreach (var task in tasks)
-                    {
-                        if (task.Result.Item2 == null)
-                        {
-                            invalidCount++;
-                        }
-                        else
-                        {
-                            inputBuckets[task.Result.Item1].Add(task.Result.Item2);
-                            validCount++;
-                        }
-                    }
-
-                    tasks.Clear();
 
                     WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
                     WriteBuckets(db, inputBuckets);
@@ -238,7 +206,7 @@ namespace Metacrack.Plugins
             }
         }
 
-        private static (char, Entity) ProcessLine(string line, CatalogOptions options, string[] fields, int[] columns, HashSet<string> lookups)
+        private static (char Bucket, Entity Entity) ProcessLine(string line, CatalogOptions options, string[] fields, int[] columns, HashSet<string> lookups)
         {
             var lineSpan = line.AsSpan();
             var splits = lineSpan.SplitByChar(':');
