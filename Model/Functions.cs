@@ -57,10 +57,10 @@ namespace Metacrack.Model
 
         public override void ReadCompletionCallback(ref RowKey key, ref MyInput input, ref MyOutput output, MyContext ctx, Status status, RecordMetadata recordMetadata)
         {
-            if (output.value.RowId == key.key)
-                Console.WriteLine("Success!");
-            else
-                Console.WriteLine("Error!");
+            //if (output.value.RowId == key.key)
+            //    Console.WriteLine("Success!");
+            //else
+            //    Console.WriteLine("Error!");
         }
     }
 }

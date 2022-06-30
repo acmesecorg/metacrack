@@ -14,8 +14,10 @@ namespace Metacrack
     public class Database: IDisposable 
     {
         private bool _disposedValue;
+        private string _outputFolder;
 
         private FasterKV<RowKey, Entity> _store;
+        private readonly object _sessionLock = new object();
 
         private Dictionary<char, ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>>> _sessions;
 
@@ -24,36 +26,50 @@ namespace Metacrack
             // With non-blittable types, you need an object log device in addition to the
             // main device. FASTER serializes the actual objects in the object log.
             if (!outputFolder.EndsWith("\\")) outputFolder += "\\";
+            _outputFolder = outputFolder;
+        }
 
-            var logSettings = new LogSettings 
-            { 
-                LogDevice = Devices.CreateLogDevice(outputFolder + "hlog.log"), 
-                ObjectLogDevice = Devices.CreateLogDevice(outputFolder + "hlog.obj.log")
+        public void Restore()
+        {
+            var logSettings = new LogSettings
+            {
+                LogDevice = Devices.CreateLogDevice(_outputFolder + "hlog.log"),
+                ObjectLogDevice = Devices.CreateLogDevice(_outputFolder + "hlog.obj.log")
             };
 
             var checkpointSettings = new CheckpointSettings();
-            checkpointSettings.CheckpointDir = outputFolder;
-            
+            checkpointSettings.CheckpointDir = _outputFolder;
+            checkpointSettings.RemoveOutdated = true;
+
             var serializerSettings = new SerializerSettings<RowKey, Entity>
             {
                 keySerializer = () => new RowKeySerializer(),
                 valueSerializer = () => new EntitySerializer()
             };
 
-            _store = new FasterKV<RowKey, Entity>(1L << 20, logSettings, checkpointSettings, serializerSettings, null, null, true); 
+            _store = new FasterKV<RowKey, Entity>(1L << 20, logSettings, checkpointSettings, serializerSettings, null, null, true);
             _sessions = new Dictionary<char, ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>>>();
         }
 
-        public void InsertAll(char hex, IEnumerable<Entity> objects)
+        public ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> GetSession(char hex)
         {
-            UpdateAll(hex, objects);
+            if (!_sessions.ContainsKey(hex))
+            {
+                lock (_sessionLock)
+                {
+                    var newSession = _store.NewSession(new Functions());
+                    _sessions.Add(hex, newSession);
+
+                    return newSession;
+                }
+            }
+            
+            return _sessions[hex];
         }
 
-        public void UpdateAll(char hex, IEnumerable<Entity> objects)
+        public void UpsertAll(char hex, IEnumerable<Entity> objects)
         {
-            if (!_sessions.ContainsKey(hex)) _sessions.Add(hex, _store.NewSession(new Functions()));
-
-            var session = _sessions[hex];
+            var session = GetSession(hex);
             var context = default(MyContext);
 
             foreach (var obj in objects)
@@ -64,18 +80,27 @@ namespace Metacrack
             }
         }
 
-        public Entity Select(char hex, long rowId)
+        public void Upsert(ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> session, MyContext context, Entity entity)
         {
-            if (!_sessions.ContainsKey(hex)) _sessions.Add(hex, _store.NewSession(new Functions()));
-            var session = _sessions[hex];
+            var key = new RowKey { key = entity.RowId };
+            session.Upsert(ref key, ref entity, context, 0);
+        }
+
+        public Entity Select(ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> session, long rowId)
+        {
             var key = new RowKey { key = rowId };
             var input = default(MyInput);
             var context = default(MyContext);
 
             var g1 = new MyOutput();
 
-            var status = session.Read(ref key, ref input, ref g1, context, 0);
+            session.Read(ref key, ref input, ref g1, context, 0);
             return g1.value;
+        }
+
+        public void Checkpoint()
+        {
+            _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
         }
 
         public void Flush()

@@ -106,12 +106,15 @@ namespace Metacrack.Plugins
                 }
             }
 
-            var isNew = File.Exists(outputPath);
+            var isNew = File.Exists(outputPath) && Directory.GetFiles(outputPath).Count() > 0;
 
             //Open up sqlite
             using (var db = new Database(outputPath))
             {
                 WriteMessage((isNew) ? "Creating new key value store" : "Found existing key value store");
+
+                WriteMessage("Please wait. Restoring key value store");
+                db.Restore();
 
                 //Get input files size
                 var fileEntriesSize = GetFileEntriesSize(fileEntries);
@@ -130,13 +133,11 @@ namespace Metacrack.Plugins
                 foreach (var lookupPath in fileEntries)
                 {
                     //Create a list of updates and inserts in memory per file
-                    var insertBuckets = new Dictionary<char, Dictionary<long, Entity>>();
-                    var updateBuckets = new Dictionary<char, Dictionary<long, Entity>>();
+                    var inputBuckets = new Dictionary<char, List<Entity>>();
 
                     foreach (var hex in Hex)
                     {
-                        insertBuckets.Add(hex, new Dictionary<long, Entity>());
-                        updateBuckets.Add(hex, new Dictionary<long, Entity>());
+                        inputBuckets.Add(hex, new List<Entity>());
                     }
 
                     fileCount++;
@@ -167,29 +168,12 @@ namespace Metacrack.Plugins
                                         var bucket = rowChar.Char;
                                         var rowId = rowChar.Id;
 
-                                        var inserts = insertBuckets[bucket];
-                                        var updates = updateBuckets[bucket];
+                                        var inputs = inputBuckets[bucket];
 
-                                        //Determine if we already have an entity for this file
-                                        //If we do, it will already be in the inserts and updates, and we will just update values
-                                        if (!inserts.TryGetValue(rowId, out entity) && !updates.TryGetValue(rowId, out entity))
-                                        {
-                                            //Otherwise check if we have an entity in the database (if it existed first)
-                                            entity = (isNew) ? default : db.Select(bucket, rowId);
+                                        entity = new Entity();
+                                        entity.RowId = rowId;
 
-                                            //Not found in the database, so create a new one
-                                            if (entity == null)
-                                            {
-                                                entity = new Entity();
-                                                entity.RowId = rowId;
-
-                                                inserts.Add(rowId, entity);
-                                            }
-                                            else
-                                            {
-                                                updates.Add(rowId, entity);
-                                            }
-                                        }
+                                        inputs.Add(entity);
 
                                         //Stem email if required
                                         if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, entity);
@@ -198,7 +182,6 @@ namespace Metacrack.Plugins
                                     {
                                         //Dont continue getting values
                                         invalidCount++;
-                                        ValidateEmail(split, out var emailStem2);
                                         break;
                                     }
                                 }
@@ -232,7 +215,10 @@ namespace Metacrack.Plugins
                             if (lineCount % memoryLines == 0)
                             {
                                 //Writes and clears the buckets
-                                WriteBuckets(db, insertBuckets, updateBuckets, isNew);
+                                WriteMessage($"Writing checkpoint");
+                                
+                                WriteBuckets(db, inputBuckets);
+                                db.Checkpoint();
 
                                 isNew = false;
                             }
@@ -240,7 +226,7 @@ namespace Metacrack.Plugins
                     }
 
                     WriteMessage($"Writing final values to catalog.");
-                    WriteBuckets(db, insertBuckets, updateBuckets, isNew);
+                    WriteBuckets(db, inputBuckets);
 
                     //Update the files percentage
                     WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
@@ -254,38 +240,29 @@ namespace Metacrack.Plugins
             }
         }
 
-        private static void WriteBuckets(Database db, Dictionary<char, Dictionary<long, Entity>> insertBuckets, Dictionary<char, Dictionary<long, Entity>> updateBuckets, bool isNew)
+        private static void WriteBuckets(Database db, Dictionary<char, List<Entity>> insertBuckets)
         {
             //Write out the inserts and updates, and set the file creation type to something other than created
-            var count = 0;
+            var tasks = new List<Task>();
 
             foreach (var hex in Hex)
             {
-                WriteProgress($"Writing bucket {hex}", count, 15);
-
                 var inserts = insertBuckets[hex];
-                var updates = updateBuckets[hex];
 
                 //If we are looping, then we always need to do an update
-                if (isNew)
-                {
-                    if (updates.Count > 0) db.UpdateAll(hex, updates.Values);
-                    if (inserts.Count > 0) db.InsertAll(hex, inserts.Values);
-                }
-                else
-                {
-                    if (updates.Count > 0) db.UpdateAll(hex, updates.Values);
-                    if (inserts.Count > 0) db.InsertAll(hex, inserts.Values);
-                }
-
-                updates.Clear();
-                inserts.Clear();
-
-                count++;
+                if (inserts.Count > 0) tasks.Add(Task.Run(() => WriteBucket(hex, db, inserts)));
             }
+
+            Task.WhenAll(tasks).Wait(); 
 
             //Lets also allow managed code to collect this memory
             GC.Collect();
+        }
+
+        public static void WriteBucket(char hex, Database db, List<Entity> inserts)
+        {
+            db.UpsertAll(hex, inserts);
+            inserts.Clear();
         }
     }
 }

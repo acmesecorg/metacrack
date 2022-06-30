@@ -89,6 +89,9 @@ namespace Metacrack
             //Open database
             using (var db = new Database(path, true))
             {
+                WriteMessage("Please wait. Restoring key value store");
+                db.Restore();
+
                 foreach (var filePath in fileEntries)
                 {
                     //Create a version based on the file size, so that the hash and dict are bound together
@@ -122,22 +125,7 @@ namespace Metacrack
                                 if (email.Length == 0 || hash.Length == 0) continue;
 
                                 //Validate the email
-                                if (!ValidateEmail(email, out string validEmail)) continue;
-
-                                //Check hash looks correct
-                                var hashParts = hash.SplitByChar(':');
-                                var count = 0;
-
-                                //Loop through hash parts here and validate hash portion, salt portion, and count if not correct vv hashinfo
-                                foreach (var (hashPart, index2) in hashParts)
-                                {
-                                    if (index2 == 0 && !ValidateHash(hashPart, hashInfo)) continue;
-                                    if (index2 == 1 && !ValidateSalt(hashPart, hashInfo)) continue;
-                                    count++;
-                                }
-
-                                //Validate if we have correct column count in hash
-                                if (count != hashInfo.Columns) continue;
+                                if (!ValidateEmail(email, out string validEmail)) continue;                               
 
                                 //Place in a bucket for parallel processing
                                 var rowChar = validEmail.ToRowIdAndChar();
@@ -148,24 +136,29 @@ namespace Metacrack
                                 hashes[bucket].Add(hash.ToString());
 
                                 //Update the percentage
-                                if (lineCount % updateMod == 0) WriteProgress($"Reading {fileInfo.Name} into memory", progressTotal, size);
+                                if (lineCount % updateMod == 0)
+                                {
+                                    WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
+
+                                    //Check if we must lookup and write to disk.
+                                    //This will also clear the buckets
+                                    var tasks = new List<Task<long>>();
+
+                                    foreach (var hex in Hex)
+                                    {
+                                        var task = Task.Run(() => AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, hex));
+                                        tasks.Add(task);
+                                    }
+
+                                    while (tasks.Count > 0)
+                                    {
+                                        var completedTask = Task.WhenAny(tasks.ToArray()).GetAwaiter().GetResult();
+                                        writeCount += completedTask.Result;
+
+                                        tasks.Remove(completedTask);
+                                    }
+                                }
                             }
-                        }
-
-                        //Do threaded lookups and writes here
-                        var progressIndicator = new Progress<long>((long value) => WriteMessage($"Got progress value {value}"));
-                        var tasks = new List<Task>();
-
-                        foreach (var hex in Hex)
-                        {
-                            writeCount += AddValues(progressIndicator, db, identifiers[hex], hashes[hex], fields, rules, options, fileName, hex);
-                            //tasks.Add(task);
-                        }
-
-                        while (tasks.Count > 0)
-                        {
-                            var completedTask = Task.WhenAny(tasks.ToArray()).GetAwaiter().GetResult();
-                            tasks.Remove(completedTask);
                         }
 
                         var finalHashPath = Path.Combine(currentDirectory, $"{fileName}.hash");
@@ -173,6 +166,7 @@ namespace Metacrack
 
                         //Combine all the files here
                         //TODO: make this work for file sizes larger than memory
+                        //TODO: reintroduce session manager if required
                         foreach (var hex in Hex)
                         {
                             var hashPath = Path.Combine(currentDirectory, $"{fileName}.{hex}.hash");
@@ -207,7 +201,7 @@ namespace Metacrack
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
         }
 
-        private static long AddValues(IProgress<long> progress, Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, string filename, char hex)
+        private static long AddValues(Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, HashInfo hashInfo, string filename, char hex)
         {
             var writeCount = 0L;
             var bufferCount = 0L;
@@ -218,10 +212,29 @@ namespace Metacrack
 
             var hashesBuffer = new List<string>();
             var wordsBuffer = new List<string>();
+            var session = db.GetSession(hex);
 
             for (var i = 0; i < identifiers.Count; i++)
             {
-                var entity = db.Select(hex, identifiers[i]);
+                //First, lets validate the hash
+                var hash = hashes[i];
+
+                //Check hash looks correct
+                var hashParts = hash.SplitByChar(':');
+                var count = 0;
+
+                //Loop through hash parts here and validate hash portion, salt portion, and count if not correct vv hashinfo
+                foreach (var (hashPart, index2) in hashParts)
+                {
+                    if (index2 == 0 && !ValidateHash(hashPart, hashInfo)) continue;
+                    if (index2 == 1 && !ValidateSalt(hashPart, hashInfo)) continue;
+                    count++;
+                }
+
+                //Validate if we have correct column count in hash
+                if (count != hashInfo.Columns) continue;
+
+                var entity = db.Select(session, identifiers[i]);
 
                 //An entry was found in the table
                 if (entity != null)
@@ -236,8 +249,6 @@ namespace Metacrack
                     //Limit the words to the maximum
                     if (words.Count() > options.HashMaximum) words = words.Take(options.HashMaximum).ToList();
 
-                    var hash = hashes[i];
-
                     foreach (var word in words)
                     {
                         hashesBuffer.Add(hash);
@@ -248,8 +259,8 @@ namespace Metacrack
                     bufferCount += words.Count;
                 }
 
-                //Check if we need to append 
-                if (bufferCount > 1000)
+                //Check if we need to append every 1000 lines or if we have reached the end 
+                if (bufferCount >= 1000)
                 {
                     File.AppendAllLines(hashPath, hashesBuffer.ToArray());
                     File.AppendAllLines(wordPath, wordsBuffer.ToArray());
@@ -257,24 +268,17 @@ namespace Metacrack
                     hashesBuffer.Clear();
                     wordsBuffer.Clear();
 
-                    progress?.Report(bufferCount);
                     bufferCount = 0;
                 }
             }
 
-            //Write final values
-            //Check if we need to append 
-            if (bufferCount > 0)
-            {
-                File.AppendAllLines(hashPath, hashesBuffer.ToArray());
-                File.AppendAllLines(wordPath, wordsBuffer.ToArray());
+            //Write out final buffers
+            File.AppendAllLines(hashPath, hashesBuffer.ToArray());
+            File.AppendAllLines(wordPath, wordsBuffer.ToArray());
 
-                hashesBuffer.Clear();
-                wordsBuffer.Clear();
-
-                progress?.Report(bufferCount);
-                bufferCount = 0;
-            }
+            //Cleanup
+            identifiers.Clear();
+            hashes.Clear();
 
             return writeCount;
         }

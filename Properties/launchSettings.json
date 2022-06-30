@@ -92,7 +92,7 @@
     },
     "Catalog Stress Test": {
       "commandName": "Project",
-      "commandLineArgs": "catalog additions-may2022.txt C:\\Breach\\test\\store",
+      "commandLineArgs": "catalog additions.3.txt C:\\Breach\\test\\store",
       "workingDirectory": "C:\\Breach\\test"
     }
   }
