@@ -111,7 +111,7 @@ namespace Metacrack.Plugins
             //Open up sqlite
             using (var db = new Database(outputPath))
             {
-                WriteMessage((isNew) ? "Creating new key value store" : "Please wait.Restoring key value store");
+                WriteMessage((isNew) ? "Creating new key value store" : "Please wait. Restoring key value store");
 
                 db.Restore();
 
@@ -132,6 +132,7 @@ namespace Metacrack.Plugins
                 foreach (var lookupPath in fileEntries)
                 {
                     //Create a list of updates and inserts in memory per file
+                    var lines = new List<(char Hex, Entity entity)>();
                     var inputBuckets = new Dictionary<char, List<Entity>>();
 
                     foreach (var hex in Hex)
@@ -142,78 +143,45 @@ namespace Metacrack.Plugins
                     var fileName = Path.GetFileName(lookupPath);
                     fileCount++;
 
+                    var tasks = new List<Task<(char, Entity)>>();
+
                     using (var reader = new StreamReader(lookupPath))
                     {
                         while (!reader.EndOfStream)
                         {
                             lineCount++;
 
-                            var line = reader.ReadLine().AsSpan();
-                            var splits = line.SplitByChar(':');
-                            var entity = default(Entity);
-                            var fieldIndex = 0;
+                            var line = reader.ReadLine();
 
                             progressTotal += line.Length;
 
-                            foreach (var (split, index) in splits)
-                            {
-                                //Get the email, stem it and validate it 
-                                if (index == 0)
-                                {
-                                    if (ValidateEmail(split, out var emailStem))
-                                    {
-                                        validCount++;
-
-                                        var rowChar = emailStem.ToRowIdAndChar();
-                                        var bucket = rowChar.Char;
-                                        var rowId = rowChar.Id;
-
-                                        var inputs = inputBuckets[bucket];
-
-                                        entity = new Entity();
-                                        entity.RowId = rowId;
-
-                                        inputs.Add(entity);
-
-                                        //Stem email if required
-                                        if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, entity);
-                                    }
-                                    else
-                                    {
-                                        //Dont continue getting values
-                                        invalidCount++;
-                                        break;
-                                    }
-                                }
-                                //Else map the index to the correct entity type and perform and functions
-                                else if (!options.StemEmailOnly && columns.Contains(index))
-                                {
-                                    if (options.Tokenize)
-                                    {
-                                        var tokens = split.SplitByChar(' ');
-                                        foreach (ReadOnlySpan<char> token in tokens)
-                                        {
-                                            //We trim the token, but we dont change capitalisation. We leave that to the lookup
-                                            var trimToken = token.Trim();
-                                            if (trimToken.Length > 0) entity.SetValue(trimToken, fields[fieldIndex]);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        entity.SetValue(split, fields[fieldIndex]);
-                                    }
-                                    fieldIndex++;
-                                }
-
-                                //Shortcut if we have parsed all the data we need to for this line
-                                if (fieldIndex >= columns.Count()) break;
-                            }
+                            tasks.Add(Task.Run(() => ProcessLine(line, options, fields, columns, lookups)));
 
                             if (lineCount % 10000 == 0) WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
 
                             //Write to database after we process a certain number of lines (100 million or so)
                             if (lineCount % memoryLines == 0)
                             {
+                                WriteProgress($"Waiting for tasks", progressTotal, fileEntriesSize);
+
+                                //Get the values from the tasks and place them into buckets
+                                Task.WhenAll(tasks).GetAwaiter().GetResult();
+
+                                foreach (var task in tasks)
+                                {
+                                    if (task.Result.Item2 == null)
+                                    {
+                                        invalidCount++;
+                                    }
+                                    else
+                                    {
+                                        inputBuckets[task.Result.Item1].Add(task.Result.Item2);
+                                        validCount++;
+                                    }
+                                }
+
+                                tasks.Clear();
+
                                 //Writes and clears the buckets
                                 WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
 
@@ -226,6 +194,26 @@ namespace Metacrack.Plugins
                             }
                         }
                     }
+
+                    //Flush final tasks into the buckets
+                    WriteProgress($"Waiting for tasks", progressTotal, fileEntriesSize);
+
+                    Task.WhenAll(tasks).GetAwaiter().GetResult();
+
+                    foreach (var task in tasks)
+                    {
+                        if (task.Result.Item2 == null)
+                        {
+                            invalidCount++;
+                        }
+                        else
+                        {
+                            inputBuckets[task.Result.Item1].Add(task.Result.Item2);
+                            validCount++;
+                        }
+                    }
+
+                    tasks.Clear();
 
                     WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
                     WriteBuckets(db, inputBuckets);
@@ -248,6 +236,63 @@ namespace Metacrack.Plugins
                 WriteMessage($"Processed {validCount} lines out of {lineCount} ({invalidCount} invalid)");
                 WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");
             }
+        }
+
+        private static (char, Entity) ProcessLine(string line, CatalogOptions options, string[] fields, int[] columns, HashSet<string> lookups)
+        {
+            var lineSpan = line.AsSpan();
+            var splits = lineSpan.SplitByChar(':');
+            var entity = default(Entity);
+            var fieldIndex = 0;
+            var bucket = default(char);
+
+            foreach (var (split, index) in splits)
+            {
+                //Get the email, stem it and validate it 
+                if (index == 0)
+                {
+                    if (ValidateEmail(split, out var emailStem))
+                    {
+                        var rowChar = emailStem.ToRowIdAndChar();
+                        entity = new Entity();
+                        entity.RowId = rowChar.Id;
+
+                        bucket = rowChar.Char;
+
+                        //Stem email if required
+                        if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, entity);
+                    }
+                    else
+                    {
+                        //Dont continue getting values
+                        return (default, default);
+                    }
+                }
+                //Else map the index to the correct entity type and perform and functions
+                else if (!options.StemEmailOnly && columns.Contains(index))
+                {
+                    if (options.Tokenize)
+                    {
+                        var tokens = split.SplitByChar(' ');
+                        foreach (ReadOnlySpan<char> token in tokens)
+                        {
+                            //We trim the token, but we dont change capitalisation. We leave that to the lookup
+                            var trimToken = token.Trim();
+                            if (trimToken.Length > 0) entity.SetValue(trimToken, fields[fieldIndex]);
+                        }
+                    }
+                    else
+                    {
+                        entity.SetValue(split, fields[fieldIndex]);
+                    }
+                    fieldIndex++;
+                }
+
+                //Shortcut if we have parsed all the data we need to for this line
+                if (fieldIndex >= columns.Count()) break;
+            }
+
+            return (bucket, entity);
         }
 
         private static void WriteBuckets(Database db, Dictionary<char, List<Entity>> insertBuckets)

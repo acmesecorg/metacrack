@@ -27,8 +27,11 @@ public static class StringExtensions
 
     public static (long Id, char Char) ToRowIdAndChar(this string value)
     {
-        var bytes = _sha1.ComputeHash(Encoding.UTF8.GetBytes(value));
-        return (BitConverter.ToInt64(bytes, 0), Convert.ToHexString(bytes,0,1)[0]);
+        using (var sha1 = new SHA1Managed())
+        {
+            var bytes = sha1.ComputeHash(Encoding.UTF8.GetBytes(value));
+            return (BitConverter.ToInt64(bytes, 0), Convert.ToHexString(bytes, 0, 1)[0]);
+        }
     }
 
     public static string RemoveSpecialCharacters(this string str)
