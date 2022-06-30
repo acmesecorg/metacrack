@@ -76,15 +76,27 @@ namespace Metacrack
             {
                 var entity = obj;
                 var key = new RowKey { key = obj.RowId };
+
+                //This will overwrite any existing entity
                 session.Upsert(ref key, ref entity, context, 0);
             }
         }
 
-        public void Upsert(ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> session, MyContext context, Entity entity)
+        public void ReadModifyWriteAll(char hex, IEnumerable<Entity> objects)
         {
-            var key = new RowKey { key = entity.RowId };
-            session.Upsert(ref key, ref entity, context, 0);
+            var session = GetSession(hex);
+
+            foreach (var obj in objects)
+            {
+                var entity = obj;
+                var key = new RowKey { key = obj.RowId };
+                var myInput = new MyInput {Value = entity };
+                var myOutput = new MyOutput();
+
+                session.RMW(ref key, ref myInput, ref myOutput);
+            }
         }
+
 
         public Entity Select(ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> session, long rowId)
         {
@@ -95,7 +107,7 @@ namespace Metacrack
             var g1 = new MyOutput();
 
             session.Read(ref key, ref input, ref g1, context, 0);
-            return g1.value;
+            return g1.Value;
         }
 
         public void Checkpoint()

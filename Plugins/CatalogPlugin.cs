@@ -235,8 +235,12 @@ namespace Metacrack.Plugins
                     WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
                 }
 
-                WriteMessage($"Compacting key value store.");
-                db.Compact(db.GetSession(Hex[0]));
+                //Compaction doesnt appear to reduce the size of the store, but the option is available 
+                if (options.Compact)
+                {
+                    WriteMessage($"Compacting key value store.");
+                    db.Compact(db.GetSession(Hex[0]));
+                }
 
                 WriteMessage($"Flushing key value store data to disk.");
                 db.Flush();
@@ -257,6 +261,7 @@ namespace Metacrack.Plugins
 
                 //If we are looping, then we always need to do an update
                 if (inserts.Count > 0) tasks.Add(Task.Run(() => WriteBucket(hex, db, inserts)));
+                //if (inserts.Count > 0) WriteBucket(hex, db, inserts);
             }
 
             Task.WhenAll(tasks).Wait(); 
@@ -267,7 +272,7 @@ namespace Metacrack.Plugins
 
         public static void WriteBucket(char hex, Database db, List<Entity> inserts)
         {
-            db.UpsertAll(hex, inserts);
+            db.ReadModifyWriteAll(hex, inserts);
             inserts.Clear();
         }
     }

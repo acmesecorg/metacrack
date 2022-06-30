@@ -75,11 +75,6 @@
       "commandLineArgs": "hash dailyquiz.dict --hash 0",
       "workingDirectory": "D:\\hashcat-6.2.5+8"
     },
-    "Catalog Test": {
-      "commandName": "Project",
-      "commandLineArgs": "catalog input.txt C:\\Breach\\test\\store --columns 1 2 --fields p u --names names.txt --stem-email",
-      "workingDirectory": "C:\\Breach\\test"
-    },
     "Lookup Test": {
       "commandName": "Project",
       "commandLineArgs": "lookup breach.txt C:\\Breach\\test\\store -m 3200 -r best64.rule -f p u i",
@@ -90,10 +85,20 @@
       "commandLineArgs": "lookup test.left.txt C:\\Breach\\test\\store",
       "workingDirectory": "C:\\Breach\\test"
     },
+    "Catalog Test": {
+      "commandName": "Project",
+      "commandLineArgs": "catalog input.txt C:\\Breach\\test\\store",
+      "workingDirectory": "C:\\Breach\\test"
+    },
+    "Catalog Test All Fields": {
+      "commandName": "Project",
+      "commandLineArgs": "catalog input.txt C:\\Breach\\test\\store --columns 1 2 --fields p u --names names.txt --stem-email",
+      "workingDirectory": "C:\\Breach\\test"
+    },
     "Catalog Stress Test": {
       "commandName": "Project",
       "commandLineArgs": "catalog additions.3.txt C:\\Breach\\test\\store",
       "workingDirectory": "C:\\Breach\\test"
-    }
+    }  
   }
 }

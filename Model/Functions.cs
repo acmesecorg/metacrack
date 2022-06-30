@@ -9,16 +9,16 @@ namespace Metacrack.Model
 {
     public class MyInput
     {
-        public long value;
+        public Entity Value;
 
-        public override string ToString() => value.ToString();
+        public override string ToString() => Value.ToString();
     }
 
     public class MyOutput
     {
-        public Entity value;
+        public Entity Value;
 
-        public override string ToString() => value.ToString();
+        public override string ToString() => Value.ToString();
     }
 
     public class MyContext { }
@@ -27,40 +27,44 @@ namespace Metacrack.Model
     {
         public override bool InitialUpdater(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput output, ref RMWInfo rmwInfo)
         {
-            //value.value = input.value;
+            if (value == null)
+            {
+                value = input.Value;
+                return true;
+            }
+            
+            //Merge input.value into value
+            value.CopyFrom(input.Value);
             return true;
         }
 
+        //This appears to happen when you are updated values that have already been checkpointed
         public override bool CopyUpdater(ref RowKey key, ref MyInput input, ref Entity oldValue, ref Entity newValue, ref MyOutput output, ref RMWInfo rmwInfo)
         {
-            newValue = oldValue;
+            //Merge input.value and old.value into newValue
+            newValue.CopyFrom(oldValue);
+            newValue.CopyFrom(input.Value);
+            
             return true;
         }
 
+        //This appears to happen when you are updating values recently added
         public override bool InPlaceUpdater(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput output, ref RMWInfo rmwInfo) 
-        { 
-            //value.value += input.value; 
+        {
+            value.CopyFrom(input.Value);
             return true; 
         }
 
         public override bool SingleReader(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput dst, ref ReadInfo readInfo)
         {
-            dst.value = value;
+            dst.Value = value;
             return true;
         }
 
         public override bool ConcurrentReader(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput dst, ref ReadInfo readInfo)
         {
-            dst.value = value;
+            dst.Value = value;
             return true;
-        }
-
-        public override void ReadCompletionCallback(ref RowKey key, ref MyInput input, ref MyOutput output, MyContext ctx, Status status, RecordMetadata recordMetadata)
-        {
-            //if (output.value.RowId == key.key)
-            //    Console.WriteLine("Success!");
-            //else
-            //    Console.WriteLine("Error!");
         }
     }
 }

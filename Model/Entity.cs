@@ -33,6 +33,18 @@ namespace Metacrack.Model
         [ProtoMember(7)]
         public string Values { get; set; }
 
+        public void CopyFrom(Entity entity)
+        {
+            if (entity == null) return;
+
+            AddPasswords(entity.Passwords);
+            AddUsernames(entity.Usernames);
+            AddNames(entity.Names);
+            AddDates(entity.Dates);
+            AddNumbers(entity.Numbers);
+            AddValues(entity.Values);
+        }
+
         public void AddPasswords(string values)
         {
             if (string.IsNullOrEmpty(values)) return;

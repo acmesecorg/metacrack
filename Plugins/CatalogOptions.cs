@@ -34,5 +34,8 @@ namespace Metacrack.Plugins
         [Option('f', "fields", HelpText = "The predefined fields to write values to. Each column should have a matching field. Valid values are: " +
             "p password u username n name d date i number v value.")]
         public IEnumerable<string> Fields { get; set; }
+
+        [Option("compact", HelpText = "Compact the key value store once value are added.")]
+        public bool Compact { get; set; }
     }
 }

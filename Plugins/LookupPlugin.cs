@@ -159,6 +159,25 @@ namespace Metacrack
                                     }
                                 }
                             }
+
+                            //Final write
+                            WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
+
+                            var finalTasks = new List<Task<long>>();
+
+                            foreach (var hex in Hex)
+                            {
+                                var task = Task.Run(() => AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, hex));
+                                finalTasks.Add(task);
+                            }
+
+                            while (finalTasks.Count > 0)
+                            {
+                                var completedTask = Task.WhenAny(finalTasks.ToArray()).GetAwaiter().GetResult();
+                                writeCount += completedTask.Result;
+
+                                finalTasks.Remove(completedTask);
+                            }
                         }
 
                         var finalHashPath = Path.Combine(currentDirectory, $"{fileName}.hash");
