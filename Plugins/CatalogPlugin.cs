@@ -106,14 +106,13 @@ namespace Metacrack.Plugins
                 }
             }
 
-            var isNew = File.Exists(outputPath) && Directory.GetFiles(outputPath).Count() > 0;
+            var isNew = !(File.Exists(outputPath) && Directory.GetFiles(outputPath).Length > 0);
 
             //Open up sqlite
             using (var db = new Database(outputPath))
             {
-                WriteMessage((isNew) ? "Creating new key value store" : "Found existing key value store");
+                WriteMessage((isNew) ? "Creating new key value store" : "Please wait.Restoring key value store");
 
-                WriteMessage("Please wait. Restoring key value store");
                 db.Restore();
 
                 //Get input files size
@@ -140,6 +139,7 @@ namespace Metacrack.Plugins
                         inputBuckets.Add(hex, new List<Entity>());
                     }
 
+                    var fileName = Path.GetFileName(lookupPath);
                     fileCount++;
 
                     using (var reader = new StreamReader(lookupPath))
@@ -209,28 +209,34 @@ namespace Metacrack.Plugins
                                 if (fieldIndex >= columns.Count()) break;
                             }
 
-                            if (lineCount % 10000 == 0) WriteProgress($"Adding values", progressTotal, fileEntriesSize);
+                            if (lineCount % 10000 == 0) WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
 
                             //Write to database after we process a certain number of lines (100 million or so)
                             if (lineCount % memoryLines == 0)
                             {
                                 //Writes and clears the buckets
-                                WriteMessage($"Writing checkpoint");
-                                
+                                WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
+
                                 WriteBuckets(db, inputBuckets);
                                 db.Checkpoint();
 
                                 isNew = false;
+
+                                WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
                             }
                         }
                     }
 
-                    WriteMessage($"Writing final values to catalog.");
+                    WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
                     WriteBuckets(db, inputBuckets);
+                    db.Checkpoint();
 
                     //Update the files percentage
                     WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
                 }
+
+                WriteMessage($"Compacting key value store.");
+                db.Compact(db.GetSession(Hex[0]));
 
                 WriteMessage($"Flushing key value store data to disk.");
                 db.Flush();

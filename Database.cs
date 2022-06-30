@@ -105,8 +105,13 @@ namespace Metacrack
 
         public void Flush()
         {
-            _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).AsTask().GetAwaiter().GetResult();
-            _store.Log.FlushAndEvict(true);
+            _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).AsTask().GetAwaiter().GetResult();            
+        }
+
+        public void Compact(ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> session)
+        {
+            session.Compact(_store.Log.HeadAddress, CompactionType.Scan);
+            _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
         }
 
         protected virtual void Dispose(bool disposing)
