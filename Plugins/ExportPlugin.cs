@@ -34,6 +34,9 @@ namespace Metacrack
             {
                 WriteMessage($"Removing hashes for {options.RemoveHashesPath}.");
                 removeHashes.AddRange(File.ReadAllLines(options.RemoveHashesPath));
+
+                //See if we need to calcuate the remove words path
+                if (options.RemoveWordsPath.Length == 0) options.RemoveWordsPath = options.RemoveHashesPath.Replace(".hash", ".word");
             }
 
             if (options.RemoveWordsPath.Length > 0)

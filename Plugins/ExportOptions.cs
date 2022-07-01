@@ -18,7 +18,7 @@ namespace Metacrack
         [Option]
         public bool IgnoreSalt { get; set; }
 
-        [Option("remove-hash", Default = "", HelpText = "The path to the file containing hashes to be removed.")]
+        [Option("remove", Default = "", HelpText = "The path to the file containing hashes to be removed.")]
         public string RemoveHashesPath { get; set; }
 
         [Option("remove-word", Default = "", HelpText = "The path to the file containing associated words to be removed. Use in conjunction with --remove.")]
