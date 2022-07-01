@@ -13,7 +13,8 @@ namespace Metacrack.Plugins
         public static void Process(CatalogOptions options)
         {
             //Validate and display arguments
-            var memoryLines = 6000000 * 4; //20 millon = 3gb, so roughly 4GB
+            var checkpointLines = 4000000;
+            var flushLines = checkpointLines * 8;
             var currentDirectory = Directory.GetCurrentDirectory();
             var fileEntries = Directory.GetFiles(currentDirectory, options.InputPath);
 
@@ -108,101 +109,117 @@ namespace Metacrack.Plugins
 
             var isNew = !(Directory.Exists(outputPath) && Directory.GetFiles(outputPath).Length > 0);
 
-            //Open up sqlite
-            using (var db = new Database(outputPath))
+            try
             {
-                WriteMessage((isNew) ? "Creating new key value store" : "Please wait. Restoring key value store");
-
-                db.Restore();
-
-                //Get input files size
-                var fileEntriesSize = GetFileEntriesSize(fileEntries);
-
-                WriteMessage($"Found {fileEntries.Count()} text file entries ({FormatSize(fileEntriesSize)}) in all folders.");
-
-                progressTotal = 0L;
-                lineCount = 0L;
-                var validCount = 0L;
-                var invalidCount = 0L;
-                var fileCount = 0;
-
-                WriteMessage($"Started adding values at {DateTime.Now.ToShortTimeString()}");
-
-                //Process a file
-                foreach (var lookupPath in fileEntries)
+                //Open up sqlite
+                using (var db = new Database(outputPath))
                 {
-                    //Create a list of updates and inserts in memory per file
-                    var lines = new List<(char Hex, Entity entity)>();
-                    var inputBuckets = new Dictionary<char, List<Entity>>();
+                    WriteMessage((isNew) ? "Creating new key value store" : "Please wait. Restoring key value store");
 
-                    foreach (var hex in Hex)
+                    db.Restore();
+
+                    //Get input files size
+                    var fileEntriesSize = GetFileEntriesSize(fileEntries);
+
+                    WriteMessage($"Found {fileEntries.Count()} text file entries ({FormatSize(fileEntriesSize)}) in all folders.");
+
+                    progressTotal = 0L;
+                    lineCount = 0L;
+                    var validCount = 0L;
+                    var invalidCount = 0L;
+                    var fileCount = 0;
+
+                    WriteMessage($"Started adding values at {DateTime.Now.ToShortTimeString()}");
+
+                    //Process a file
+                    foreach (var lookupPath in fileEntries)
                     {
-                        inputBuckets.Add(hex, new List<Entity>());
-                    }
+                        //Create a list of updates and inserts in memory per file
+                        var inputBuckets = new Dictionary<char, List<Entity>>();
+                        var line = "";
+                        var task = Task.CompletedTask;
 
-                    var fileName = Path.GetFileName(lookupPath);
-                    fileCount++;
-
-                    using (var reader = new StreamReader(lookupPath))
-                    {
-                        while (!reader.EndOfStream)
+                        foreach (var hex in Hex)
                         {
-                            lineCount++;
+                            inputBuckets.Add(hex, new List<Entity>());
+                        }
 
-                            var line = reader.ReadLine();
+                        var fileName = Path.GetFileName(lookupPath);
+                        fileCount++;
 
-                            progressTotal += line.Length;
-
-                            var result = ProcessLine(line, options, fields, columns, lookups);
-
-                            if (result.Entity == null)
+                        try
+                        {
+                            using (var reader = new StreamReader(lookupPath))
                             {
-                                invalidCount++;
+                                while (!reader.EndOfStream)
+                                {
+                                    lineCount++;
+
+                                    line = reader.ReadLine();
+
+                                    progressTotal += line.Length;
+
+                                    var result = ProcessLine(line, options, fields, columns, lookups);
+
+                                    if (result.Entity == null)
+                                    {
+                                        invalidCount++;
+                                    }
+                                    else
+                                    {
+                                        validCount++;
+                                        inputBuckets[result.Bucket].Add(result.Entity);
+                                    }
+
+                                    if (lineCount % 10000 == 0) WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
+
+                                    //Write to database after we process a certain number of lines (100 million or so)
+                                    if (lineCount % checkpointLines == 0)
+                                    {
+                                        //We wait for the previous checkpoint to complete
+                                        task.Wait();
+
+                                        //Writes and clears the buckets
+                                        WriteBuckets(db, inputBuckets);
+
+                                        //Check if we are also at a full checkpoint (ie flush)
+                                        if (lineCount % flushLines == 0)
+                                        {
+                                            task = Task.Run(() => db.Flush());
+                                        }
+                                        else
+                                        {
+                                            task = Task.Run(() => db.Checkpoint());
+                                        }
+
+                                        isNew = false;
+                                    }
+                                }
                             }
-                            else
-                            {
-                                validCount++;
-                                inputBuckets[result.Bucket].Add(result.Entity);
-                            }
-
-                            if (lineCount % 10000 == 0) WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
-
-                            //Write to database after we process a certain number of lines (100 million or so)
-                            if (lineCount % memoryLines == 0)
-                            {
-                                //Writes and clears the buckets
-                                WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
-
-                                WriteBuckets(db, inputBuckets);
-                                db.Checkpoint();
-
-                                isNew = false;
-
-                                WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
-                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            WriteError($"Exception processing {fileName} ({line}). {ex.Message}");
                         }
                     }
 
-                    WriteProgress($"Writing checkpoint", progressTotal, fileEntriesSize);
-                    WriteBuckets(db, inputBuckets);
-                    db.Checkpoint();
+                    //Compaction doesnt appear to reduce the size of the store, but the option is available 
+                    if (options.Compact)
+                    {
+                        WriteMessage($"Compacting key value store.");
+                        db.Compact(db.GetSession(Hex[0]));
+                    }
 
-                    //Update the files percentage
-                    WriteProgress($"Processing file {fileCount} of {fileEntries.Length}", progressTotal, fileEntriesSize);
+                    WriteMessage($"Flushing key value store data to disk.");
+                    db.Flush();
+
+                    WriteMessage($"Processed {validCount} lines out of {lineCount} ({invalidCount} invalid)");
+                    WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");
                 }
+            }
+            catch (Exception ex)
+            {
 
-                //Compaction doesnt appear to reduce the size of the store, but the option is available 
-                if (options.Compact)
-                {
-                    WriteMessage($"Compacting key value store.");
-                    db.Compact(db.GetSession(Hex[0]));
-                }
-
-                WriteMessage($"Flushing key value store data to disk.");
-                db.Flush();
-
-                WriteMessage($"Processed {validCount} lines out of {lineCount} ({invalidCount} invalid)");
-                WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");
             }
         }
 
@@ -280,7 +297,7 @@ namespace Metacrack.Plugins
             Task.WhenAll(tasks).Wait(); 
 
             //Lets also allow managed code to collect this memory
-            GC.Collect();
+            GC.Collect(3, GCCollectionMode.Forced);
         }
 
         public static void WriteBucket(char hex, Database db, List<Entity> inserts)
