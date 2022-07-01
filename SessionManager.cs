@@ -70,6 +70,46 @@ namespace Metacrack
             }
         }
 
+        public void AddFiles(string hashPath, string wordPath, IProgress<int> progress = null)
+        {
+            //Get input files size
+            var fileEntries = new string[] { hashPath, wordPath };
+            var fileEntriesSize = PluginBase.GetFileEntriesSize(fileEntries);
+
+            var progressTotal = 0L;
+            var lineCount = 0L;
+
+            using (var hashReader = new StreamReader(hashPath))
+            using (var wordReader = new StreamReader(wordPath))
+            {
+                var lastHash = "";
+                var lastWords = new List<string>();
+
+                while (!hashReader.EndOfStream)
+                {
+                    var hash = hashReader.ReadLine();
+                    var word = wordReader.ReadLine();
+
+                    if (lastHash != hash && lastWords.Count > 0)
+                    {
+                        AddWords(lastHash.AsSpan(), lastWords);
+                        lastWords.Clear();
+
+                        if (lineCount % 10000 == 0 && progress != null) progress.Report((int)((double)progressTotal / fileEntriesSize * 100));
+                    }
+
+                    lineCount++;
+                    progressTotal += hash.Length + word.Length + 2;
+
+                    lastHash = hash;
+                    lastWords.Add(word);
+                }
+
+                //Write final
+                AddWords(lastHash.AsSpan(), lastWords);
+            }
+        }
+
         public void AddWords(ReadOnlySpan<char> hash, List<string> words)
         {
             //If we just have one default session

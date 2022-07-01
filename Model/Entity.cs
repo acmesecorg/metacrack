@@ -12,25 +12,25 @@ namespace Metacrack.Model
     {
         private static int ValueLengthMax = 70;
 
-        [ProtoMember(1)]
+        //We dont serialize the rowId, this is stored in the index log instead
         public long RowId { get; set; }
 
-        [ProtoMember(2)]
+        [ProtoMember(1)]
         public string Passwords { get; set; }
 
-        [ProtoMember(3)]
+        [ProtoMember(2)]
         public string Usernames { get; set; }
 
-        [ProtoMember(4)]
+        [ProtoMember(3)]
         public string Names { get; set; }
 
-        [ProtoMember(5)]
+        [ProtoMember(4)]
         public string Dates { get; set; }
 
-        [ProtoMember(6)]
+        [ProtoMember(5)]
         public string Numbers { get; set; }
 
-        [ProtoMember(7)]
+        [ProtoMember(6)]
         public string Values { get; set; }
 
         public void CopyFrom(Entity entity)

@@ -107,6 +107,7 @@ namespace Metacrack
             var g1 = new MyOutput();
 
             session.Read(ref key, ref input, ref g1, context, 0);
+            g1.Value.RowId = rowId;
             return g1.Value;
         }
 

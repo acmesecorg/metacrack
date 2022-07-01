@@ -97,6 +97,23 @@ namespace Metacrack
             return path;
         }
 
+        public static void CombineFiles(string path, string inputPattern, string outputFilePath)
+        {
+            var inputFilePaths = Directory.GetFiles(path, inputPattern);
+
+            using (var outputStream = File.Create(outputFilePath))
+            {
+                foreach (var inputFilePath in inputFilePaths)
+                {
+                    using (var inputStream = File.OpenRead(inputFilePath))
+                    {
+                        // Buffer size can be passed as the second argument.
+                        inputStream.CopyTo(outputStream);
+                    }
+                }
+            }
+        }
+
         public static string IncrementFilename(string filenameNoExtension, string type)
         {
             var dottype = $".{type}";
