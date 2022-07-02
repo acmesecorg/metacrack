@@ -84,11 +84,11 @@ namespace Metacrack
 
             //Get all folders starting with temp
             var count = 0;
-            var path = Path.Combine(current, $"\\Temp");
+            var path = $"{current}\\Temp";
 
             while (Directory.Exists(path))
             {
-                path = Path.Combine(current, $"\\Temp{count}");
+                path = Path.Combine(current, $"{current}\\Temp{count}");
                 count++;
             }
 
@@ -468,7 +468,7 @@ namespace Metacrack
             var name = subsplits.Current.Value;
             
             //Add the whole name as a value
-            entity.AddValues(name);
+            entity.AddValues(name.ToString());
 
             //Remove special characters, giving us alpha and numerics
             //Regex expression is cached
@@ -478,7 +478,7 @@ namespace Metacrack
             //We are really more interested in special numbers and dates of birth etc here
             if (int.TryParse(value, out var number))
             {
-                if (number > 9) entity.AddNumbers(value);
+                if (number > 9) entity.AddNumbers(value.ToString());
             }
             else
             {
@@ -500,7 +500,7 @@ namespace Metacrack
                         {
                             if (int.TryParse(other, out var number2))
                             {
-                                if (number2 > 9) entity.AddNumbers(other);
+                                if (number2 > 9) entity.AddNumbers(other.ToString());
                             }
                             else
                             {

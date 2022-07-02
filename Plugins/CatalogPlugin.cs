@@ -129,21 +129,21 @@ namespace Metacrack.Plugins
                     var invalidCount = 0L;
                     var fileCount = 0;
 
+                    //Create a list of updates and inserts in memory
+                    var inputBuckets = new Dictionary<char, List<Entity>>();
+                    foreach (var hex in Hex)
+                    {
+                        inputBuckets.Add(hex, new List<Entity>());
+                    }
+
+                    var task = Task.CompletedTask;
+
                     WriteMessage($"Started adding values at {DateTime.Now.ToShortTimeString()}");
 
                     //Process a file
                     foreach (var lookupPath in fileEntries)
                     {
-                        //Create a list of updates and inserts in memory per file
-                        var inputBuckets = new Dictionary<char, List<Entity>>();
                         var line = "";
-                        var task = Task.CompletedTask;
-
-                        foreach (var hex in Hex)
-                        {
-                            inputBuckets.Add(hex, new List<Entity>());
-                        }
-
                         var fileName = Path.GetFileName(lookupPath);
                         fileCount++;
 
@@ -153,10 +153,9 @@ namespace Metacrack.Plugins
                             {
                                 while (!reader.EndOfStream)
                                 {
-                                    lineCount++;
-
                                     line = reader.ReadLine();
 
+                                    lineCount++;
                                     progressTotal += line.Length;
 
                                     var result = ProcessLine(line, options, fields, columns, lookups);
@@ -170,6 +169,8 @@ namespace Metacrack.Plugins
                                         validCount++;
                                         inputBuckets[result.Bucket].Add(result.Entity);
                                     }
+
+                                    if (result.Entity?.RowId == 3031383550799529486) result.Entity.RowId = 3031383550799529486;
 
                                     if (lineCount % 10000 == 0) WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
 
@@ -203,6 +204,12 @@ namespace Metacrack.Plugins
                         }
                     }
 
+                    //Ensure final writes occur
+                    task.Wait();
+
+                    //Writes and clears the buckets
+                    WriteBuckets(db, inputBuckets);
+
                     //Compaction doesnt appear to reduce the size of the store, but the option is available 
                     if (options.Compact)
                     {
@@ -219,7 +226,7 @@ namespace Metacrack.Plugins
             }
             catch (Exception ex)
             {
-
+                WriteError($"Exception writing catalog. {ex.Message}");
             }
         }
 
@@ -246,6 +253,8 @@ namespace Metacrack.Plugins
 
                         //Stem email if required
                         if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, entity);
+
+                        //if (emailStem == "savannahmaecrump@gmail.com") emailStem = "savannahmaecrump@gmail.com";
                     }
                     else
                     {
@@ -263,12 +272,12 @@ namespace Metacrack.Plugins
                         {
                             //We trim the token, but we dont change capitalisation. We leave that to the lookup
                             var trimToken = token.Trim();
-                            if (trimToken.Length > 0) entity.SetValue(trimToken, fields[fieldIndex]);
+                            if (trimToken.Length > 0) entity.SetValue(trimToken.ToString(), fields[fieldIndex]);
                         }
                     }
                     else
                     {
-                        entity.SetValue(split, fields[fieldIndex]);
+                        entity.SetValue(split.ToString(), fields[fieldIndex]);
                     }
                     fieldIndex++;
                 }

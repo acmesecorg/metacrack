@@ -13,24 +13,25 @@ namespace Metacrack.Model
         private static int ValueLengthMax = 70;
 
         //We dont serialize the rowId, this is stored in the index log instead
+        [ProtoMember(1)]
         public long RowId { get; set; }
 
-        [ProtoMember(1)]
+        [ProtoMember(2)]
         public string Passwords { get; set; }
 
-        [ProtoMember(2)]
+        [ProtoMember(3)]
         public string Usernames { get; set; }
 
-        [ProtoMember(3)]
+        [ProtoMember(4)]
         public string Names { get; set; }
 
-        [ProtoMember(4)]
+        [ProtoMember(5)]
         public string Dates { get; set; }
 
-        [ProtoMember(5)]
+        [ProtoMember(6)]
         public string Numbers { get; set; }
 
-        [ProtoMember(6)]
+        [ProtoMember(7)]
         public string Values { get; set; }
 
         public void CopyFrom(Entity entity)
@@ -48,116 +49,74 @@ namespace Metacrack.Model
         public void AddPasswords(string values)
         {
             if (string.IsNullOrEmpty(values)) return;
-            AddPasswords(values.AsSpan());
-        }
-
-        public void AddPasswords(ReadOnlySpan<char> values)
-        {
-            if (values.Length == 0) return;
-
             if (string.IsNullOrEmpty(Passwords))
             {
-                Passwords = values.ToString();
+                Passwords = values;
                 return;
             }
 
-            Passwords = Passwords.AsSpan().MergeWith(values, ':');
+            Passwords = Passwords.MergeWith(values, ':');
         }
+
 
         public void AddUsernames(string values)
         {
             if (string.IsNullOrEmpty(values)) return;
-            AddUsernames(values.AsSpan());
-        }
-
-        public void AddUsernames(ReadOnlySpan<char> values)
-        {
-            if (values.Length == 0) return;
-
             if (string.IsNullOrEmpty(Usernames))
             {
-                Usernames = values.ToString();
+                Usernames = values;
                 return;
             }
 
-            Usernames = Usernames.AsSpan().MergeWith(values, ':');
+            Usernames = Usernames.MergeWith(values, ':');
         }
 
         public void AddNames(string values)
         {
             if (string.IsNullOrEmpty(values)) return;
-            AddNames(values.AsSpan());
-        }
-
-        public void AddNames(ReadOnlySpan<char> values)
-        {
-            if (values.Length == 0) return;
-
             if (string.IsNullOrEmpty(Names))
             {
-                Names = values.ToString();
+                Names = values;
                 return;
             }
 
-            Names = Names.AsSpan().MergeWith(values, ':');
+            Names = Names.MergeWith(values, ':');
         }
 
         public void AddDates(string values)
         {
             if (string.IsNullOrEmpty(values)) return;
-            AddDates(values.AsSpan());
-        }
-
-        public void AddDates(ReadOnlySpan<char> values)
-        {
-            if (values.Length == 0) return;
-
             if (string.IsNullOrEmpty(Dates))
             {
-                Dates = values.ToString();
+                Dates = values;
                 return;
             }
 
-            Dates = Dates.AsSpan().MergeWith(values, ':');
+            Dates = Dates.MergeWith(values, ':');
         }
 
         public void AddNumbers(string values)
         {
             if (string.IsNullOrEmpty(values)) return;
-            AddNumbers(values.AsSpan());
-        }
-
-        public void AddNumbers(ReadOnlySpan<char> values)
-        {
-            if (values.Length == 0) return;
-
             if (string.IsNullOrEmpty(Numbers))
             {
-                Numbers = values.ToString();
+                Numbers = values;
                 return;
             }
 
-            Numbers = Numbers.AsSpan().MergeWith(values, ':');
+            Numbers = Numbers.MergeWith(values, ':');
         }
 
         public void AddValues(string values)
         {
             if (string.IsNullOrEmpty(values)) return;
-            AddValues(values.AsSpan());
-        }
+            if (string.IsNullOrEmpty(Values))
+            {
+                Values = values;
+                return;
+            }
 
-        public void AddValues(ReadOnlySpan<char> values)
-        {
-            if (values.Length == 0) return;
-
-            Values = Values.AsSpan().MergeWith(values, ':');
-        }
-
-        public void SetValue(string value, string field)
-        {
-            if (string.IsNullOrEmpty(value)) return;
-
-            SetValue(value.AsSpan(), field);
+            Values = Values.MergeWith(values, ':');
         }
 
         public List<string> GetValues(IEnumerable<string> fields)
@@ -255,7 +214,7 @@ namespace Metacrack.Model
             return result;
         }
 
-        public void SetValue(ReadOnlySpan<char> value, string field)
+        public void SetValue(string value, string field)
         {
             if (value.Length > ValueLengthMax) return;
 

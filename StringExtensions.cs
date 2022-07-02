@@ -55,15 +55,24 @@ public static class StringExtensions
 
     public static string MergeWith(this string existing, string additions)
     {
+        return MergeWith(existing, additions, ':');
+    }
+
+    public static string MergeWith(this string existing, string additions, char seperator)
+    {
         if (string.IsNullOrEmpty(existing)) return additions;
         if (string.IsNullOrEmpty(additions)) return existing;
+        if (existing == additions) return existing;
 
-        return MergeWith(existing.AsSpan(), additions.AsSpan(), ':');
+        var hashSet = new HashSet<string>(existing.Split(seperator));
+        hashSet.UnionWith(additions.Split(seperator));
+
+        return string.Join(seperator, hashSet);
     }
 
     //Ensure empty checks are done further up the call stack for best performance
     //TODO: add limit checks so that eg we have max 20 values
-    public static string MergeWith(this ReadOnlySpan<char> existing, ReadOnlySpan<char> additions, char seperator)
+    public static string MergeWithSpan(this ReadOnlySpan<char> existing, ReadOnlySpan<char> additions, char seperator)
     {
         //Create maximum length
         Span<char> buffer = stackalloc char[existing.Length + additions.Length + 1];

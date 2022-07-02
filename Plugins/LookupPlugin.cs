@@ -175,20 +175,9 @@ namespace Metacrack
                             //Final write
                             WriteProgress($"Processing {fileInfo.Name}", progressTotal, size);
 
-                            var finalTasks = new List<Task<long>>();
-
                             foreach (var hex in Hex)
                             {
-                                var task = Task.Run(() => AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, tempDirectory, hex));
-                                finalTasks.Add(task);
-                            }
-
-                            while (finalTasks.Count > 0)
-                            {
-                                var completedTask = Task.WhenAny(finalTasks.ToArray()).GetAwaiter().GetResult();
-                                writeCount += completedTask.Result;
-
-                                finalTasks.Remove(completedTask);
+                                AddValues(db, identifiers[hex], hashes[hex], fields, rules, options, hashInfo, fileName, tempDirectory, hex);
                             }
                         }
 
@@ -199,12 +188,11 @@ namespace Metacrack
                         CombineFiles(tempDirectory, $"{fileName}.*.hash", hashPath);
                         CombineFiles(tempDirectory, $"{fileName}.*.word", wordPath);
 
-                        if (options.Sessions > 0 || options.Part.Length > 0)
+                        //Check if we should use session manager
+                        TryParse(options.Part, out var partLength);
+
+                        if (options.Sessions > 0 || partLength > 0)
                         {
-                            var partLength = 0;
-
-                            TryParse(options.Part, out partLength);
-
                             using (var sessionManager = new SessionManager(fileName, options.Sessions, partLength))
                             {
                                 var progress = new Progress<int>((value) => WriteProgress($"Writing sessions for {fileName}", value));
@@ -228,7 +216,16 @@ namespace Metacrack
             }
 
 
-            //Remove temp directory
+            //Remove temp directory and its file
+            WriteMessage($"Removing temporary files.");
+
+            var di = new DirectoryInfo(tempDirectory);
+
+            foreach (var file in di.GetFiles())
+            {
+                file.Delete();
+            }
+
             Directory.Delete(tempDirectory);
 
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");

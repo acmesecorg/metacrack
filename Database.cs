@@ -93,6 +93,8 @@ namespace Metacrack
                 var myInput = new MyInput {Value = entity };
                 var myOutput = new MyOutput();
 
+                if (obj.RowId == 3031383550799529486) obj.RowId = 3031383550799529486;
+
                 session.RMW(ref key, ref myInput, ref myOutput);
             }
         }
@@ -107,7 +109,7 @@ namespace Metacrack
             var g1 = new MyOutput();
 
             session.Read(ref key, ref input, ref g1, context, 0);
-            g1.Value.RowId = rowId;
+            if (g1.Value != null) g1.Value.RowId = rowId;
             return g1.Value;
         }
 
