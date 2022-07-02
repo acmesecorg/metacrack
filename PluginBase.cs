@@ -241,6 +241,12 @@ namespace Metacrack
             //1460   8efbef4cec28f228fa948daaf4893ac3638fbae81358ff9020be1d7a9a509fc6:1234          HMAC-SHA256 (key = $salt)
             if (mode == 1410 || mode == 1420 || mode == 1430 || mode == 1440 || mode == 1450 || mode == 1460) return new HashInfo(mode, 2, 64, true);
 
+            //1700   82a9dda829eb7f8ffe9fbe49e45d47d2dad96 .... 83c6840f10e8246b9db54a4859b7ccd0123d86e5872c1e5082f             sha5125
+            if (mode == 1700 || mode == 1770) return new HashInfo(mode, 1, 128, true);
+
+            //1710   e5c3ede3e49fb86592fb03f471c35ba13e8d5 .... 9a8fdafb635fa2223c24e5558fd9313e8995019dcbec1fb5841:6352283260  sha512($salt.$pass)
+            if (mode == 1710 || mode == 1720 || mode == 1730 || mode == 1740 || mode == 1750 || mode == 1760) return new HashInfo(mode, 2, 128, true);
+
             //1800	 $6$52450745$k5ka2p8bFuSmoVT1tzOyyuaREkkKBcCNqoDKzYiJL9RaE8yMnPgh2XzzF0NDrUhgrcLwg78xs1w5pJiypEdFX/  sha512crypt $6$, SHA512 (Unix)
             if (mode == 1800) return new HashInfo(mode, 1, 106, false);
 
