@@ -170,8 +170,6 @@ namespace Metacrack.Plugins
                                         inputBuckets[result.Bucket].Add(result.Entity);
                                     }
 
-                                    if (result.Entity?.RowId == 3031383550799529486) result.Entity.RowId = 3031383550799529486;
-
                                     if (lineCount % 10000 == 0) WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
 
                                     //Write to database after we process a certain number of lines (100 million or so)
