@@ -16,10 +16,10 @@ namespace Metacrack
         private bool _disposedValue;
         private string _outputFolder;
 
-        private FasterKV<RowKey, Entity> _store;
+        private FasterKV<long, Entity> _store;
         private readonly object _sessionLock = new object();
 
-        private Dictionary<char, ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>>> _sessions;
+        private Dictionary<char, ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>>> _sessions;
 
         public Database(string outputFolder, bool readOnly = false)
         {
@@ -41,17 +41,17 @@ namespace Metacrack
             checkpointSettings.CheckpointDir = _outputFolder;
             checkpointSettings.RemoveOutdated = true;
 
-            var serializerSettings = new SerializerSettings<RowKey, Entity>
+            var serializerSettings = new SerializerSettings<long, Entity>
             {
-                keySerializer = () => new RowKeySerializer(),
+                //keySerializer = () => new RowKeySerializer(),
                 valueSerializer = () => new EntitySerializer()
             };
 
-            _store = new FasterKV<RowKey, Entity>(1L << 20, logSettings, checkpointSettings, serializerSettings, null, null, true);
-            _sessions = new Dictionary<char, ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>>>();
+            _store = new FasterKV<long, Entity>(1L << 20, logSettings, checkpointSettings, serializerSettings, null, null, true);
+            _sessions = new Dictionary<char, ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>>>();
         }
 
-        public ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> GetSession(char hex)
+        public ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>> GetSession(char hex)
         {
             if (!_sessions.ContainsKey(hex))
             {
@@ -74,7 +74,7 @@ namespace Metacrack
             foreach (var obj in objects)
             {
                 var entity = obj;
-                var key = new RowKey { key = obj.RowId };
+                var key =  obj.RowId;
                 var myInput = new MyInput {Value = entity };
                 var myOutput = new MyOutput();
 
@@ -83,13 +83,15 @@ namespace Metacrack
         }
 
 
-        public Entity Select(ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> session, long rowId)
+        public Entity Select(ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>> session, long rowId)
         {
-            var key = new RowKey { key = rowId };
+            var key = rowId;
             var input = default(MyInput);
-            var context = default(MyContext);
+            var context = default(Empty);
 
             var g1 = new MyOutput();
+
+            if (key == -2641243622861321423) key = -2641243622861321423;
 
             session.Read(ref key, ref input, ref g1, context, 0);
             if (g1.Value != null) g1.Value.RowId = rowId;

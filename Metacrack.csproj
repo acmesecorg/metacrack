@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Remove="Model\Entity.g.cs" />
     <Compile Remove="Model\EntityHexes.cs" />
+    <Compile Remove="Model\RowKey.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Rules results.xlsx" />

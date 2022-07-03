@@ -21,11 +21,9 @@ namespace Metacrack.Model
         public override string ToString() => Value.ToString();
     }
 
-    public class MyContext { }
-
-    public sealed class Functions : FunctionsBase<RowKey, Entity, MyInput, MyOutput, MyContext>
+    public sealed class Functions : FunctionsBase<long, Entity, MyInput, MyOutput, Empty>
     {
-        public override bool InitialUpdater(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput output, ref RMWInfo rmwInfo)
+        public override bool InitialUpdater(ref long key, ref MyInput input, ref Entity value, ref MyOutput output, ref RMWInfo rmwInfo)
         {
             if (value == null)
             {
@@ -39,7 +37,7 @@ namespace Metacrack.Model
         }
 
         //This appears to happen when you are updated values that have already been checkpointed
-        public override bool CopyUpdater(ref RowKey key, ref MyInput input, ref Entity oldValue, ref Entity newValue, ref MyOutput output, ref RMWInfo rmwInfo)
+        public override bool CopyUpdater(ref long key, ref MyInput input, ref Entity oldValue, ref Entity newValue, ref MyOutput output, ref RMWInfo rmwInfo)
         {
             if (newValue == null)
             {
@@ -56,19 +54,19 @@ namespace Metacrack.Model
         }
 
         //This appears to happen when you are updating values recently added
-        public override bool InPlaceUpdater(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput output, ref RMWInfo rmwInfo) 
+        public override bool InPlaceUpdater(ref long key, ref MyInput input, ref Entity value, ref MyOutput output, ref RMWInfo rmwInfo) 
         {
             value.CopyFrom(input.Value);
             return true; 
         }
 
-        public override bool SingleReader(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput dst, ref ReadInfo readInfo)
+        public override bool SingleReader(ref long key, ref MyInput input, ref Entity value, ref MyOutput dst, ref ReadInfo readInfo)
         {
             dst.Value = value;
             return true;
         }
 
-        public override bool ConcurrentReader(ref RowKey key, ref MyInput input, ref Entity value, ref MyOutput dst, ref ReadInfo readInfo)
+        public override bool ConcurrentReader(ref long key, ref MyInput input, ref Entity value, ref MyOutput dst, ref ReadInfo readInfo)
         {
             dst.Value = value;
             return true;

@@ -46,6 +46,8 @@ namespace Metacrack.Plugins
             var outputPath = Path.Combine(currentDirectory, options.OutputFolder);
             WriteMessage($"Writing data to {outputPath}");
 
+            if (!Directory.Exists(outputPath)) Directory.CreateDirectory(outputPath);
+
             //Determine input columns
             int[] columns = (options.Columns.Count() == 0) ? new int[] { 1 } : Array.ConvertAll(options.Columns.ToArray(), s => int.Parse(s));
 
