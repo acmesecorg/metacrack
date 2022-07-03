@@ -16,7 +16,9 @@ namespace Metacrack.Plugins
             var checkpointLines = 4000000;
             var flushLines = checkpointLines * 8;
             var currentDirectory = Directory.GetCurrentDirectory();
-            var fileEntries = Directory.GetFiles(currentDirectory, options.InputPath);
+
+            var inputPath = Path.Combine(currentDirectory, options.InputPath);
+            var fileEntries = Directory.GetFiles(Path.GetDirectoryName(inputPath), Path.GetFileName(inputPath));
 
             if (fileEntries.Length == 0)
             {
@@ -184,7 +186,9 @@ namespace Metacrack.Plugins
                                         //Check if we are also at a full checkpoint (ie flush)
                                         if (lineCount % flushLines == 0)
                                         {
-                                            task = Task.Run(() => db.Flush());
+                                            //task = Task.Run(() => db.Flush());
+                                            db.Flush();
+                                            task = Task.CompletedTask;
                                         }
                                         else
                                         {
@@ -212,7 +216,7 @@ namespace Metacrack.Plugins
                     if (options.Compact)
                     {
                         WriteMessage($"Compacting key value store.");
-                        db.Compact(db.GetSession(Hex[0]));
+                        db.Compact();
                     }
 
                     WriteMessage($"Flushing key value store data to disk.");
@@ -251,8 +255,6 @@ namespace Metacrack.Plugins
 
                         //Stem email if required
                         if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, entity);
-
-                        //if (emailStem == "savannahmaecrump@gmail.com") emailStem = "savannahmaecrump@gmail.com";
                     }
                     else
                     {
@@ -301,10 +303,10 @@ namespace Metacrack.Plugins
                 //if (inserts.Count > 0) WriteBucket(hex, db, inserts);
             }
 
-            Task.WhenAll(tasks).Wait(); 
+            Task.WhenAll(tasks).Wait();
 
-            //Lets also allow managed code to collect this memory
-            GC.Collect(3, GCCollectionMode.Forced);
+            //Allow this memory to be freed
+            GC.Collect();
         }
 
         public static void WriteBucket(char hex, Database db, List<Entity> inserts)

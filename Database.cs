@@ -67,21 +67,6 @@ namespace Metacrack
             return _sessions[hex];
         }
 
-        public void UpsertAll(char hex, IEnumerable<Entity> objects)
-        {
-            var session = GetSession(hex);
-            var context = default(MyContext);
-
-            foreach (var obj in objects)
-            {
-                var entity = obj;
-                var key = new RowKey { key = obj.RowId };
-
-                //This will overwrite any existing entity
-                session.Upsert(ref key, ref entity, context, 0);
-            }
-        }
-
         public void ReadModifyWriteAll(char hex, IEnumerable<Entity> objects)
         {
             var session = GetSession(hex);
@@ -118,13 +103,41 @@ namespace Metacrack
 
         public void Flush()
         {
-            _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).AsTask().GetAwaiter().GetResult();            
+            //Wait for all sessions to complete, then take a full checkpoint and clear memory objects
+            lock (_sessionLock)
+            {
+                if (_sessions != null)
+                {
+                    foreach (var session in _sessions.Values)
+                    {
+                        session.CompletePending(true);
+                        session.Dispose();
+                    }
+
+                    _sessions.Clear();
+                }
+
+                _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).AsTask().GetAwaiter().GetResult();
+                _store.Log.FlushAndEvict(true);
+            }
+
+            GC.Collect(3, GCCollectionMode.Default);
         }
 
-        public void Compact(ClientSession<RowKey, Entity, MyInput, MyOutput, MyContext, IFunctions<RowKey, Entity, MyInput, MyOutput, MyContext>> session)
+        public void Compact()
         {
-            session.Compact(_store.Log.HeadAddress, CompactionType.Scan);
-            _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+            //Write all sessions
+            //Dispose any internal objects here
+            lock (_sessionLock)
+            {
+                if (_sessions != null)
+                {
+                    foreach (var session in _sessions.Values)
+                    {
+                        session.Compact(_store.Log.HeadAddress, CompactionType.Scan);
+                    }
+                }
+            }
         }
 
         protected virtual void Dispose(bool disposing)
@@ -134,7 +147,10 @@ namespace Metacrack
                 if (disposing)
                 {
                     //Dispose any internal objects here
-                    foreach (var session in _sessions.Values) session?.Dispose();
+                    if (_sessions != null)
+                    {
+                        foreach (var session in _sessions.Values) session?.Dispose();
+                    }
                     _store?.Dispose();
                 }
                 _disposedValue = true;
