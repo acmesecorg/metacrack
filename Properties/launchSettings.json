@@ -40,8 +40,8 @@
     },
     "Rank": {
       "commandName": "Project",
-      "commandLineArgs": "rank 10000.15000.left.plains.txt --output-mode rule --output test.rule",
-      "workingDirectory": "C:\\Breach\\Dubsmash (10000)\\Run2"
+      "commandLineArgs": "rank 2628-2642.10000.found dubsmash.rule --count 10000 --rule",
+      "workingDirectory": "d:\\Breach\\Dubsmash (10000)\\Run3"
     },
     "Parse": {
       "commandName": "Project",
