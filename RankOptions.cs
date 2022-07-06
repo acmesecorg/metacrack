@@ -8,6 +8,9 @@ namespace Metacrack
         [Value(0, Required = true, MetaName = "InputPath", HelpText = "The path to the file(s) containing the hash:plains.")]
         public string InputPath { get; set; }
 
+        [Value(1, Required = false, MetaName = "OutputPath", HelpText = "The file to  write output to.")]
+        public string OutputPath { get; set; }
+
         [Option("count", Default = "10")]
         public string Count { get; set; }
 
@@ -17,10 +20,7 @@ namespace Metacrack
         [Option("debug-mode")]
         public int DebugMode { get; set; }
 
-        [Option("output")]
-        public string OutputPath { get; set; }
-
-        [Option("output-mode", HelpText = "Determines the format of the output")]
-        public string OutputMode { get; set; }
+        [Option("rule", HelpText = "Output as a rule file")]
+        public bool Rules { get; set; }
     }
 }

@@ -15,11 +15,14 @@ namespace Metacrack
                 return;
             }
 
-            //Parse out any special modes
-            var outputMode = options.OutputMode.ToLowerInvariant();
-            var outputAsRules = outputMode == "rule";
+            if (options.OutputPath.Length > 0 && File.Exists(options.OutputPath))
+            {
+                WriteError($"File {options.OutputPath} already exists.");
+                return;
+            }
 
-            if (outputAsRules) WriteMessage($"Outputting rule file.");
+            //Parse out any special modes
+            if (options.Rules) WriteMessage($"Outputting rule file.");
 
             var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
@@ -102,10 +105,14 @@ namespace Metacrack
                 TryParse(options.Count, out int count);
                 TryParse(options.Keep, out int keep);
 
+                var longest = 0;
+                var longestValue = 0;
+                var total = 0L;
+
                 //Now sort the dictionary and write out the results
                 if (options.DebugMode > 0)
                 {
-                    var total = dict.Keys.Count();
+                    total = dict.Keys.Count();
                     WriteMessage($"Writing out rules {fileInfo.Name} ({total} entries)");
 
                     var lines = new List<string>();
@@ -114,9 +121,6 @@ namespace Metacrack
                     WriteMessage($"Results for: {fileInfo.Name} ({total} entries)");
 
                     //Loop through and count longest word
-                    var longest = 0;
-                    var longestValue = 0;
-
                     foreach (var pair in sorted)
                     {
                         if (pair.Key.Length > longest) longest = pair.Key.Length;
@@ -161,14 +165,11 @@ namespace Metacrack
                 else
                 {
                     var sorted = dict.OrderByDescending(x => x.Value).Take(count);
-                    var total = dict.Keys.Count();
+                    total = dict.Keys.Count();
 
                     WriteMessage($"Results for: {fileInfo.Name} ({total} entries)");
 
                     //Loop through and count longest word
-                    var longest = 0;
-                    var longestValue = 0;
-
                     foreach (var pair in sorted)
                     {
                         if (pair.Key.Length > longest) longest = pair.Key.Length;
@@ -192,13 +193,12 @@ namespace Metacrack
                     if (options.OutputPath != null)
                     {
                         var outputPath = Path.Combine(currentDirectory, options.OutputPath);
+                        var output = new List<string>();
 
-                        if (outputAsRules)
+                        //Loop through each word and write it out as a rule
+                        foreach (var pair in sorted)
                         {
-                            var rules = new List<string>();
-
-                            //Loop through each word and write it out as a rule
-                            foreach (var pair in sorted)
+                            if (options.Rules)
                             {
                                 var builder = new StringBuilder();
                                 foreach (var k in pair.Key)
@@ -207,17 +207,19 @@ namespace Metacrack
                                     builder.Append(k);
                                 }
 
-                                rules.Add(builder.ToString());
+                                output.Add(builder.ToString());
+                            }
+                            else
+                            {
+                                var percent = (int)((double)pair.Value / total * 100);
+                                output.Add($"{pair.Key}{new string(' ', longest - pair.Key.Length + longestValue - pair.Value.ToString().Length)}{pair.Value} ({percent}%)");
                             }
 
-                            File.AppendAllLines(outputPath, rules);
-                            WriteMessage($"Wrote out {rules.Count} rules to {options.OutputPath}");
+                            if (output.Count == count) break;
                         }
-                        else
-                        {
-                            File.AppendAllLines(outputPath, dict.Keys);
-                            WriteMessage($"Wrote out {dict.Keys.Count} values to {options.OutputPath}");
-                        }
+
+                        File.AppendAllLines(outputPath, output);
+                        WriteMessage($"Wrote out {output.Count} {((options.Rules) ? "rules": "values")} to {options.OutputPath}");                       
                     }
                 }
             }
