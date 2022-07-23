@@ -6,7 +6,9 @@
       "distributionName": ""
     },
     "Catalog": {
-      "commandName": "Project"
+      "commandName": "Project",
+      "commandLineArgs": "catalog 10000.12000.left4.txt d:\\meta --prefix dubsmash --email-only",
+      "workingDirectory": "D:\\Dubsmash (10000)"
     },
     "Export": {
       "commandName": "Project",
@@ -15,8 +17,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup reddoorz.left5.txt c:\\breach\\output --hash 3200 --filter ..\\best69.rule --infer",
-      "workingDirectory": "C:\\Breach\\RedDoorz (3200)"
+      "commandLineArgs": "lookup *left3.txt d:\\output --hash 10000 --filter ..\\best64.rule --infer",
+      "workingDirectory": "D:\\Dubsmash (10000)"
     },
     "Map": {
       "commandName": "Project",
@@ -35,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql R2Games.sql --table vb_user --columns 7 5 48 --modes force-insert",
-      "workingDirectory": "C:\\Breach\\R2Games"
+      "commandLineArgs": "sql ulmon_usr.sql --columns 3 4 --debug",
+      "workingDirectory": "D:\\Ulmon (3200)"
     },
     "Rank": {
       "commandName": "Project",
