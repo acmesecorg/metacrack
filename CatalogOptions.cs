@@ -31,6 +31,9 @@ namespace Metacrack
         [Option("stem-email-only", HelpText = "Use email as a source of values only.")]
         public bool StemEmailOnly { get; set; }
 
+        [Option("email-only", HelpText = "Use email exactly as a value only.")]
+        public bool EmailOnly { get; set; }
+
         [Option("stem-names")]
         public string NamesPath { get; set; }
 

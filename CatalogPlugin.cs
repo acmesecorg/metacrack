@@ -49,6 +49,7 @@ namespace Metacrack
             if (options.StemEmail) WriteMessage("Stem email enabled");
             if (options.StemEmailOnly) WriteMessage("Stem email only enabled");
             if (options.XReference) WriteMessage("X reference enabled");
+            if (options.EmailOnly) WriteMessage("Email only enabled");
 
             //Determine columns;
             int[] columns = (options.Columns.Count() == 0) ? new int[] { 1 } : Array.ConvertAll(options.Columns.ToArray(), s => int.Parse(s));
@@ -158,39 +159,46 @@ namespace Metacrack
                                         var identifier = GetIdentifier(hash).Substring(2);
                                         var finals = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-                                        //Write out each split, so we need to choose columns here
-
-                                        //TODO: just use all columns
-                                        //Set a flag at the start, and keep increasing the columns collection by the size of the splits
-                                        foreach (var i in columns)
+                                        if (options.EmailOnly)
                                         {
-                                            if (splits.Length > i)
+                                            finals.Add(splits[0].ToLower());
+                                        }
+                                        else
+                                        {
+                                            //Write out each split, so we need to choose columns here
+
+                                            //TODO: just use all columns
+                                            //Set a flag at the start, and keep increasing the columns collection by the size of the splits
+                                            foreach (var i in columns)
                                             {
-                                                var split = splits[i];
-
-                                                //if (split == "rhettlynch") split = split;
-
-                                                if (split.Length > 0)
+                                                if (splits.Length > i)
                                                 {
-                                                    if (options.Tokenize || options.StemEmail || options.StemEmailOnly)
-                                                    {
-                                                        if (options.Tokenize)
-                                                        {
-                                                            var tokens = split.Split(' ');
-                                                            foreach (var token in tokens)
-                                                            {
-                                                                //We trim the token, but we dont change capitalisation. We leave that to the lookup
-                                                                var trimToken = token.Trim();
-                                                                if (trimToken.Length > 0) finals.Add(trimToken);
-                                                            }
-                                                        }
+                                                    var split = splits[i];
 
-                                                        //Add the original value
-                                                        if (!options.Tokenize && !options.StemEmailOnly) finals.Add(split);
-                                                    }
-                                                    else
+                                                    //if (split == "rhettlynch") split = split;
+
+                                                    if (split.Length > 0)
                                                     {
-                                                        finals.Add(split);
+                                                        if (options.Tokenize || options.StemEmail || options.StemEmailOnly)
+                                                        {
+                                                            if (options.Tokenize)
+                                                            {
+                                                                var tokens = split.Split(' ');
+                                                                foreach (var token in tokens)
+                                                                {
+                                                                    //We trim the token, but we dont change capitalisation. We leave that to the lookup
+                                                                    var trimToken = token.Trim();
+                                                                    if (trimToken.Length > 0) finals.Add(trimToken);
+                                                                }
+                                                            }
+
+                                                            //Add the original value
+                                                            if (!options.Tokenize && !options.StemEmailOnly) finals.Add(split);
+                                                        }
+                                                        else
+                                                        {
+                                                            finals.Add(split);
+                                                        }
                                                     }
                                                 }
                                             }
