@@ -24,10 +24,10 @@ namespace Metacrack
         [Option]
         public bool Base64 { get; set; }
 
-        [Option("remove", Default = "", HelpText = "The path to the file containing hashes to be removed.")]
+        [Option("remove-hash", Default = "", HelpText = "The path to the file containing hashes to be removed.")]
         public string RemoveHashesPath { get; set; }
 
-        [Option("remove-associated", Default = "", HelpText = "The path to the file containing associated words to be removed. Use in conjunction with --remove.")]
+        [Option("remove-word", Default = "", HelpText = "The path to the file containing associated words to be removed. Use in conjunction with --remove.")]
         public string RemoveWordsPath { get; set; }
 
         [Option("shuck", Default = "", HelpText = "The path to the word file that will be used to calculate shuck pairs to convert founds back to plains.")]
