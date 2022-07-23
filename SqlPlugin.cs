@@ -204,9 +204,14 @@ namespace Metacrack
             {
                 if (options.Debug)
                 {
-                    WriteMessage($"Line {lineCount},{errors[0].Offset}:{errors[0].Message}");
+                    WriteHighlight($"Line {lineCount},{errors[0].Offset}:{errors[0].Message}");
 
-                    File.AppendAllText(debugPath, bufferString);
+                    var lines = new List<string>();
+
+                    lines.Add($"Line {lineCount},{errors[0].Offset}:{errors[0].Message}");
+                    lines.Add(bufferString);
+
+                    File.AppendAllLines(debugPath, lines);
 
                     WriteMessage($"Wrote sql debug output to {debugPath}");
 
