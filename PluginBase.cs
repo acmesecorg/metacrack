@@ -258,6 +258,9 @@ namespace Metacrack
 
             if (mode == 2611) return new HashInfo(mode, 2, 32, true);
 
+            //2711   dfd92028c0e948a4a33eaf3924277b12:llu(Q\q~%ur!H$z9W4B)z$opBO#&^^
+            if (mode == 2711) return new HashInfo(mode, 2, 32, true);
+
             //10000  pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=  Django (PBKDF2-SHA256)
             if (mode == 10000) return new HashInfo(mode, 1, 77, 79, false);
 
