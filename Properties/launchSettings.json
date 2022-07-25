@@ -17,8 +17,8 @@
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup *left3.txt d:\\output --hash 10000 --filter ..\\best64.rule --infer",
-      "workingDirectory": "D:\\Dubsmash (10000)"
+      "commandLineArgs": "lookup unreal.left.txt d:\\output --hash 2711",
+      "workingDirectory": "D:\\UnrealEngine (2711)"
     },
     "Map": {
       "commandName": "Project",
@@ -27,8 +27,8 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate vodafone.parse.txt --hash 3200 --iterations 8 --email",
-      "workingDirectory": "C:\\Breach\\Vodafone"
+      "commandLineArgs": "validate ",
+      "workingDirectory": "D:\\readnovel.com_2019.05"
     },
     "Export with Remove": {
       "commandName": "Project",
