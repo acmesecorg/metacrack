@@ -87,8 +87,8 @@
     },
     "Catalog Test": {
       "commandName": "Project",
-      "commandLineArgs": "catalog input.txt C:\\Breach\\test\\store",
-      "workingDirectory": "C:\\Breach\\test"
+      "commandLineArgs": "catalog input.txt d:\\test\\store",
+      "workingDirectory": "d:\\test"
     },
     "Catalog Test All Fields": {
       "commandName": "Project",
@@ -102,13 +102,13 @@
     },
     "Catalog Ultimate Test": {
       "commandName": "Project",
-      "commandLineArgs": "catalog \"C:\\Breach\\Output New\\*.txt\" C:\\Breach\\store",
-      "workingDirectory": "C:\\Breach\\"
+      "commandLineArgs": "catalog \"D:\\(Additions)\\*.txt\" D:\\Test\\Store",
+      "workingDirectory": "D:\\Test"
     },
     "Lookup Ultimate test": {
       "commandName": "Project",
-      "commandLineArgs": "lookup test.left.txt C:\\Breach\\store",
-      "workingDirectory": "C:\\Breach\\test"
+      "commandLineArgs": "lookup test2.txt D:\\Test\\Store",
+      "workingDirectory": "d:\\test"
     }
   }
 }

@@ -14,7 +14,6 @@ namespace Metacrack.Plugins
         {
             //Validate and display arguments
             var checkpointLines = 4000000;
-            var flushLines = checkpointLines * 8;
             var currentDirectory = Directory.GetCurrentDirectory();
 
             var inputPath = Path.Combine(currentDirectory, options.InputPath);
@@ -41,6 +40,7 @@ namespace Metacrack.Plugins
             if (options.Tokenize) WriteMessage("Tokenize enabled");
             if (options.StemEmail) WriteMessage("Stem email enabled");
             if (options.StemEmailOnly) WriteMessage("Stem email only enabled");
+            if (options.NoOptimize) WriteMessage("Key value store compaction will be skipped.");
 
             //Determine output path
             var outputPath = Path.Combine(currentDirectory, options.OutputFolder);
@@ -160,7 +160,7 @@ namespace Metacrack.Plugins
                                     line = reader.ReadLine();
 
                                     lineCount++;
-                                    progressTotal += line.Length;
+                                    progressTotal += line.Length + 2;
 
                                     var result = ProcessLine(line, options, fields, columns, lookups);
 
@@ -179,25 +179,24 @@ namespace Metacrack.Plugins
                                     //Write to database after we process a certain number of lines (100 million or so)
                                     if (lineCount % checkpointLines == 0)
                                     {
-                                        //We wait for the previous checkpoint to complete
+                                        //We wait for the previous flush to complete
+                                       // WriteProgress($"Waiting on buckets {fileName}", progressTotal, fileEntriesSize);
                                         task.Wait();
 
                                         //Writes and clears the buckets
+                                        //WriteProgress($"Writing buckets {fileName}", progressTotal, fileEntriesSize);
+
                                         WriteBuckets(db, inputBuckets);
 
                                         //Check if we are also at a full checkpoint (ie flush)
-                                        if (lineCount % flushLines == 0)
-                                        {
-                                            task = Task.Run(() => db.Flush());
-                                        }
-                                        else
-                                        {
-                                            task = Task.Run(() => db.Checkpoint());
-                                        }
-
+                                        //WriteProgress($"Flushing buckets {fileName}", progressTotal, fileEntriesSize);
+                                        task = Task.Run(() => db.Flush());
+            
                                         isNew = false;
                                     }
                                 }
+
+                                WriteProgress($"Processing {fileName}", progressTotal, fileEntriesSize);
                             }
                         }
                         catch (Exception ex)
@@ -214,14 +213,12 @@ namespace Metacrack.Plugins
                     db.Flush();
 
                     //Compaction doesnt appear to reduce the size of the store, but the option is available 
-                    if (options.Compact)
+                    if (!options.NoOptimize)
                     {
-                        WriteMessage($"Compacting key value store.");
+                        WriteMessage($"Started compacting key value store at {DateTime.Now.ToShortTimeString()}.");
                         db.Compact();
+                        WriteMessage($"Finished compacting key value store at {DateTime.Now.ToShortTimeString()}.");
                     }
-
-                    WriteMessage($"Flushing key value store data to disk.");
-                    db.Flush();
 
                     WriteMessage($"Processed {validCount} lines out of {lineCount} ({invalidCount} invalid)");
                     WriteMessage($"Finished adding values at {DateTime.Now.ToShortTimeString()}");

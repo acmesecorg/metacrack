@@ -35,7 +35,7 @@ namespace Metacrack.Plugins
             "p password u username n name d date i number v value.")]
         public IEnumerable<string> Fields { get; set; }
 
-        [Option("compact", HelpText = "Compact the key value store once value are added.")]
-        public bool Compact { get; set; }
+        [Option("no-optimize", HelpText = "Skips optimisation of the key value store after input files are processed.")]
+        public bool NoOptimize { get; set; }
     }
 }
