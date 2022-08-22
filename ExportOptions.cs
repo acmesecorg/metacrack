@@ -12,9 +12,6 @@ namespace Metacrack
         [Value(1, Required = true, MetaName = "LookupPath", HelpText = "The search pattern for the hash lookup files.")]
         public string LookupPath { get; set; }
 
-        [Option('f', "found")]
-        public bool FoundMode { get; set; }
-
         [Option]
         public bool NoSalt { get; set; }
 

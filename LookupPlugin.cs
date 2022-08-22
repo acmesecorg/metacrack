@@ -157,36 +157,34 @@ namespace Metacrack
                     {
                         while (!reader.EndOfStream)
                         {
-                            var line = reader.ReadLine();
+                            var line = reader.ReadLineAsEmailHash();
 
                             lineCount++;
-                            progressTotal += line.Length;
+                            progressTotal += line.Text.Length;
 
-                            var splits = line.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-
-                            if (splits.Length == hashInfo.Columns + 1)
+                            if (line.FullHash != null)
                             {
-                                var email = splits[0].ToLower();
-                                var inputHash = (hashInfo.Columns == 1) ? splits[1]: $"{splits[1]}:{splits[2]}";
-
                                 //Validate the hash
                                 if (!options.Export)
                                 {
-                                    if (!ValidateHash(splits[1], hashInfo)) continue;
-                                    if (hashInfo.Columns == 2 && !ValidateSalt(splits[2], hashInfo)) continue;
+                                    if (!ValidateHash(line.HashPart, hashInfo)) continue;
+
+                                    //Salt validation
+                                    if (hashInfo.Columns == 2 && !ValidateSalt(line.Salt, hashInfo)) continue;
                                 }
 
+                                //Debuging only
                                 //if (email.StartsWith("mail.adikukreja@gmail.com")) email = email.ToLower();
 
                                 //Validate the email is valid
-                                if (ValidateEmail(email, out var emailStem))
+                                if (ValidateEmail(line.Email, out var emailStem))
                                 {
                                     var emailHash = sha1.ComputeHash(Encoding.UTF8.GetBytes(emailStem));
                                     var key = emailHash[0].ToString("x2");
                                     var identifier = GetIdentifier(emailHash).Substring(2);
 
-                                    //We will just add the hash(+salt?) into the output now
-                                    if (!lookup.Buckets[key].ContainsKey(identifier)) lookup.Buckets[key].Add(identifier, options.Export ? emailStem: inputHash);
+                                    //We will just add the full hash into the output now
+                                    if (!lookup.Buckets[key].ContainsKey(identifier)) lookup.Buckets[key].Add(identifier, options.Export ? emailStem: line.FullHash);
                                 }
                             }
 

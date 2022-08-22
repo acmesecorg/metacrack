@@ -12,13 +12,13 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "export idc.left.txt idc.left.output.txt --shuck idc.left.word",
-      "workingDirectory": "D:\\IDC Games (2811)\\Run2"
+      "commandLineArgs": "export ownagepranks.data.txt 389.2611.found",
+      "workingDirectory": "D:\\OwnagePranks (2611)\\Run1"
     },
     "Lookup": {
       "commandName": "Project",
-      "commandLineArgs": "lookup unreal.left.txt d:\\output --hash 2711",
-      "workingDirectory": "D:\\UnrealEngine (2711)"
+      "commandLineArgs": "lookup ownagepranks.data.left.txt d:\\output --hash 2611",
+      "workingDirectory": "D:\\OwnagePranks (2611)"
     },
     "Map": {
       "commandName": "Project",
@@ -32,8 +32,8 @@
     },
     "Export with Remove": {
       "commandName": "Project",
-      "commandLineArgs": "dailymotion-hashes-left.txt dailymotion-hashes-left.output.txt --remove dailymotion-hashes-left.hash --remove-associated dailymotion-hashes-left.word",
-      "workingDirectory": "d:\\"
+      "commandLineArgs": "export ownagepranks.data.left3.txt ownagepranks.data.left.output.txt --remove-hash ownagepranks.data.left3.hash --remove-word ownagepranks.data.left3.word",
+      "workingDirectory": "D:\\OwnagePranks (2611)\\Run4"
     },
     "Sql": {
       "commandName": "Project",
