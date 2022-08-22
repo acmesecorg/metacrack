@@ -6,7 +6,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using FASTER.core;
+
+using RocksDbSharp;
 using Metacrack.Model;
 
 namespace Metacrack
@@ -15,49 +16,42 @@ namespace Metacrack
     {
         private bool _disposedValue;
         private string _outputFolder;
+        private bool _readOnly = false;
 
-        private FasterKV<long, Entity> _store;
+        private RocksDb _db;
         private readonly object _sessionLock = new object();
 
-        private Dictionary<char, ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>>> _sessions;
+        private Dictionary<char, WriteBatch> _sessions;
 
         public Database(string outputFolder, bool readOnly = false)
         {
-            // With non-blittable types, you need an object log device in addition to the
-            // main device. FASTER serializes the actual objects in the object log.
             if (!outputFolder.EndsWith("\\")) outputFolder += "\\";
             _outputFolder = outputFolder;
+            _readOnly = readOnly;
         }
 
         public void Restore()
         {
-            var logSettings = new LogSettings
+            _sessions = new Dictionary<char, WriteBatch>();
+
+            var options = new DbOptions().SetCreateIfMissing(true);
+
+            if (_readOnly)
             {
-                LogDevice = Devices.CreateLogDevice(_outputFolder + "hlog.log"),
-                ObjectLogDevice = Devices.CreateLogDevice(_outputFolder + "hlog.obj.log")
-            };
-
-            var checkpointSettings = new CheckpointSettings();
-            checkpointSettings.CheckpointDir = _outputFolder;
-            checkpointSettings.RemoveOutdated = true;
-
-            var serializerSettings = new SerializerSettings<long, Entity>
-            {
-                //keySerializer = () => new RowKeySerializer(),
-                valueSerializer = () => new EntitySerializer()
-            };
-
-            _store = new FasterKV<long, Entity>(1L << 20, logSettings, checkpointSettings, serializerSettings, null, null, true);
-            _sessions = new Dictionary<char, ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>>>();
+                _db = RocksDb.OpenReadOnly(options, _outputFolder, false);
+                return;
+            }
+            
+            _db = RocksDb.Open(options, _outputFolder);
         }
 
-        public ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>> GetSession(char hex)
+        public WriteBatch GetSession(char hex)
         {
             if (!_sessions.ContainsKey(hex))
             {
                 lock (_sessionLock)
                 {
-                    var newSession = _store.NewSession(new Functions());
+                    var newSession = new WriteBatch();
                     _sessions.Add(hex, newSession);
 
                     return newSession;
@@ -71,56 +65,59 @@ namespace Metacrack
         {
             var session = GetSession(hex);
 
-            foreach (var obj in objects)
+            //TODO: look into a merge operator here
+            foreach (var entity in objects)
             {
-                var entity = obj;
-                var key =  obj.RowId;
-                var myInput = new MyInput {Value = entity };
-                var myOutput = new MyOutput();
+                var key =  entity.RowId;
 
-                session.RMW(ref key, ref myInput, ref myOutput);
+                //Check for existing, if found, we have to merge the changes into the new 
+                var bytes = _db.Get(key);
+
+                if (bytes != null)
+                {
+                    var existing = Entity.FromBytes(bytes);
+                    existing.CopyFrom(entity);
+                    bytes = Entity.ToBytes(existing);
+                }
+
+                //Add to the batch 
+                session.Put(key, bytes);
             }
         }
 
 
-        public Entity Select(ClientSession<long, Entity, MyInput, MyOutput, Empty, IFunctions<long, Entity, MyInput, MyOutput, Empty>> session, long rowId)
+        public Entity Select(byte[] rowId)
         {
-            var key = rowId;
-            var input = default(MyInput);
-            var context = default(Empty);
+            var bytes = _db.Get(rowId);
 
-            var g1 = new MyOutput();
+            if (bytes == null) return null;
 
-            if (key == -2641243622861321423) key = -2641243622861321423;
-
-            session.Read(ref key, ref input, ref g1, context, 0);
-            if (g1.Value != null) g1.Value.RowId = rowId;
-            return g1.Value;
+            return Entity.FromBytes(bytes);
         }
 
+        //For now, a checkpoint and a flush will be the same thing
         public void Checkpoint()
         {
-            _store.TakeHybridLogCheckpointAsync(CheckpointType.FoldOver).GetAwaiter().GetResult();
+            Flush();
         }
 
         public void Flush()
         {
-            //Wait for all sessions to complete, then take a full checkpoint and clear memory objects
+            //Wait for all sessions to complete, then commit and clear memory objects
             lock (_sessionLock)
             {
-                if (_sessions != null)
+                //Copy the session references so that code can continue writing into new sessions
+                var flushSessions = new Dictionary<char, WriteBatch>(_sessions);
+                _sessions.Clear();
+
+                if (flushSessions != null)
                 {
-                    foreach (var session in _sessions.Values)
+                    foreach (var flushSession in flushSessions.Values)
                     {
-                        session.CompletePending(true);
-                        session.Dispose();
+                        _db.Write(flushSession);
+                        flushSession.Dispose();
                     }
-
-                    _sessions.Clear();
                 }
-
-                _store.TakeFullCheckpointAsync(CheckpointType.FoldOver).AsTask().GetAwaiter().GetResult();
-                _store.Log.FlushAndEvict(true);
             }
 
             GC.Collect(3, GCCollectionMode.Default);
@@ -130,16 +127,7 @@ namespace Metacrack
         {
             //Write all sessions
             //Dispose any internal objects here
-            lock (_sessionLock)
-            {
-                if (_sessions != null)
-                {
-                    foreach (var session in _sessions.Values)
-                    {
-                        session.Compact(_store.Log.HeadAddress, CompactionType.Scan);
-                    }
-                }
-            }
+            
         }
 
         protected virtual void Dispose(bool disposing)
@@ -153,7 +141,7 @@ namespace Metacrack
                     {
                         foreach (var session in _sessions.Values) session?.Dispose();
                     }
-                    _store?.Dispose();
+                    _db?.Dispose();
                 }
                 _disposedValue = true;
             }

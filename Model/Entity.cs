@@ -1,5 +1,4 @@
-﻿using FASTER.core;
-using ProtoBuf;
+﻿using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,8 +11,8 @@ namespace Metacrack.Model
     {
         private static int ValueLengthMax = 70;
 
-        //We dont serialize the rowId, this is stored in the index log instead
-        public long RowId { get; set; }
+        //We dont serialize the rowId, this is stored as the key in the database instead
+        public byte[] RowId { get; set; }
 
         [ProtoMember(1)]
         public string Passwords { get; set; }
@@ -244,32 +243,21 @@ namespace Metacrack.Model
                 AddValues(value);
             }
         }
-    }
 
-    public class EntitySerializer: BinaryObjectSerializer<Entity>
-   {
-         public override void Serialize(ref Entity value)
+        public static Entity FromBytes(byte[] bytes)
+        {
+            var buffer = new ReadOnlySpan<byte>(bytes);
+            return Serializer.Deserialize<Entity>(buffer);
+        }
+
+        public static byte[] ToBytes(Entity value)
         {
             using (var memoryStream = new MemoryStream())
             {
                 Serializer.Serialize(memoryStream, value);
-                var byteArray = memoryStream.ToArray();
-                var length = (Int32) byteArray.Length;
-
-                //Write the length, then the bytes
-                writer.Write(length);
-                writer.Write(byteArray, 0, byteArray.Length);
+                return memoryStream.ToArray();
             }
         }
-
-        public override void Deserialize(out Entity value)
-        {
-            var length = reader.ReadInt32();
-            var bytes = reader.ReadBytes(length);
-            var buffer = new ReadOnlySpan<byte>(bytes);
-
-            value = Serializer.Deserialize<Entity>(buffer);
-        }       
     }
 }
 

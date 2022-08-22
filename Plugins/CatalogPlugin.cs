@@ -115,7 +115,7 @@ namespace Metacrack.Plugins
 
             try
             {
-                //Open up sqlite
+                //Open up the database
                 using (var db = new Database(outputPath))
                 {
                     WriteMessage((isNew) ? "Creating new key value store" : "Please wait. Restoring key value store");
@@ -188,9 +188,7 @@ namespace Metacrack.Plugins
                                         //Check if we are also at a full checkpoint (ie flush)
                                         if (lineCount % flushLines == 0)
                                         {
-                                            //task = Task.Run(() => db.Flush());
-                                            db.Flush();
-                                            task = Task.CompletedTask;
+                                            task = Task.Run(() => db.Flush());
                                         }
                                         else
                                         {
@@ -213,6 +211,7 @@ namespace Metacrack.Plugins
 
                     //Writes and clears the buckets
                     WriteBuckets(db, inputBuckets);
+                    db.Flush();
 
                     //Compaction doesnt appear to reduce the size of the store, but the option is available 
                     if (options.Compact)
@@ -249,7 +248,7 @@ namespace Metacrack.Plugins
                 {
                     if (ValidateEmail(split, out var emailStem))
                     {
-                        var rowChar = emailStem.ToRowIdAndChar();
+                        var rowChar = emailStem.ToRowIdBytesAndChar();
                         entity = new Entity();
                         entity.RowId = rowChar.Id;
 

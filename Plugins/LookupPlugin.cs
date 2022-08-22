@@ -89,12 +89,12 @@ namespace Metacrack
             var hashInfo = GetHashInfo(options.HashType);
             
             //We initially load the row ids and their associated hashes 
-            var identifiers = new Dictionary<char, List<long>>();
+            var identifiers = new Dictionary<char, List<byte[]>>();
             var hashes = new Dictionary<char, List<string>>();
 
             foreach (var hex in Hex)
             {
-                identifiers.Add(hex, new List<long>());
+                identifiers.Add(hex, new List<byte[]>());
                 hashes.Add(hex, new List<string>());    
             }
 
@@ -140,7 +140,7 @@ namespace Metacrack
                                 if (!ValidateEmail(email, out string validEmail)) continue;                               
 
                                 //Place in a bucket for parallel processing
-                                var rowChar = validEmail.ToRowIdAndChar();
+                                var rowChar = validEmail.ToRowIdBytesAndChar();
                                 var rowId = rowChar.Id;
                                 var bucket = rowChar.Char;
 
@@ -231,7 +231,7 @@ namespace Metacrack
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
         }
 
-        private static long AddValues(Database db, List<long> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, HashInfo hashInfo, string filename, string tempDirectory, char hex)
+        private static long AddValues(Database db, List<byte[]> identifiers, List<string> hashes, string[] fields, List<List<string>> rules, LookupOptions options, HashInfo hashInfo, string filename, string tempDirectory, char hex)
         {
             var writeCount = 0L;
             var bufferCount = 0L;
@@ -263,7 +263,7 @@ namespace Metacrack
                 //Validate if we have correct column count in hash
                 if (count != hashInfo.Columns) continue;
 
-                var entity = db.Select(session, identifiers[i]);
+                var entity = db.Select(identifiers[i]);
 
                 //An entry was found in the table
                 if (entity != null)

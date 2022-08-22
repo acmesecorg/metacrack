@@ -30,6 +30,12 @@ public static class StringExtensions
         var bytes = _sha1.ComputeHash(Encoding.UTF8.GetBytes(value));
         return (BitConverter.ToInt64(bytes, 0), Convert.ToHexString(bytes, 0, 1)[0]);
     }
+    public static (byte[] Id, char Char) ToRowIdBytesAndChar(this string value)
+    {
+        var bytes = _sha1.ComputeHash(Encoding.UTF8.GetBytes(value));
+        return (bytes, Convert.ToHexString(bytes, 0, 1)[0]);
+    }
+
 
     public static string RemoveSpecialCharacters(this string str)
     {
