@@ -264,6 +264,18 @@ namespace Metacrack
             //10000  pbkdf2_sha256$20000$H0dPx8NeajVu$GiC4k5kqbbR9qWBlsRgDywNqC2vd9kqfk7zdorEnNas=  Django (PBKDF2-SHA256)
             if (mode == 10000) return new HashInfo(mode, 1, 77, 79, false);
 
+            //10800 | SHA2 - 384
+            //17500 | SHA3 - 384
+            //17900 | Keccak - 384
+            //10870 | sha384(utf16le($pass))
+            if (mode == 10800 || mode == 10870 || mode == 17500 || mode == 17900) return new HashInfo(mode, 1, 96, true);
+
+            //10810 | sha384($pass.$salt)
+            //10820 | sha384($salt.$pass)
+            //10840 | sha384($salt.utf16le($pass))
+            //10830 | sha384(utf16le($pass).$salt)
+            if (mode == 10810 || mode == 10820 || mode == 10840 || mode == 10830) return new HashInfo(mode, 2, 96, true);
+
             //25600  $2a$05$/VT2Xs2dMd8GJKfrXhjYP.DkTjOVrY12yDN7/6I8ZV0q/1lEohLru  bcrypt(md5($pass))/bcryptmd5
             if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2");
 
