@@ -38,7 +38,7 @@ Given the file *breach.txt* and the *Store* folder created in the [Catalog](CATA
 
 Running the command below creates a hash and word file pair named *breach.hash* and *breach.word*. 
 
-`meta lookup breach.txt metadata.db -m 3200`
+`meta lookup breach.txt Store -m 3200`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -65,7 +65,7 @@ To use other fields from our database catalog, we need to specify which fields t
 
 The following command uses passwords, usernames, and numbers from the catalog:
 
-`meta lookup breach.txt metadata.db -m 3200 -f p u i`
+`meta lookup breach.txt Store -m 3200 -f p u i`
 &nbsp;<br>
 &nbsp;<br>
 	
@@ -99,7 +99,7 @@ Re-run the command but this time specify a rule:
   > **Note**<br>
   > The *best64.rule* file can be found inside the /rules folder of your hashcat installation or from the GitHub repository [here](https://github.com/hashcat/hashcat/blob/master/rules/best64.rule). 
 
-`meta lookup breach.txt metadata.db -m 3200 -r best64.rule -f p u i`
+`meta lookup breach.txt Store -m 3200 -r best64.rule -f p u i`
 &nbsp;<br>
 &nbsp;<br>
 	
@@ -119,7 +119,14 @@ Re-run the command but this time specify a rule:
 >test  
 >test21974  		
 
-By using a rule, we have moved 25% of the guesses from the output files.
+By using a rule, we have moved 25% of the guesses from the output files. Running the following hashcat command should give the following two craks in the breach.output.txt file:
+	
+`hashcat -m 3200 -a 9 breach.hash breach.word -o breach.output.txt -r rules/best64.rule`
+&nbsp;<br>
+&nbsp;<br>
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy:test9
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2:password
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2:password
  
 ### Using sessions
 
@@ -127,7 +134,7 @@ In our previous example, current versions of Hashcat (6.2.5) would continue to g
 	
 To split the *.hash* and *.word* files into multiple sessions, use the *-s* or *--sessions* option as follows:
 
-`meta lookup breach.txt metadata.db -m 3200 -f p u i -s 3`
+`meta lookup breach.txt Store -m 3200 -f p u i -s 3`
 &nbsp;<br>
 &nbsp;<br>
 The following files are created
