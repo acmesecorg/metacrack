@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Metacrack
+namespace Metacrack.Plugins
 {
     [Verb("cut", HelpText = "Outputs a new file by cutting from the start to the end line numbers provided.")]
     public class CutOptions
@@ -12,10 +12,10 @@ namespace Metacrack
         public string OutputPath { get; set; }
 
         [Value(2, Required = true, MetaName = "Start", HelpText = "Starting line inclusive.")]
-        public long Start { get; set; }
+        public string Start { get; set; }
 
         [Value(3, Required = true, MetaName = "End", HelpText = "Ending line inclusive")]
-        public long End { get; set; }
+        public string End { get; set; }
 
     }
 }

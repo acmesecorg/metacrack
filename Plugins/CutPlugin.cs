@@ -1,4 +1,4 @@
-﻿namespace Metacrack
+﻿namespace Metacrack.Plugins
 {
     public class CutPlugin : PluginBase
     {
@@ -7,19 +7,22 @@
             var currentDirectory = Directory.GetCurrentDirectory();
             var fileEntries = Directory.GetFiles(currentDirectory, options.InputPath);
 
+            TryParse(options.Start, out int start);
+            TryParse(options.Start, out int end);
+
             if (fileEntries.Length == 0)
             {
                 WriteMessage($"File(s) {options.InputPath} not found.");
                 return;
             }
 
-            if (options.Start >= options.End )
+            if (start >= end )
             {
                 WriteMessage("End value must be greater than start");
                 return;
             }
 
-            WriteMessage($"Cutting new file {options.OutputPath} from line {options.Start} to line {options.End}");
+            WriteMessage($"Cutting new file {options.OutputPath} from line {start} to line {end}");
 
             var size = GetFileEntriesSize(fileEntries);
             var progressTotal = 0L;
@@ -55,7 +58,7 @@
                         progressTotal += line.Length + 2;
 
                         //We start from line 1 
-                        if (lineCount >= options.Start && lineCount <= options.End) output.Add(line);
+                        if (lineCount >= start && lineCount <= end) output.Add(line);
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Reading {fileName}", progressTotal, size);
@@ -69,7 +72,7 @@
                         }
 
                         //Break out early
-                        if (lineCount > options.End) break;
+                        if (lineCount > end) break;
                     }
                 }
 

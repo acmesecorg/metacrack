@@ -14,7 +14,7 @@ namespace Metacrack.Plugins
         [Option(HelpText = "The space seperated columns indexes in the VALUES of the INSERT statment.")]
         public IEnumerable<string> Columns { get; set; }
 
-        [Option("column-names", HelpText = "he names of the columns to be imported (if they exist in the INSERT statment).")]
+        [Option("column-names", HelpText = "The names of the columns to be imported (if they exist in the INSERT statment).")]
         public IEnumerable<string> ColumnNames { get; set; }
 
         [Option("meta", HelpText = "The indicies of the columns to be used to write data to a meta data file. The first column (from --column or --column-names) is used as a common key ")]
