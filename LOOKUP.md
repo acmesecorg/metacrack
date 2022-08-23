@@ -30,7 +30,7 @@ Lookup can also split files into parts using the *part* option.
 
 ## Examples
  
-The files used in this example can be foudn in the /tutorial folder.
+The files used in this example can be found in the /tutorial folder.<br>
 Given the file *breach.txt* and the *Store* folder created in the [Catalog](CATALOG.md) example:
 
 >alice.smith<span>@icloud.com:$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
