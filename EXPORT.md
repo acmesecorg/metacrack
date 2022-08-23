@@ -23,14 +23,14 @@ Takes an *email:hash* file(s) and combines it with the output file from a hashca
  
 ## Examples
  
-Given the file *breach.txt*
+In the docuemntation for (CATALOG.md) and (LOOKUP.md) we used the *breach.txt* file as a list of *email:plain* value we wanted to crack
 
 >alice.smith<span>@icloud.com:$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >alice1974<span>@apple.com:$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
 
-Running the command below creates a hash and word file pair named *breach.hash* and *breach.word*. 
+with an output file from Hashcat containing the following *hash:plain* pairs. We can run the *export* command to associate the emails with the cracked plains, and to clean up any duplicated from hashcat. The command below creates the following outputs: 
 
-`meta lookup breach.txt metadata.db -m 3200`
+`meta export breach.txt breach.output.txt`
 &nbsp;<br>
 &nbsp;<br>
 
