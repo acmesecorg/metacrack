@@ -35,5 +35,4 @@ The following plugins are documented in the order that they might be used when t
  
 
  
- ## Creating your own plugin
- Content to be added.
+
