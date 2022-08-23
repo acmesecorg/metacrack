@@ -35,3 +35,12 @@ The following plugins are documented in the order that they might be used when t
 | [catalog](CATALOG.md) | Add contents of *email:plain* files (and other meta data) to a database.|
 | [lookup](LOOKUP.md) | Create a pair of .hash and .word files from a list of *email:hash* pairs to use in an -a 9 attack. |
 | [export](EXPORT.md) | Takes email:hash file(s) and combines with the output file from an -a 9 attack. |
+
+The following utility plugins are also available.
+
+| Verb | Description |
+| --- | --- |
+| [sql](SQL.md) | Captures data from sql export files using a sql parser.|
+| [rank](RANK.md) | Provides various forms of occurrence data from plains and other sources |
+| [validate](VALIDATE.md) | Validates a list of hashes, seperating them into valid and invalid files. |
+
