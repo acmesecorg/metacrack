@@ -7,7 +7,7 @@ Input files should always begin with an email address. The email address is anon
 Values in input files should be seperated by a ':' character.
 
   > **Note**<br>
-  > Data is stored using the cross platform [FASTER](https://microsoft.github.io/FASTER/) key value store. It is not possible to browse the data at this time.
+  > Data is stored using the cross platform [RocksDB](https://github.com/facebook/rocksdb) key value store via [RocksDB sharp](https://github.com/curiosity-ai/rocksdb-sharp). It is not possible to browse the data at this time.
 
 ## Usage
 
