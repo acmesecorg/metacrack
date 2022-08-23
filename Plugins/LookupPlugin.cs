@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Metacrack.Model;
-
-namespace Metacrack
+﻿namespace Metacrack.Plugins
 {
     public class LookupPlugin: PluginBase
     {

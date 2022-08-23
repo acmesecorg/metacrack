@@ -1,7 +1,6 @@
 ﻿using CommandLine;
-using System.Collections.Generic;
 
-namespace Metacrack
+namespace Metacrack.Plugins
 {
     [Verb("lookup", HelpText = "Lookup meta data for a list of email:hash pairs.")]
     public class LookupOptions

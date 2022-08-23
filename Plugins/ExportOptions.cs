@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Metacrack
+namespace Metacrack.Plugins
 {
     //This is the default plugin
     [Verb("export", false, HelpText = "Creates a new list of founds and lefts from a list of hashes and solved hashes.")]

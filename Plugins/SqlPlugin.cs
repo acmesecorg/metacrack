@@ -1,12 +1,7 @@
 ﻿using Microsoft.SqlServer.TransactSql.ScriptDom;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
 
-namespace Metacrack
+namespace Metacrack.Plugins
 {
     [Plugin("sql")]
     public class SqlPlugin : PluginBase
@@ -23,6 +18,16 @@ namespace Metacrack
             {
                 WriteError($"No .sql files found for {options.InputPath}.");
                 return;
+            }
+
+            //Parse out any special modes
+            var modes = options.Modes.Select(s => s.ToLowerInvariant());
+            var canForceNew = options.Modes.Contains("force-insert");
+
+            if (modes.Count() > 0)
+            {
+                WriteMessage($"Detected {modes.Count()} mode(s).");
+                if (canForceNew) WriteMessage($"Force new inserts enabled.");
             }
 
             Console.WriteLine($"Started at {DateTime.Now.ToShortTimeString()}.");
@@ -48,9 +53,10 @@ namespace Metacrack
                 var filePathName = $"{currentDirectory}\\{fileName}";
                 var outputPath = $"{filePathName}.parsed.txt";
                 var metapath = $"{filePathName}.meta.txt";
+                var debugPath = $"{filePathName}.debug.txt";
 
                 //Check that there are no output files
-                if (!CheckOverwrite(new string[] { outputPath, metapath }))
+                if (!CheckForFiles(new string[] { outputPath, metapath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
                     var fileInfo = new FileInfo(sqlPath);
@@ -61,16 +67,19 @@ namespace Metacrack
 
                 fileOutput.Clear();
                 metaOutput.Clear();
-                lineCount = 0;               
+                lineCount = 0;
+
+                var buffer = new StringBuilder();
 
                 using (var reader = new StreamReader(sqlPath))
-                {
-                    var buffer = new StringBuilder();
+                {                   
                     var inInsert = false;
+                    var line = "";
+                    var forceNew = false;
 
                     while (!reader.EndOfStream)
                     {
-                        var line = reader.ReadLine().TrimStart();
+                        line = reader.ReadLine().TrimStart();
 
                         lineCount++;
                         progressTotal += line.Length;
@@ -80,7 +89,6 @@ namespace Metacrack
 
                         var isNewStatement = false;
                         
-
                         //Detect a new statement
                         foreach (var statement in _keyword)
                         {
@@ -92,9 +100,9 @@ namespace Metacrack
                         }
 
                         //We collect each line and put them into a string buffer.
-                        if (isNewStatement && buffer.Length > 0)
+                        if ((isNewStatement || forceNew) && buffer.Length > 0)
                         {
-                            var parsed = ProcessBuffer(options, buffer, statementLineCount, columns, metas, fileOutput, metaOutput);
+                            var parsed = ProcessBuffer(options, buffer, statementLineCount, columns, metas, fileOutput, metaOutput, debugPath);
 
                             if (options.Debug)
                             {
@@ -116,6 +124,12 @@ namespace Metacrack
                                 fileOutput.Clear();
                                 metaOutput.Clear();
                             }
+
+                            if (forceNew)
+                            {
+                                buffer.AppendLine($"INSERT INTO {options.Table} VALUES");
+                                forceNew = false;
+                            }
                         }
 
                         //Insert statements must start on a new line
@@ -127,6 +141,13 @@ namespace Metacrack
                                 inInsert = true;
                                 statementLineCount = lineCount;
                             }
+                        }
+
+                        //Force a new statement
+                        if (canForceNew && buffer.Length > 10485760 && line.EndsWith(",")) //10MB
+                        {
+                            line = line.Substring(0, line.Length - 1);
+                            forceNew = true;
                         }
 
                         if (inInsert)
@@ -146,9 +167,8 @@ namespace Metacrack
                             line = line.Replace("\\t", "");
                             line = line.Replace("\\%", "%");
                             line = line.Replace("\\_", "_");
-
-                            
-
+                            line = line.Replace("\\.", ".");
+                            line = line.Replace("\\N", "''");
 
                             buffer.AppendLine(line);
                         }
@@ -157,6 +177,9 @@ namespace Metacrack
                         if (lineCount % 100 == 0) WriteProgress($"Parsing {fileName}", progressTotal, size);
                     }
                 }
+
+                //We need to process the last buffer
+                if (buffer.Length > 0) ProcessBuffer(options, buffer, statementLineCount, columns, metas, fileOutput, metaOutput, debugPath);
 
                 //Write out file
                 WriteMessage($"Finished writing to {fileName}.parsed.txt at {DateTime.Now.ToShortTimeString()}.");
@@ -167,15 +190,32 @@ namespace Metacrack
             WriteMessage($"Completed at {DateTime.Now.ToShortTimeString()}.");
         } 
         
-        private static StatementList ProcessBuffer(SqlOptions options, StringBuilder buffer, long lineCount, int[] columns, int[] metas, List<string> fileOutput, List<string> metaOutput)
+        private static StatementList ProcessBuffer(SqlOptions options, StringBuilder buffer, long lineCount, int[] columns, int[] metas, List<string> fileOutput, List<string> metaOutput, string debugPath)
         {
-            var statements = _parser.ParseStatementList(new StringReader(buffer.ToString()), out var errors);
+            var bufferString = buffer.ToString();
+            var statements = _parser.ParseStatementList(new StringReader(bufferString), out var errors);
 
             if (errors.Count > 0)
             {
-                if (options.Debug) WriteMessage($"Line {lineCount},{errors[0].Offset}:{errors[0].Message}");
-                return null;
+                if (options.Debug)
+                {
+                    WriteHighlight($"Line {lineCount},{errors[0].Offset}:{errors[0].Message}");
+
+                    var lines = new List<string>();
+
+                    lines.Add($"Line {lineCount},{errors[0].Offset}:{errors[0].Message}");
+                    lines.Add(bufferString);
+
+                    File.AppendAllLines(debugPath, lines);
+
+                    WriteMessage($"Wrote sql debug output to {debugPath}");
+
+                    return null;
+                }
             }
+
+            var parseColumns = columns.Length == 0 && options.ColumnNames.Count() > 0;
+            var parseMetas = metas.Length == 0 && options.MetaNames.Count() > 0;
 
             if (statements != null)
             {
@@ -195,11 +235,14 @@ namespace Metacrack
                             if (options.Debug) WriteMessage($"Parsed insert statement for target table without errors.");
 
                             var spec = insertStatement.InsertSpecification;
-
                             var source = spec.InsertSource;
 
                             if (source is ValuesInsertSource)
                             {
+                                //Check if we need to parse out column values
+                                if (parseColumns) columns = ParseColumns(insertStatement, spec, options.ColumnNames);
+                                if (parseMetas) metas = ParseColumns(insertStatement, spec, options.MetaNames);
+
                                 var valuesSource = source as ValuesInsertSource;
 
                                 foreach (var rowValues in valuesSource.RowValues)
@@ -209,10 +252,13 @@ namespace Metacrack
 
                                     foreach (var column in columns)
                                     {
-                                        var literal = rowValues.ColumnValues[column] as Literal;
+                                        if (column <= rowValues.ColumnValues.Count)
+                                        {
+                                            var literal = rowValues.ColumnValues[column] as Literal;
 
-                                        //Convert NULL to empty string
-                                        outputs.Add((literal.Value == "NULL") ? "" : literal.Value);
+                                            //Convert NULL to empty string
+                                            outputs.Add((literal.Value == "NULL") ? "" : literal.Value);
+                                        }
                                     }
 
                                     foreach (var meta in metas)
@@ -224,7 +270,7 @@ namespace Metacrack
                                     }
 
                                     //Ignore empty outputs and empty passwords
-                                    if (outputs.Count > 0 && !string.IsNullOrEmpty(outputs[1]))
+                                    if (outputs.Count > 0 && !string.IsNullOrEmpty(outputs[0]))
                                     {
                                         //Force to lowercase only the first output (email)
                                         outputs[0] = outputs[0].ToLower();
@@ -268,6 +314,31 @@ namespace Metacrack
             }
 
             return statements;
+        }
+
+        private static int[] ParseColumns(InsertStatement insertStatement, InsertSpecification spec, IEnumerable<string> names)
+        {
+            var indexes = new List<int>();
+
+            //Loop through the columns, and compare tokens
+            foreach (var columnName in names)
+            {
+                var i = 0;
+                foreach (var column in spec.Columns)
+                {
+                    var token = insertStatement.ScriptTokenStream[column.FirstTokenIndex];
+                    var name = token.Text.Trim('"').Trim('[').Trim(']');
+
+                    if (name.Contains(columnName, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        indexes.Add(i);
+                        break;
+                    }
+                    i++;
+                }
+            }
+
+            return indexes.ToArray();
         }
     }
 }
