@@ -2,7 +2,7 @@
 
 Adds character seperated data from an input text file to a new or existing database.
 
-Input files should always begin with an email address. The email address is anonymized by hashing the email address and then deriving a 64bit signed integer to create a unique row id. A database will therefore not contain any email address information. Email addresses can however be used to derive name values using the *stem-email* and *stem-email-only* options, however this may substantially de-anonimise the data.
+Input files should always begin with an email address. The email address is anonymized by hashing the email address and then deriving a 64bit signed integer to create a unique row id. A database will therefore not contain any email address information. Email addresses can be used to derive name values using the *stem-email* and *stem-email-only* options, however this may substantially de-anonimise the data.
 
 Values in input files should be seperated by a ':' character.
 
