@@ -45,8 +45,6 @@ namespace Metacrack
         public static readonly char[] Hex = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
         public const int MaxSessionsDefault = 20;
 
-        //Cache this for better performance. Since it is static, we dont worry so much about disposal
-        private static SHA1 _sha1;
         private static long _sharedProgressTotal;
         private static long _sharedProgress;
 
@@ -405,72 +403,6 @@ namespace Metacrack
             //Or the two combined, but a bit slower:
             return val - (val < 58 ? 48 : (val < 97 ? 55 : 87));
         }
-
-        //public static HashSet<String> GetTokens(string value)
-        //{
-        //    var result = new HashSet<string>();
-
-        //    //Add the value
-        //    result.Add(value);
-
-        //    //Add the lowercase of the value
-        //    result.Add(value.ToLower());
-
-        //    //Split on space, - etc
-        //    var splits = value.Split(new char[] { ' ', '-', '.' }, StringSplitOptions.RemoveEmptyEntries);
-
-        //    foreach (var split in splits)
-        //    {
-        //        result.Add(split);
-        //        result.Add(split.ToLower());
-
-        //        //Remove any special characters and numbers at the end
-        //        var match = Regex.Match(split, "^([a-z]*)", RegexOptions.IgnoreCase);
-        //        if (match.Success)
-        //        {
-        //            var matchValue = match.Groups[1].Value;
-        //            if (matchValue.Length > 2)
-        //            {
-        //                result.Add(match.Groups[1].Value);
-        //                result.Add(match.Groups[1].Value.ToLower());
-        //            }
-        //        }
-        //    }
-
-        //    return result;
-        //}
-
-        //public static string GetIdentifier(string email)
-        //{
-        //    if (_sha1 == null) _sha1 = SHA1.Create();
-        //    return GetIdentifier(_sha1.ComputeHash(Encoding.UTF8.GetBytes(email)));
-        //}
-
-        //public static string GetIdentifier(byte[] bytes)
-        //{
-        //    if (bytes == null) throw new ArgumentNullException(nameof(bytes));
-        //    if (bytes.Length < 10) throw new ArgumentOutOfRangeException(nameof(bytes));
-
-        //    var builder = new StringBuilder(20);
-        //    for (var i=0; i<10; i++) builder.Append(bytes[i].ToString("x2"));
-
-        //    return builder.ToString();
-        //}
-
-        //public static string GetSerial(FileInfo fileInfo, string prefix = "")
-        //{
-        //    var numberBytes = BitConverter.GetBytes(fileInfo.Length);
-        //    if (BitConverter.IsLittleEndian) Array.Reverse(numberBytes);
-
-        //    //Remove any leading zeros (this is a bit clunky)
-        //    var foos = new List<byte>(numberBytes);
-        //    while (foos[0] == 0x00) foos.RemoveAt(0);
-
-        //    numberBytes = foos.ToArray();
-
-        //    var version = Convert.ToBase64String(numberBytes).Replace("=", "").Replace("/", "").Replace("+", "");
-        //    return (version.Length > 6) ? $"{prefix}{version.ToLower().Substring(version.Length - 3, 3)}" : $"{prefix}{version.ToLower()}";
-        //}
 
         public static IEnumerable<List<T>> SplitList<T>(List<T> locations, int nSize = 256)
         {

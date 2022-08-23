@@ -13,7 +13,7 @@ namespace Metacrack
         private static Type[] _optionTypes;
         private static Type[] _pluginTypes;
 
-        private static string[] InternalPlugins = new string[] { "catalog", "export", "lookup", "map", "parse", "split", "sql", "validate", "help" };
+        private static string[] InternalPlugins = new string[] { "catalog", "cut", "export", "lookup", "map", "parse", "rank", "split", "sql", "validate", "help" };
 
         public static void Main(string[] args)
         {
@@ -52,9 +52,9 @@ namespace Metacrack
                 if (obj.GetType() == type)
                 {
                     var attr = type.GetCustomAttribute<VerbAttribute>();
-                    
+
                     foreach (var type2 in _pluginTypes)
-                    {                      
+                    {
                         var name = type2.Name.Replace("Plugin", "").ToLower();
                         var attr2 = type2.GetCustomAttribute<PluginAttribute>();
 
@@ -62,7 +62,7 @@ namespace Metacrack
 
                         if (attr.Name == name)
                         {
-                            ConsoleUtil.WriteMessage($"Using {name} plugin", ConsoleColor.DarkYellow);
+                            ConsoleUtil.WriteMessage($"Using {name} plugin.", ConsoleColor.DarkYellow);
 
                             //Try regular synchronous invoke
                             var method = type2.GetMethod("Process", BindingFlags.Public | BindingFlags.Static);
@@ -77,7 +77,7 @@ namespace Metacrack
                             method = type2.GetMethod("ProcessAsync", BindingFlags.Public | BindingFlags.Static);
                             if (method != null)
                             {
-                                var task = (Task) method.Invoke(null, new object[] { obj });
+                                var task = (Task)method.Invoke(null, new object[] { obj });
                                 task.GetAwaiter().GetResult();
                                 return;
                             }
