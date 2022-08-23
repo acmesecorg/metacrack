@@ -35,6 +35,7 @@ Given the file *breach.txt* and the *Store* folder created in the [Catalog](CATA
 
 >alice.smith<span>@icloud.com:$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >alice1974<span>@apple.com:$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
+>jim@acmesec.org:$2y$10$uhNbQS6F9bfHMPp.yc6BB.R.XfwqFF3/b0lxS23mNOpkM8TEYyPrC
 
 Running the command below creates a hash and word file pair named *breach.hash* and *breach.word*. 
 
