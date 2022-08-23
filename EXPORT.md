@@ -4,7 +4,7 @@ Takes an *email:hash* file(s) and combines it with the output file from a hashca
 
 - *name*.left.txt - The remaining *email:hash* pairs which were not found in the output file.
 - *name*.found.txt - A list of *hash:plain* pairs found in both input files.
-- *name*.plains.txt - A list of *email*:plain* pairs created by combining the two input files
+- *name*.plains.txt - A list of *email:plain* pairs created by combining the two input files
 
 ## Usage
 
