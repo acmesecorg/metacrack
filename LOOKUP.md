@@ -6,13 +6,13 @@ Input files should always begin with an email address or username identifier, an
 
 > bob<span>@acme.com:ab4f63f9ac65152575886860dde480a1:gb89z
 
-When using a hash with a seperate salt, ensure that an appropriate mode option has been added. Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the ratio of hashes to words in the output. 
+When using a hash with a seperate salt, ensure that an appropriate mode option has been added. Because hashcat will fail if any hash is incorrect (causing the hash and word count files to be out of sync), it is recommended to always specify a mode. Advanced users can use the *rule* and *session* to reduce the number of words generated for a hash for each attack.
 
 Lookup can also split files into parts using the *part* option.
 
 ## Usage
 
-`meta lookup inputpath [catalogpath] [options]`
+`meta lookup inputpath catalogfolder [options]`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -30,14 +30,16 @@ Lookup can also split files into parts using the *part* option.
 
 ## Examples
  
-Given the file *breach.txt*
+The files used in this example can be found in the /tutorial folder.<br>
+Given the file *breach.txt* and the *Store* folder created in the [Catalog](CATALOG.md) example:
 
 >alice.smith<span>@icloud.com:$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >alice1974<span>@apple.com:$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
+>jim@acmesec.org:$2y$10$uhNbQS6F9bfHMPp.yc6BB.R.XfwqFF3/b0lxS23mNOpkM8TEYyPrC
 
 Running the command below creates a hash and word file pair named *breach.hash* and *breach.word*. 
 
-`meta lookup breach.txt metadata.db -m 3200`
+`meta lookup breach.txt Store -m 3200`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -64,7 +66,7 @@ To use other fields from our database catalog, we need to specify which fields t
 
 The following command uses passwords, usernames, and numbers from the catalog:
 
-`meta lookup breach.txt metadata.db -m 3200 -f p u i`
+`meta lookup breach.txt Store -m 3200 -f p u i`
 &nbsp;<br>
 &nbsp;<br>
 	
@@ -98,7 +100,7 @@ Re-run the command but this time specify a rule:
   > **Note**<br>
   > The *best64.rule* file can be found inside the /rules folder of your hashcat installation or from the GitHub repository [here](https://github.com/hashcat/hashcat/blob/master/rules/best64.rule). 
 
-`meta lookup breach.txt metadata.db -m 3200 -r best64.rule -f p u i`
+`meta lookup breach.txt Store -m 3200 -r best64.rule -f p u i`
 &nbsp;<br>
 &nbsp;<br>
 	
@@ -118,7 +120,14 @@ Re-run the command but this time specify a rule:
 >test  
 >test21974  		
 
-By using a rule, we have moved 25% of the guesses from the output files.
+By using a rule, we have moved 25% of the guesses from the output files. Running the following hashcat command should give the following two craks in the breach.output.txt file:
+	
+`hashcat -m 3200 -a 9 breach.hash breach.word -o breach.output.txt -r rules/best64.rule`
+&nbsp;<br>
+&nbsp;<br>
+>$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy:test9
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2:password
+>$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2:password
  
 ### Using sessions
 
@@ -126,7 +135,7 @@ In our previous example, current versions of Hashcat (6.2.5) would continue to g
 	
 To split the *.hash* and *.word* files into multiple sessions, use the *-s* or *--sessions* option as follows:
 
-`meta lookup breach.txt metadata.db -m 3200 -f p u i -s 3`
+`meta lookup breach.txt Store -m 3200 -f p u i -s 3`
 &nbsp;<br>
 &nbsp;<br>
 The following files are created
@@ -142,4 +151,4 @@ To run hashcat against the first pair of files, use a command such as this:
 `hashcat -a 9 -m 3200 breach.session1.hash breach.session1.word -o breach.session1.output.txt`
 &nbsp;<br>
 &nbsp;<br>
-See the [export]() page for details on how to remove matched values from *.hash* and *.word* files before starting the next session.
+See the [export](EXPORT.md) page for details on how to remove matched values from *.hash* and *.word* files before starting the next session.

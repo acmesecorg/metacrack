@@ -2,16 +2,16 @@
 
 Adds character seperated data from an input text file to a new or existing database.
 
-Input files should always begin with an email address. The email address is anonymized by hashing the email address and then deriving a 64bit signed integer to create a unique row id. A database will therefore not contain any email address information. Email addresses can however be used to derive name values using the *stem-email* and *stem-email-only* options, however this may substantially de-anonimise the data.
+Input files should always begin with an email address. The email address is anonymized by hashing the email address and then deriving a 64bit signed integer to create a unique row id. A database will therefore not contain any email address information. Email addresses can be used to derive name values using the *stem-email* and *stem-email-only* options, however this may substantially de-anonimise the data.
 
 Values in input files should be seperated by a ':' character.
 
   > **Note**<br>
-  > Data is stored using the cross platform [RocksDB](https://github.com/facebook/rocksdb) key value store via [RocksDB sharp](https://github.com/curiosity-ai/rocksdb-sharp). It is not possible to browse the data at this time.
+  > Data is stored using the cross platform [RocksDB](https://github.com/facebook/rocksdb) key value store via [RocksDB sharp](https://github.com/curiosity-ai/rocksdb-sharp).
 
 ## Usage
 
-`meta catalog inputpath [outputpath] [options]`
+`meta catalog inputpath catalogfolder [options]`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -28,7 +28,7 @@ Values in input files should be seperated by a ':' character.
  
 
 ## Examples
- 
+The files used in this example can be found in the /tutorial folder.<br>
 Given the file *input.txt*
 
 >Email|Password|Username<br>
@@ -39,9 +39,9 @@ Given the file *input.txt*
 
 Passwords are often reused by users and they are the most common type of meta data used to create an associative attack. Between 10% and 25% records in a data breach may contain reused passwords or passwords that can be matched with a simple rule.
 
-Running the command below creates a new catalog file called metadata.db and populates the *Passwords* field with the first column of the input file. Note that the email address containing *+test* is converted to the base username form and added to the existing value in *Passwords*.
+Running the command below creates a new catalog in a folder called *Store* and populates the *Passwords* field with the first column of the input file. Note that the email address containing *+test* is converted to the base username form and added to the existing value in *Passwords*.
 
-`meta catalog input.txt metadata.db`
+`meta catalog input.txt Store`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -57,7 +57,7 @@ Usernames can often form the basis of a user password, and can deliver a conside
 
 To add the usernames contained in the second column, we can reprocess the file specifying the columns and fields we want to use. There should always be a field specified for every column. When ommitted, the first column is mapped to the Passwords field as per the example above. No new passwords were added because they already existed in the catalog.
 
-`meta catalog input.txt metadata.db --columns 1 2 --fields p u`
+`meta catalog input.txt Store --columns 1 2 --fields p u`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -78,7 +78,7 @@ Given the file *names.txt* and running the command following:
 >Alice<br>
 >Bob<br>
 
-`meta catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-email`
+`meta catalog input.txt Store --columns 1 2 --fields p u --names names.txt --stem-email`
 &nbsp;<br>
 &nbsp;<br>
 

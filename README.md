@@ -28,13 +28,14 @@ Words that would be duplicated by a rule in hashcat can be filtered out by suppl
   > Ensure that you are both legally and ethically allowed to use the meta data associated with the hashes you are trying to crack. 
 
 ## Plugins 
-The following plugins are documented in the order that they might be used when trying to crack a list of hashes. 
+The following list of plugins is documented in the order that they might be used when trying to crack a list of hashes, as well containing a list of useful utility plugins.
  
 | Verb | Description |
 | --- | --- |
 | [catalog](CATALOG.md) | Add contents of *email:plain* files (and other meta data) to a database.|
 | [lookup](LOOKUP.md) | Create a pair of .hash and .word files from a list of *email:hash* pairs to use in an -a 9 attack. |
- 
-
- 
+| [export](EXPORT.md) | Takes email:hash file(s) and combines with the output file from an -a 9 attack. |
+| [sql](SQL.md) | Captures data from sql export files using a sql parser.|
+| [rank](RANK.md) | Provides various forms of occurrence data from plains and other sources |
+| [validate](VALIDATE.md) | Validates a list of hashes, seperating them into valid and invalid files. |
 
