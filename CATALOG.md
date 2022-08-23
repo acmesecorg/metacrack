@@ -11,7 +11,7 @@ Values in input files should be seperated by a ':' character.
 
 ## Usage
 
-`meta catalog inputpath [outputpath] [options]`
+`meta catalog inputpath outputfolder [options]`
 &nbsp;<br>
 &nbsp;<br>
 
