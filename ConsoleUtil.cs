@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text;
+﻿using System.Text;
 
 namespace Metacrack
 {
@@ -26,11 +25,15 @@ namespace Metacrack
 
         public static void WriteProgress(string text, long progress, long total)
         {
+            if (Console.IsOutputRedirected) return;
+
             WriteProgress(text, (int)((double)progress / total * 100));
         }
 
         public static void WriteProgress(string text, int percent)
         {
+            if (Console.IsOutputRedirected) return;
+
             if (text == null) throw new ArgumentNullException("text");
             if (percent > 100) percent = 100;
 
@@ -68,12 +71,14 @@ namespace Metacrack
             }
 
             _lastProgressText = text;
-            _lastProgressPercent = percentString;            
+            _lastProgressPercent = percentString;
         }
 
         public static void CancelProgress()
         {
-            Console.Write(new string('\b',Console.CursorLeft));
+            if (Console.IsOutputRedirected) return;
+
+            Console.Write(new string('\b', Console.CursorLeft));
             Console.SetCursorPosition(0, Console.CursorTop);
 
             _lastProgressText = "";
