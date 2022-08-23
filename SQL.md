@@ -19,23 +19,4 @@ Imports data from sql exports file(s) containing lists of INSERT statements. Var
 | --end | Line in the input file to end parsing. If not specified, the file is parsed to the end.|
 | --debug | Shows parse information on screen without processing file further.|
 | --modes | Modifies processing depending on the mode chosen. (experimental)|
-| <img width=350> | |
-
-## Example
- 
-Given the file *sample.sql* located in the /tutorial folder, the following command parses the data into an *email:hash:salt* data file and an *email:username* metadata file. 
-
-`meta sql stuff`
-&nbsp;<br>
-&nbsp;<br>
-
-The following files are produced 
-*sample.data.txt*
->$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
->$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
->$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
-
-*sample.meta.txt*
->password1  
->password5  
->test  			
+| <img width=350> | |			
