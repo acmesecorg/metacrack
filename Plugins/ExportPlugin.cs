@@ -14,7 +14,7 @@ namespace Metacrack
 
             if (lookupFileEntries.Length == 0)
             {
-                WriteMessage($"Lookup file(s) for {options.LookupPath} not found.");
+                WriteMessage($"Lookup file(s) {options.LookupPath} was not found.");
                 return;
             }
 
@@ -34,9 +34,6 @@ namespace Metacrack
             {
                 WriteMessage($"Removing hashes for {options.RemoveHashesPath}.");
                 removeHashes.AddRange(File.ReadAllLines(options.RemoveHashesPath));
-
-                //See if we need to calcuate the remove words path
-                if (options.RemoveWordsPath.Length == 0) options.RemoveWordsPath = options.RemoveHashesPath.Replace(".hash", ".word");
             }
 
             if (options.RemoveWordsPath.Length > 0)
@@ -75,6 +72,7 @@ namespace Metacrack
             //Load lookups into memory
             var lookups = new Dictionary<string, string>();
             var lineCount = 0;
+            var errorCount = 0;
 
             var size = GetFileEntriesSize(lookupFileEntries);
             var progressTotal = 0L;
@@ -88,42 +86,27 @@ namespace Metacrack
                     {
                         lineCount++;
 
-                        var line = reader.ReadLine();
-                        var splits = line.Split(':');
+                        var line = reader.ReadLineAsHashPlain(options.IgnoreSalt);
+
                         progressTotal += line.Length;
 
-                        if (splits.Length == 2 || splits.Length == 3)
+                        //Hash is not null if line was read correctly
+                        if (line.Hash != null)
                         {
-                            var hash = splits[0].ToLower();
-                            var plain = "";
-
-                            //Throw away any hash identifier eg MD5 ABCXXX
-                            if (hash.Contains(' '))
-                            {
-                                var newSplits = hash.Split(' ');
-                                hash = newSplits[1];
-                            }
-
-                            if (splits.Length == 3)
-                            {
-                                if (!options.IgnoreSalt) hash = $"{hash}:{splits[1]}";
-                                plain = splits[2];
-                            }
-                            else
-                            {
-                                plain = splits[1];
-                            }
-
                             //Translate shucked result to plain or just add
                             //Only add if not already in file
-                            if (useShucks && shucks.ContainsKey(plain))
+                            if (useShucks && shucks.ContainsKey(line.Plain))
                             {
-                                lookups[hash] = shucks[plain];
+                                lookups[line.Hash] = shucks[line.Plain];
                             }
                             else
                             {
-                                lookups[hash] = plain;
+                                lookups[line.Hash] = line.Plain;
                             }
+                        }
+                        else
+                        {
+                            errorCount++;
                         }
 
                         //Update the percentage
@@ -131,7 +114,7 @@ namespace Metacrack
                     }
                 }
             }
-            
+
             WriteMessage($"Loaded {lookups.Keys.Count} lookups from {lineCount} lines in {lookupFileEntries.Count()} files.");
 
             var output = new List<string>();
@@ -152,12 +135,10 @@ namespace Metacrack
                 var fileName = Path.GetFileNameWithoutExtension(hashesPath);
                 var plainsPath = $"{currentDirectory}\\{fileName}.plains.txt"; //email:plain
                 var foundPath = $"{currentDirectory}\\{fileName}.found.txt"; //hash:plain
-
-                //Increment filename needs optimisation
                 var leftPath = $"{currentDirectory}\\{IncrementFilename(fileName, "left")}.txt"; //hash
 
                 //Check that there are no output files
-                if (!CheckOverwrite(new string[] { plainsPath, foundPath, leftPath}))
+                if (!CheckForFiles(new string[] { plainsPath, foundPath, leftPath }))
                 {
                     WriteHighlight($"Skipping {hashesPath}.");
                     continue;
@@ -179,40 +160,27 @@ namespace Metacrack
                         userHashCounts++;
                         counter++;
 
-                        var line = reader.ReadLine();
-                        var splits = line.Split(':');
+                        var line = reader.ReadLineAsEmailHash();
 
-                        progressTotal += line.Length;
-
+                        progressTotal += line.Text.Length;
 
                         //Username + hash ( + salt)
-                        if (splits.Length == 2 || splits.Length == 3)
+                        if (line.FullHash != null)
                         {
-                            var user = splits[0];
-                            var originalHash = splits[1];
-                            var hash = splits[1].ToLower();
-
-
-                            //Check for salt
-                            if (splits.Length == 3 && !options.NoSalt)
-                            {
-                                hash = $"{hash}:{splits[2]}";
-                                originalHash = $"{originalHash}:{splits[2]}";
-                            }
-
-                            if (lookups.TryGetValue(hash, out string plain))
+                            if (lookups.TryGetValue(line.FullHash, out string plain))
                             {
                                 founds++;
-                                output.Add($"{user}:{plain}");
+                                output.Add($"{line.Email}:{plain}");
 
                                 //Write out the founds on a per file basis
-                                found.Add($"{originalHash}:{plain}");
+                                found.Add($"{line.FullHash}:{plain}");
 
                                 //Sort out any removals
                                 if (removeHashes.Count > 0)
                                 {
-                                    var index = removeHashes.IndexOf(originalHash);
-                                    
+                                    //The index in the hash file should match the index in the word file
+                                    var index = removeHashes.IndexOf(line.FullHash);
+
                                     if (index > -1)
                                     {
                                         removeHashes.RemoveAt(index);
@@ -223,7 +191,7 @@ namespace Metacrack
                             else
                             {
                                 lefts++;
-                                left.Add(line);
+                                left.Add(line.Text);
                             }
                         }
 
@@ -256,16 +224,20 @@ namespace Metacrack
                     File.AppendAllLines(foundPath, found);
                     File.AppendAllLines(leftPath, left);
 
-                    //Write out the removed hashes and words
+                    //Write out the removed hashes and words as a new file
                     if (removeHashes.Count > 0)
                     {
-                        File.Delete(options.RemoveHashesPath);
-                        File.AppendAllLines(options.RemoveHashesPath, removeHashes);
+                        var removeHashesFileName = Path.GetFileNameWithoutExtension(options.RemoveHashesPath);
+                        var removeHashesNewPath = $"{currentDirectory}\\{IncrementFilename(removeHashesFileName, "left")}.hash"; //hash
+
+                        File.AppendAllLines(removeHashesNewPath, removeHashes);
 
                         if (removeWords.Count > 0)
                         {
-                            File.Delete(options.RemoveWordsPath);
-                            File.AppendAllLines(options.RemoveWordsPath, removeWords);
+                            var removeWordsFileName = Path.GetFileNameWithoutExtension(options.RemoveWordsPath);
+                            var removeWordsNewPath = $"{currentDirectory}\\{IncrementFilename(removeWordsFileName, "left")}.word"; //word
+
+                            File.AppendAllLines(removeWordsNewPath, removeWords);
                         }
                     }
                 }
