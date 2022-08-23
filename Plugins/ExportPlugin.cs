@@ -5,11 +5,11 @@
         public static void Process(ExportOptions options)
         {
             var currentDirectory = Directory.GetCurrentDirectory();
-            var lookupFileEntries = Directory.GetFiles(currentDirectory, options.LookupPath);
+            var lookupFileEntries = Directory.GetFiles(currentDirectory, options.OutputPath);
 
             if (lookupFileEntries.Length == 0)
             {
-                WriteMessage($"Lookup file(s) {options.LookupPath} was not found.");
+                WriteMessage($"Lookup file(s) {options.OutputPath} was not found.");
                 return;
             }
 

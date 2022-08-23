@@ -8,12 +8,12 @@
     "Catalog": {
       "commandName": "Project",
       "commandLineArgs": "catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-email",
-      "workingDirectory": "C:\\Breach\\test"
+      "workingDirectory": "C:\\Users\\James\\Documents\\GitHub\\Metacrack\\Tutorial"
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "export idc.left.txt idc.left.output.txt --shuck idc.left.word",
-      "workingDirectory": "D:\\IDC Games (2811)\\Run2"
+      "commandLineArgs": "export breach.txt breach.output.txt",
+      "workingDirectory": "C:\\Users\\James\\Documents\\GitHub\\Metacrack\\Tutorial"
     },
     "Lookup": {
       "commandName": "Project",

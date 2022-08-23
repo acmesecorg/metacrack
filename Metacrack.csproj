@@ -10,11 +10,11 @@
 	<ProductVersion>2.0.0.0</ProductVersion>
 	<Version>2.0.0.0</Version>
 	<Product>MetaCrack</Product>
-	<Copyright></Copyright>
+	<Copyright>Copyright Acmesec and Metacrack authors</Copyright>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<RepositoryUrl>https://github.com/metacrackorg/metacrack</RepositoryUrl>
-	<Company></Company>
-	<Authors />
+	<Company>Acmesec</Company>
+	<Authors></Authors>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -47,9 +47,5 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Plugins\" />
   </ItemGroup>
 </Project>

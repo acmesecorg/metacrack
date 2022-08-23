@@ -9,13 +9,10 @@ namespace Metacrack.Plugins
         [Value(0, Required = true, MetaName = "HashesPath", HelpText = "The file containing the original hashes.")]
         public string HashesPath { get; set; }
 
-        [Value(1, Required = true, MetaName = "LookupPath", HelpText = "The search pattern for the hash lookup files.")]
-        public string LookupPath { get; set; }
+        [Value(1, Required = true, MetaName = "OutputPath", HelpText = "The file containing the hashcat output.")]
+        public string OutputPath { get; set; }
 
-        [Option]
-        public bool NoSalt { get; set; }
-
-        [Option]
+        [Option("ignore-salt", HelpText = "Do not compare salts when matching hashes. Default is false.")]
         public bool IgnoreSalt { get; set; }
 
         [Option]
