@@ -41,7 +41,7 @@ Passwords are often reused by users and they are the most common type of meta da
 
 Running the command below creates a new catalog in a folder called *Store* and populates the *Passwords* field with the first column of the input file. Note that the email address containing *+test* is converted to the base username form and added to the existing value in *Passwords*.
 
-`meta catalog input.txt store`
+`meta catalog input.txt Store`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -57,7 +57,7 @@ Usernames can often form the basis of a user password, and can deliver a conside
 
 To add the usernames contained in the second column, we can reprocess the file specifying the columns and fields we want to use. There should always be a field specified for every column. When ommitted, the first column is mapped to the Passwords field as per the example above. No new passwords were added because they already existed in the catalog.
 
-`meta catalog input.txt store --columns 1 2 --fields p u`
+`meta catalog input.txt Store --columns 1 2 --fields p u`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -78,7 +78,7 @@ Given the file *names.txt* and running the command following:
 >Alice<br>
 >Bob<br>
 
-`meta catalog input.txt store --columns 1 2 --fields p u --names names.txt --stem-email`
+`meta catalog input.txt Store --columns 1 2 --fields p u --names names.txt --stem-email`
 &nbsp;<br>
 &nbsp;<br>
 
