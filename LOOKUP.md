@@ -12,7 +12,7 @@ Lookup can also split files into parts using the *part* option.
 
 ## Usage
 
-`meta lookup inputpath [catalogpath] [options]`
+`meta lookup inputpath catalogfolder [options]`
 &nbsp;<br>
 &nbsp;<br>
 
@@ -30,7 +30,8 @@ Lookup can also split files into parts using the *part* option.
 
 ## Examples
  
-Given the file *breach.txt*
+The files used in this example can be foudn in the /tutorial folder.
+Given the file *breach.txt* and the *Store* folder created in the [Catalog](CATALOG.md) example:
 
 >alice.smith<span>@icloud.com:$2a$10$XsDGiVuwaoYP8uGDoleDmuWV9s4MtMCn1OWzV3PEEFL4gtYVroNW2
 >alice1974<span>@apple.com:$2a$10$myx7zGGnlbgRxyaPhF0NwuYkJuQ0qSHuShRpL8bQVfgGHQaIf4.Hy
