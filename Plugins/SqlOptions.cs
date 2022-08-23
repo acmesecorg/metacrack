@@ -11,16 +11,16 @@ namespace Metacrack.Plugins
         [Option("table", Default = "users")]
         public string Table { get; set; }
 
-        [Option]
+        [Option(HelpText = "The space seperated columns indexes in the VALUES of the INSERT statment.")]
         public IEnumerable<string> Columns { get; set; }
 
-        [Option("column-names")]
+        [Option("column-names", HelpText = "he names of the columns to be imported (if they exist in the INSERT statment).")]
         public IEnumerable<string> ColumnNames { get; set; }
 
-        [Option("meta")]
+        [Option("meta", HelpText = "The indicies of the columns to be used to write data to a meta data file. The first column (from --column or --column-names) is used as a common key ")]
         public IEnumerable<string> MetaColumns { get; set; }
 
-        [Option("meta-column-names")]
+        [Option("meta-column-names", HelpText = "The names of the columns to be used for meta data, instead of --meta column indicies.")]
         public IEnumerable<string> MetaNames { get; set; }
 
         //Give options to only parse part of the file we are interested in and avoid bugs that may arise
