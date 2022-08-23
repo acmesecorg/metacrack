@@ -2,31 +2,25 @@
 
 Takes an *email:hash* file(s) and combines it with the output file from a hashcat [hashcat](https://github.com/hashcat/hashcat) mode 9 attack, to create the following outputs.
 
-| Extension | Description |
-| :--- | :--- |
-| .left.txt | The remaining *email:hash* pairs which were not found in the output file.|
-| .found.txt| A list of *hash:plain* pairs found in both input files.|
-| .plains.txt| A list of *email*:plain* pairs created by combining the two input files|.
-| <img width=350> | |
+- *name*.left.txt - The remaining *email:hash* pairs which were not found in the output file.
+- *name*.found.txt - A list of *hash:plain* pairs found in both input files.
+- *name*.plains.txt - A list of *email*:plain* pairs created by combining the two input files
 
 ## Usage
 
-`meta lookup inputpath [catalogpath] [options]`
+`meta export hashespath outputpath [options]`
 &nbsp;<br>
 &nbsp;<br>
 
 | Option | Description |
 | :--- | :--- |
-| -m --hash-type| The mode used to verify each hash before a hash / word entry is created in each file. Matches values from Hashcat.|
-| -r --rule| Path to the rule file to use to remove duplicate words during processing.|
-| -f --fields| The predefined fields in the catalog to read values from. Valid values are: *p password u username n name d date i number v value*. Dates and numbers are appended to other fields when specified.
-| -p --part| When specified, causing a file to be broken into multiple parts. Value is specified as number of lines per file. The suffix *k* can be used to represent 1000 e.g. *300k* = 300000, *3kk* = 3000 000. Single values are interpreted implicity with a kk suffix eg *4* = 4000 000 |
-| -s --sessions| Splits words for the same hash across multiple sessions. Hashes that are cracked can be removed from subsequent sessions. Extra words are placed in the last session.|
-| --hash-maximum | Maximum number of words considered per hash.|
+| --remove-hash | Path to the file to remove any matched hashes from Usual *name*.hash|
+| --remove-word | Path to the file (usually *name*.word) to remove associated words when used in conjunction with --remove-hash. |
+| --shuck| The path to the file that will be used to convert founds back to plains.  |
+| --ignore-salt| Do not compare salts when matching hashes. Default is false. |
 | <img width=350> | |
 
  
-
 ## Examples
  
 Given the file *breach.txt*
