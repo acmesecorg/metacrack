@@ -25,7 +25,7 @@ namespace Metacrack
         public static readonly List<string> TripleTokens = new() { "x", "O", "i", "o", "s", "*"};
 
         public static readonly List<string> UnsupportedQuadTokens = new() { "X" };
-        public static readonly List<string> UnsupportedSingleTokens = new() { "4", "6", "M" };
+        public static readonly List<string> UnsupportedSingleTokens = new() { "4", "6", "M", "E" };
 
         //Filters a list for duplicates given a list of words and a set of rules
         public static List<string> FilterByRules(IEnumerable<string> input, List<List<string>> rules)
@@ -101,6 +101,7 @@ namespace Metacrack
                     valuesCount = values.Count;
                 }
             }
+
 
             return values;
         }
