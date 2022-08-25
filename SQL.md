@@ -24,7 +24,7 @@ Imports data from sql exports file(s) containing lists of INSERT statements. Var
  
 ## Examples
 
-Included in the /tutorial folder is *sample1.sql* and *sample2.sql*. We can parse the data from sample1 with this command:
+Included in the /tutorial folder is *sample1.sql*. We can parse the data from sample1 with this command:
 
 ```
 INSERT INTO MyUsers<br>
@@ -50,4 +50,16 @@ This puts the *email*:*hash*:*salt* for each insert into the *sample1.parsed.txt
 >joe<span>@blogs.com:Joe<br>
 >joe<span>@soap.com:Soapster<br>
 >joe<span>@blow.org:movieguy<br>
+ 
+You can also use the `--debug` option to display the first few lines of parsed sql, without writing a file. This can help confirm that the right columns have been selected.
+
+ 
+ ### Specifying column names instead of indices
+ 
+ Because the INSERT statement contains the column names, we can achieve the same result using this command. Note that we use `--column--names` and `--meta-column-names` instead of `--columns` and `--meta`
+
+ `meta sql sample1.sql --table MyUsers --column-names Email Hash Salt --meta-column-names Username`
+ 
+ 
+
 
