@@ -26,19 +26,20 @@ Imports data from sql exports file(s) containing lists of INSERT statements. Var
 
 Included in the /tutorial folder is *sample1.sql* and *sample2.sql*. We can parse the data from sample1 with this command:
 
->INSERT INTO MyUsers<br>
->&nbsp;&nbsp;&nbsp;&nbsp(Id, Email, Hash, Username, Salt)<br>
->VALUES<br>
->&nbsp;&nbsp;&nbsp;&nbsp;(1, 'joe<span>@blogs.com', 'e76e194b7b75987f1bc8b54dc9349277', 'Joe', 'c808zlYhCO5vBQRagXEhDZGsVlvJv0'),<br>
->&nbsp;&nbsp;&nbsp;&nbsp;(2, 'joe<span>@soap.com', '7fa65c550919b2a45b82131eda56e9de', 'Soapster', 'BBT1ezmsegtaEkJStRbd8uRPkcPfiP'),<br>
->&nbsp;&nbsp;&nbsp;&nbsp;(3, 'joe<span>@blow.org', 'f3ae38b17addc9efc539e719554d0b87', 'movieguy', 'f3ae38b17addc9efc539e719554d0b87')<br>
-&nbsp;<br>
-  
+```
+INSERT INTO MyUsers<br>
+    (Id, Email, Hash, Username, Salt)
+VALUES
+    (1, 'joe@blogs.com', 'e76e194b7b75987f1bc8b54dc9349277', 'Joe', 'c808zlYhCO5vBQRagXEhDZGsVlvJv0')
+    (2, 'joe@soap.com', '7fa65c550919b2a45b82131eda56e9de', 'Soapster', 'BBT1ezmsegtaEkJStRbd8uRPkcPfiP')
+    (3, 'joe@blow.org', 'f3ae38b17addc9efc539e719554d0b87', 'movieguy', 'f3ae38b17addc9efc539e719554d0b87')
+```
+
 `meta sql sample1.sql --table MyUsers --columns 1 2 4 --meta 3`
 &nbsp;<br>
 &nbsp;<br>
 
-This puts the *email*:*hash*:*salt* for each insert into the *sample1.parsed.txt* file, and the *email*:*username* into the *sampl1.meta.txt* file as follows:
+This puts the *email*:*hash*:*salt* for each insert into the *sample1.parsed.txt* file, and the *email*:*username* into the *sample1.meta.txt* file as follows:
 
 *sample1.parsed.txt*
 >joe<span>@blogs.com:e76e194b7b75987f1bc8b54dc9349277:c808zlYhCO5vBQRagXEhDZGsVlvJv0<br>
@@ -46,7 +47,7 @@ This puts the *email*:*hash*:*salt* for each insert into the *sample1.parsed.txt
 >joe<span>@blow.org:f3ae38b17addc9efc539e719554d0b87:f3ae38b17addc9efc539e719554d0b87<br>
 
 *sample1.meta.txt*
->joe<span>@blogs.com:Joe
->joe<span>@soap.com:Soapster
->joe<span>@blow.org:movieguy
+>joe<span>@blogs.com:Joe<br>
+>joe<span>@soap.com:Soapster<br>
+>joe<span>@blow.org:movieguy<br>
 
