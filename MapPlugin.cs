@@ -98,7 +98,20 @@
                         var line = reader.ReadLine();
                         var splits = line.Split(':');
 
-                        if (splits.Length == 2 || splits.Length == 3)
+                        if (options.NoEmail)
+                        {
+                            if (!ValidateHash(splits[0], hashInfo)) continue;
+                            var hash = (splits.Length == 1) ? splits[0] : $"{splits[0]}:{splits[1]}";
+
+                            //Loop through the map and add hash and word pair
+                            foreach (var word in map)
+                            {
+                                hashes.Add(hash);
+                                words.Add(word);
+                            }
+
+                        }
+                        else if (splits.Length == 2 || splits.Length == 3)
                         {
                             if (!ValidateEmail(splits[0], out var emailStem)) continue;
                             if (!ValidateHash(splits[1], hashInfo)) continue;

@@ -14,7 +14,7 @@ namespace Metacrack
 
             if (splitsLength < 2) return (null, null, 0);
 
-            var fullHash = splits[0].ToLower();
+            var fullHash = splits[0];
 
             //Throw away any hash identifier eg MD5 ABCXXX
             if (fullHash.Contains(' ')) fullHash = fullHash.Split(' ')[1];

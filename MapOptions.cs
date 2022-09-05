@@ -16,5 +16,8 @@ namespace Metacrack
 
         [Option("limit")]
         public int Limit { get; set; }
+
+        [Option("no-email")]
+        public bool NoEmail { get; set; }
     }
 }

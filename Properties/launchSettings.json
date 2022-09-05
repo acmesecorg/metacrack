@@ -12,8 +12,8 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "export ownagepranks.data.txt 389.2611.found",
-      "workingDirectory": "D:\\OwnagePranks (2611)\\Run1"
+      "commandLineArgs": "export jobseeker.left.txt 6039.3200.found",
+      "workingDirectory": "D:\\Jobringer_BF\\Run1"
     },
     "Lookup": {
       "commandName": "Project",
@@ -22,13 +22,13 @@
     },
     "Map": {
       "commandName": "Project",
-      "commandLineArgs": "map S.txt H.txt",
-      "workingDirectory": "D:\\crackon\\agent glitch"
+      "commandLineArgs": "map hashmob.3200.4.left --no-email",
+      "workingDirectory": "D:\\40btc"
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate ",
-      "workingDirectory": "D:\\readnovel.com_2019.05"
+      "commandLineArgs": "validate test.txt --hash 3200 --iterations 04 --no-email",
+      "workingDirectory": "D:\\40btc"
     },
     "Export with Remove": {
       "commandName": "Project",

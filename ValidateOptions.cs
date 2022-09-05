@@ -22,5 +22,9 @@ namespace Metacrack
 
         [Option("email-only")]
         public bool ValidateEmailOnly { get; set; }
+
+        [Option("no-email")]
+        public bool NoEmail { get; set; }
+
     }
 }

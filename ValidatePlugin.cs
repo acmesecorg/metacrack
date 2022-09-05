@@ -90,9 +90,13 @@
                         }
                         else
                         {
-                            if (emailValid && splits.Length > options.Column)
+                            var column = options.Column;
+
+                            if (options.NoEmail) column--;
+
+                            if (emailValid && splits.Length > column)
                             {
-                                if (ValidateHash(splits[options.Column], hashInfo, options.Iterations))
+                                if (ValidateHash(splits[column], hashInfo, options.Iterations))
                                 {
                                     valid.Add(line);
                                 }

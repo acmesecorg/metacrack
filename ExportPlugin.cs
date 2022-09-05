@@ -91,6 +91,8 @@ namespace Metacrack
 
                         progressTotal += line.Length;
 
+                        //if (line.Hash == "$2y$10$II42yolK86Cva9ywSeDtyOKyqgDk9FDQdjOsrJT8Yxy/OFQLvbZKC") progressTotal = progressTotal + 0;
+
                         //Hash is not null if line was read correctly
                         if (line.Hash != null)
                         {
@@ -168,6 +170,8 @@ namespace Metacrack
                         //Username + hash ( + salt)
                         if (line.FullHash != null)
                         {
+                            //if (line.Text.Contains("$2y$10$II42yolK86Cva9ywSeDtyOKyqgDk9FDQdjOsrJT8Yxy/OFQLvbZKC")) progressTotal = progressTotal + 0;
+
                             if (lookups.TryGetValue(line.FullHash, out string plain))
                             {
                                 founds++;
