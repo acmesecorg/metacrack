@@ -1,0 +1,3 @@
+joe@blogs.com:Joe
+joe@soap.com:Soapster
+joe@blow.org:movieguy
