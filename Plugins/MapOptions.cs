@@ -1,6 +1,6 @@
 ﻿using CommandLine;
 
-namespace Metacrack
+namespace Metacrack.Plugins
 {
     [Verb("map", HelpText = "Creates a hash list with a mapped associated wordlist.")]
     public class MapOptions

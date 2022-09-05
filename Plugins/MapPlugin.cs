@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-
-namespace Metacrack
+﻿namespace Metacrack.Plugins
 {
     public class MapPlugin : PluginBase
     {
@@ -33,7 +28,7 @@ namespace Metacrack
                 }
                 else
                 {
-                    WriteMessage("No map path specified. Creating blank worldlist.");
+                    WriteMessage("No map path specified. Creating blank wordlist.");
                     version = "blank";
                 }
             }
@@ -84,7 +79,7 @@ namespace Metacrack
                 _outputWordPath = $"{filePathName}.{version}.word";
 
                 //Check that there are no output files
-                if (!CheckOverwrite(new string[] { _outputHashPath, _outputWordPath }))
+                if (!CheckForFiles(new string[] { _outputHashPath, _outputWordPath }))
                 {
                     WriteHighlight($"Skipping {filePathName}.");
 

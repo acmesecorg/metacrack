@@ -7,7 +7,7 @@
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog input.txt metadata.db --columns 1 2 --fields p u --names names.txt --stem-email",
+      "commandLineArgs": "sql sample1.sql --table MyUsers --column-names Email Hash Salt --meta-column-names Username",
       "workingDirectory": "C:\\Users\\James\\Documents\\GitHub\\Metacrack\\Tutorial"
     },
     "Export": {
@@ -37,8 +37,8 @@
     },
     "Sql": {
       "commandName": "Project",
-      "commandLineArgs": "sql aimware.sql --table forum_users --Start 1277461 --End 1524453 --columns 5 2 3 --meta 1",
-      "workingDirectory": "D:\\Aimware (2811)"
+      "commandLineArgs": "sql sample1.sql --table MyUsers --column-names Email Hash Salt --meta-column-names Username",
+      "workingDirectory": "C:\\Users\\James\\Documents\\GitHub\\Metacrack\\Tutorial"
     },
     "Rank": {
       "commandName": "Project",
