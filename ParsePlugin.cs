@@ -77,7 +77,27 @@ namespace Metacrack
                         lineCount++;
                         progressTotal += line.Length + 2;
 
-                        if (options.ParseType.ToLower() == "log")
+                        if (options.ParseType.ToLower() == "tsv")
+                        {
+                            var splits = line.Split("\t");
+                            var builder = new StringBuilder();
+                            var skip = false;
+
+                            foreach (var column in columns)
+                            {
+                                if (splits.Length < column)
+                                {
+                                    notparsed.Add(line);
+                                    skip = true;
+                                    break;
+                                }
+                                if (builder.Length > 0) builder.Append(":");
+                                builder.Append(splits[column]);
+                            }
+
+                            if (!skip) output.Add(builder.ToString());
+                        }
+                        else if (options.ParseType.ToLower() == "log")
                         {
                             //Password must follow line after email, or everythign is reset
                             if (line.StartsWith(names[0]))

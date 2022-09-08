@@ -47,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse vodafone.txt --type vodafone",
-      "workingDirectory": "C:\\Breach\\Vodafone"
+      "commandLineArgs": "parse Lifebear.com.txt --columns 2 3 9 --type tsv",
+      "workingDirectory": "D:\\Lifebear (10)"
     },
     "Split": {
       "commandName": "Project",
