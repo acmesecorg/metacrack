@@ -229,6 +229,9 @@ namespace Metacrack
             //400    $P$984478476IagS59wHZvyQMArzfx58u.  phpass, WordPress (MD5), Joomla(MD5)
             if (mode == 400) return new HashInfo(mode, 1, 34, false);
 
+            //500    $1$28772684$iEwNOgGugqO9.bIz5sk8k/  md5crypt, MD5 (Unix), Cisco-IOS $1$ (MD5)
+            if (mode == 500) return new HashInfo(mode, 1, 34, false);
+
             //1400   127e6fbfe24a750e72930c220a8e138275656b8e5d8f48a98c3c92df2caba935  SHA2-256
             //1470   9e9283e633f4a7a42d3abc93701155be8afe5660da24c8758e7d3533e2f2dc82  sha256(utf16le($pass))
             if (mode == 1400 || mode == 1470) return new HashInfo(mode, 1, 64, true);

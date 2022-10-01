@@ -12,8 +12,8 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "export jobseeker.left.txt 6039.3200.found",
-      "workingDirectory": "D:\\Jobringer_BF\\Run1"
+      "commandLineArgs": "export onrpg.data.txt 769.2611.found",
+      "workingDirectory": "D:\\OnRPG (2611)\\Run1"
     },
     "Lookup": {
       "commandName": "Project",
@@ -47,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse Lifebear.com.txt --columns 2 3 9 --type tsv",
-      "workingDirectory": "D:\\Lifebear (10)"
+      "commandLineArgs": "parse users-full.json --type json --column-names email password",
+      "workingDirectory": "D:\\START_BF"
     },
     "Split": {
       "commandName": "Project",
