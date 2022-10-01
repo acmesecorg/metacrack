@@ -132,10 +132,11 @@ namespace Metacrack
                         continue;
                     }
 
-
                     while (!reader.EndOfStream)
                     {
-                        var line = reader.ReadLine();
+                        //Read using email hash parser and full text for backwards compatibility
+                        var fullLine = reader.ReadLineAsEmailHash();
+                        var line = fullLine.Text;
 
                         lineCount++;
                         progressTotal += line.Length + 2;
@@ -293,6 +294,30 @@ namespace Metacrack
                             else
                             {
                                 notparsed.Add(line);
+                            }
+                        }
+
+                        //Special top level domain wordlist mode
+                        else if (options.ParseType == "tldw")
+                        {
+                            var splits = line.Split(':');
+                            var tldPlain = splits[columns[1]];
+
+                            if (ValidateEmail(splits[columns[0]], out var emailStem))
+                            {
+                                //Does the email end with the tld?
+                                if (emailStem.EndsWith(options.Delimiter))
+                                {
+                                    output.Add(tldPlain);
+                                }
+                                else
+                                {
+                                    notparsed.Add(tldPlain);
+                                }
+                            }
+                            else
+                            {
+                                notparsed.Add(tldPlain);
                             }
                         }
 

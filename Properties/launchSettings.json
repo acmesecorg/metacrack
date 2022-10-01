@@ -47,8 +47,8 @@
     },
     "Parse": {
       "commandName": "Project",
-      "commandLineArgs": "parse users-full.json --type json --column-names email password",
-      "workingDirectory": "D:\\START_BF"
+      "commandLineArgs": "parse *.txt --type tldw --columns 0 1 --delimiter .de --deduplicate",
+      "workingDirectory": "D:\\Input"
     },
     "Split": {
       "commandName": "Project",
