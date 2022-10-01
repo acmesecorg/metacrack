@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Metacrack
@@ -69,6 +71,67 @@ namespace Metacrack
                 using (var reader = new StreamReader(filePath))
                 {
                     var email = "";
+
+                    //Use a json parser instead
+                    if (options.ParseType.ToLower() == "json")
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+
+                        using (JsonReader jr = new JsonTextReader(reader))
+                        {
+                            while (jr.Read())
+                            {
+                                lineCount++;
+
+                                // deserialize only when there's "{" character in the stream
+                                if (jr.TokenType == JsonToken.StartObject)
+                                {
+                                    var o = serializer.Deserialize(jr);
+                                    
+                                    if (o is JObject)
+                                    {
+                                        var jobject = (JObject)o;
+
+                                        //Try get columns out of jobject
+                                        var builder = new StringBuilder();
+                                        var skip = false;
+
+                                        foreach (var column in options.ColumnNames)
+                                        {
+                                            if (jobject.ContainsKey(column))
+                                            {
+                                                if (builder.Length > 0) builder.Append(":");
+                                                builder.Append(jobject[column]);
+                                            }
+                                            else
+                                            {
+                                                skip = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!skip) output.Add(builder.ToString());
+                                    }
+                                }
+
+                                //Update the percentage
+                                if (lineCount % 1000 == 0) WriteProgress($"Parsing {fileName} as JSON", reader.BaseStream.Position, size);
+
+                                //Write out buffer
+                                if (output.Count > 1000000)
+                                {
+                                    if (output.Count > 0) File.AppendAllLines(outputPath, output);
+
+                                    output.Clear();
+                                }
+                            }
+                        }
+
+                        //Write final
+                        if (output.Count > 0) File.AppendAllLines(outputPath, output);
+                        continue;
+                    }
+
 
                     while (!reader.EndOfStream)
                     {

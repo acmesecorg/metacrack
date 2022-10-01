@@ -17,6 +17,9 @@ namespace Metacrack
         [Option("columns")]
         public IEnumerable<string> Columns { get; set; }
 
+        [Option("column-names")]
+        public IEnumerable<string> ColumnNames { get; set; }
+
         [Option("date-columns")]
         public IEnumerable<string> DateColumns { get; set; }
 
