@@ -48,6 +48,7 @@ namespace Metacrack
             if (options.Tokenize) WriteMessage("Tokenize enabled");
             if (options.StemEmail) WriteMessage("Stem email enabled");
             if (options.StemEmailOnly) WriteMessage("Stem email only enabled");
+            if (options.StemDomain) WriteMessage("Stem domain enabled");
             if (options.XReference) WriteMessage("X reference enabled");
             if (options.EmailOnly) WriteMessage("Email only enabled");
 
@@ -205,7 +206,7 @@ namespace Metacrack
                                         }
 
                                         //Stem email if required
-                                        if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, finals);
+                                        if (options.StemEmail || options.StemEmailOnly) StemEmail(emailStem, lookups, finals, options);
 
                                         //Add lines
                                         foreach (var final in finals)

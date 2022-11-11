@@ -2,13 +2,12 @@
   "profiles": {
     "WSL": {
       "commandName": "WSL2",
-      "environmentVariables": {},
       "distributionName": ""
     },
     "Catalog": {
       "commandName": "Project",
-      "commandLineArgs": "catalog 10000.12000.left4.txt d:\\meta --prefix dubsmash --email-only",
-      "workingDirectory": "D:\\Dubsmash (10000)"
+      "commandLineArgs": "catalog 3200.txt d:\\breaches\\meta --prefix 32002 --stem-email-only --stem-domain --stem-names ..\\..\\firstnames.dict",
+      "workingDirectory": "D:\\Breaches\\3200"
     },
     "Export": {
       "commandName": "Project",
@@ -74,6 +73,11 @@
       "commandName": "Project",
       "commandLineArgs": "hash dailyquiz.dict --hash 0",
       "workingDirectory": "D:\\hashcat-6.2.5+8"
+    },
+    "Catalog Email Only": {
+      "commandName": "Project",
+      "commandLineArgs": "catalog 3200.txt d:\\breaches\\meta --prefix 3200 --email-only",
+      "workingDirectory": "D:\\Breaches\\3200"
     }
   }
 }

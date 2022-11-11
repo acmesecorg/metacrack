@@ -28,6 +28,9 @@ namespace Metacrack
         [Option("stem-email", HelpText = "Use email as a source of values.")]
         public bool StemEmail { get; set; }
 
+        [Option("stem-domain", HelpText = "Use email domain as a source of values.")]
+        public bool StemDomain { get; set; }
+
         [Option("stem-email-only", HelpText = "Use email as a source of values only.")]
         public bool StemEmailOnly { get; set; }
 

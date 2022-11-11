@@ -516,10 +516,13 @@ namespace Metacrack
             return "";
         }
 
-        public static void StemEmail(string email, HashSet<string> lookups, HashSet<string> finals)
+        public static void StemEmail(string email, HashSet<string> lookups, HashSet<string> finals, CatalogOptions options)
         {
             var subsplits = email.Split('@');
             var name = subsplits[0];
+            var domainPortion = subsplits[1].Split('.')[0];
+
+            if (options.StemDomain) finals.Add(domainPortion);
 
             //Add the whole name
             finals.Add(name);

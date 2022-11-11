@@ -6,9 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <AssemblyName>meta</AssemblyName>
-    <FileVersion>0.1.2.8</FileVersion>
-	<ProductVersion>0.1.2.8</ProductVersion>
-	<Version>0.1.2.8</Version>
+    <FileVersion>0.1.2.10</FileVersion>
+	<ProductVersion>0.1.2.10</ProductVersion>
+	<Version>0.1.2.10</Version>
 	<Product>MetaCrack</Product>
 	<Copyright></Copyright>
 	<PackageReadmeFile>README.md</PackageReadmeFile>
