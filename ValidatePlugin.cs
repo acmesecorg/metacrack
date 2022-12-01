@@ -1,4 +1,6 @@
-﻿namespace Metacrack
+﻿using System.Text.RegularExpressions;
+
+namespace Metacrack
 {
     public class ValidatePlugin : PluginBase
     {
@@ -16,13 +18,19 @@
                 return;
             }
 
-            if (options.Hash == -1 && !options.ValidateEmailOnly)
+            if (options.Hash == -1 && !options.ValidateEmailOnly && string.IsNullOrEmpty(options.Regex))
             {
                 WriteMessage("Specify a hash mode using the --hash option");
                 return;
             }
 
-            WriteMessage($"Validating hash mode {options.Hash}");
+            if (!string.IsNullOrEmpty(options.Regex) && options.Hash != -1)
+            {
+                WriteMessage("Specify either a mode or regex.");
+                return;
+            }
+
+            if (options.Hash > - 1) WriteMessage($"Validating hash mode {options.Hash}");
             if (options.Iterations > 0) WriteMessage($"Validating iterations {options.Iterations}.");
 
             if (options.ValidateEmail && options.ValidateEmailOnly)
@@ -33,6 +41,23 @@
 
             if (options.ValidateEmail) WriteMessage("Validating email");
             if (options.ValidateEmailOnly) WriteMessage("Validating email only");
+
+            var regEx = default(Regex);
+
+            //Validate the regex
+            if (!string.IsNullOrEmpty(options.Regex))
+            {
+                WriteMessage($"Validating using supplied regex");
+                try
+                {
+                    regEx = new Regex(options.Regex);
+                }
+                catch (Exception ex)
+                {
+                    WriteError(ex.Message);
+                    return;
+                }                
+            }
 
             WriteMessage($"Started at {DateTime.Now.ToShortTimeString()}.");
 
@@ -71,21 +96,20 @@
                 {
                     while (!reader.EndOfStream)
                     {
-                        var line = reader.ReadLine();
-                        var splits = line.Split(':');
+                        var line = reader.ReadLineAsEmailHash();
                         var emailValid = true;
 
-                        if (options.ValidateEmail || options.ValidateEmailOnly) emailValid = ValidateEmail(splits[0], out var emailStem);
+                        if (options.ValidateEmail || options.ValidateEmailOnly) emailValid = ValidateEmail(line.Email, out var emailStem);
 
                         if (options.ValidateEmailOnly)
                         {
                             if (emailValid)
                             {
-                                valid.Add(line);
+                                valid.Add(line.Text);
                             }
                             else
                             {
-                                invalid.Add(line);
+                                invalid.Add(line.Text);
                             }
                         }
                         else
@@ -94,25 +118,39 @@
 
                             if (options.NoEmail) column--;
 
-                            if (emailValid && splits.Length > column)
+                            if (emailValid && line.SplitLength > column)
                             {
-                                if (ValidateHash(splits[column], hashInfo, options.Iterations))
+                                if (regEx != null)
                                 {
-                                    valid.Add(line);
+                                    if (regEx.IsMatch(line.FullHash))
+                                    {
+                                        valid.Add(line.Text);
+                                    }
+                                    else
+                                    {
+                                        invalid.Add(line.Text);
+                                    }
                                 }
                                 else
                                 {
-                                    invalid.Add(line);
+                                    if (ValidateHash(line.FullHash, line.HashPart, hashInfo, options.Iterations))
+                                    {
+                                        valid.Add(line.Text);
+                                    }
+                                    else
+                                    {
+                                        invalid.Add(line.Text);
+                                    }
                                 }
                             }
                             else
                             {
-                                invalid.Add(line);
+                                invalid.Add(line.Text);
                             }
                         }
 
                         lineCount++;
-                        progressTotal += line.Length;
+                        progressTotal = reader.BaseStream.Position;
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Processing {fileName}", progressTotal, size);

@@ -26,8 +26,8 @@
     },
     "Validate": {
       "commandName": "Project",
-      "commandLineArgs": "validate test.txt --hash 3200 --iterations 04 --no-email",
-      "workingDirectory": "D:\\40btc"
+      "commandLineArgs": "validate 20.test --regex ^[a-fA-F0-9]{32}:.{1,256}$ --email",
+      "workingDirectory": "D:\\Hashes\\abf"
     },
     "Export with Remove": {
       "commandName": "Project",

@@ -26,5 +26,8 @@ namespace Metacrack
         [Option("no-email")]
         public bool NoEmail { get; set; }
 
+        //Ignore hash mode and use a regex instead
+        [Option("regex", HelpText="Ignore the value in mode and use the regex supplied instead")]
+        public string Regex { get; set; }
     }
 }

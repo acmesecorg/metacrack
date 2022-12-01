@@ -43,13 +43,13 @@ namespace Metacrack
             }
         }
 
-        public static (string Email, string FullHash, string Text, string HashPart, string Salt) ReadLineAsEmailHash(this StreamReader reader, bool noSalt = false, bool base64 = false)
+        public static (string Email, string FullHash, string Text, string HashPart, string Salt, int SplitLength) ReadLineAsEmailHash(this StreamReader reader, bool noSalt = false, bool base64 = false)
         {
             var line = reader.ReadLine();
             var splits = line.Split(':');
             var splitsLength = splits.Length;
 
-            if (splitsLength < 2) return (null, null, line, null, null);
+            if (splitsLength < 2) return (null, null, line, null, null, 0);
 
             var email = splits[0];
             var fullHash = splits[1];
@@ -88,7 +88,53 @@ namespace Metacrack
                 }
             }
 
-            return (email, fullHash, line, hashPart, salt);
+            return (email, fullHash, line, hashPart, salt, splitsLength);
+        }
+
+
+        public static (string FullHash, string Text, string HashPart, string Salt, int SplitLength) ReadLineAsHash(this StreamReader reader, bool noSalt = false, bool base64 = false)
+        {
+            var line = reader.ReadLine();
+            var splits = line.Split(':');
+            var splitsLength = splits.Length;
+
+            var fullHash = splits[0];
+            var hashPart = splits[0];
+            var salt = default(String);
+
+            //Append the rest of the splits as the salt, adding back the : that was lost
+            if (splits.Length > 1 && !noSalt)
+            {
+                var builder = new StringBuilder(fullHash);
+                var saltBuilder = new StringBuilder();
+
+                var i = 1;
+                while (i < splitsLength)
+                {
+                    builder.Append(':');
+                    builder.Append(splits[i]);
+
+                    if (i > 1) saltBuilder.Append(':');
+                    saltBuilder.Append(splits[i]);
+
+                    i++;
+                }
+
+                fullHash = builder.ToString();
+                salt = saltBuilder.ToString();
+            }
+
+            //Check hash for base64 encoding
+            if (base64)
+            {
+                if (fullHash.EndsWith("="))
+                {
+                    var bytes = Convert.FromBase64String(fullHash);
+                    fullHash = BitConverter.ToString(bytes).Replace("-", "").ToLower();
+                }
+            }
+
+            return (fullHash, line, hashPart, salt, splitsLength);
         }
 
         public static void RemoveLowest(this Dictionary<string, int> value)

@@ -95,39 +95,36 @@
                 {
                     while (!reader.EndOfStream)
                     {
-                        var line = reader.ReadLine();
-                        var splits = line.Split(':');
-
                         if (options.NoEmail)
                         {
-                            if (!ValidateHash(splits[0], hashInfo)) continue;
-                            var hash = (splits.Length == 1) ? splits[0] : $"{splits[0]}:{splits[1]}";
+                            var line = reader.ReadLineAsHash();
+
+                            if (!ValidateHash(line.FullHash, line.HashPart, hashInfo)) continue;
 
                             //Loop through the map and add hash and word pair
                             foreach (var word in map)
                             {
-                                hashes.Add(hash);
+                                hashes.Add(line.FullHash);
                                 words.Add(word);
                             }
-
                         }
-                        else if (splits.Length == 2 || splits.Length == 3)
+                        else 
                         {
-                            if (!ValidateEmail(splits[0], out var emailStem)) continue;
-                            if (!ValidateHash(splits[1], hashInfo)) continue;
+                            var line = reader.ReadLineAsEmailHash();
 
-                            var hash = (splits.Length == 2) ? splits[1] : $"{splits[1]}:{splits[2]}";
+                            if (!ValidateEmail(line.Email, out var emailStem)) continue;
+                            if (!ValidateHash(line.FullHash, line.HashPart, hashInfo)) continue;
 
                             //Loop through the map and add hash and word pair
                             foreach (var word in map)
                             {
-                                hashes.Add(hash);
+                                hashes.Add(line.FullHash);
                                 words.Add(word);
                             }
                         }
 
                         lineCount++;
-                        progressTotal += line.Length;
+                        progressTotal = reader.BaseStream.Position;
 
                         //Update the percentage
                         if (lineCount % 1000 == 0) WriteProgress($"Processing {fileName}", progressTotal, size);

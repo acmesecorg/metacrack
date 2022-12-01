@@ -145,30 +145,30 @@ namespace Metacrack
             return true;
         }
 
-        public static bool ValidateHash(string hash, HashInfo info)
+        public static bool ValidateHash(string fullHash, string hashPart, HashInfo info)
         {
-            return ValidateHash(hash, info, 0);
+            return ValidateHash(fullHash, hashPart, info, 0);
         }
 
-        public static bool ValidateHash(string hash, HashInfo info, int iteration)
+        public static bool ValidateHash(string fullHash, string hashPart, HashInfo info, int iteration)
         {
             //Validate length
             if (info.Length > 0)
             {
-                if (hash.Length < info.Length) return false;
-                if (hash.Length > info.MaxLength) return false;
+                if (fullHash.Length < info.Length) return false;
+                if (fullHash.Length > info.MaxLength) return false;
             }
 
             //Validate hex
             if (info.IsHex)
             {
-                if (!IsHex(hash)) return false;
+                if (!IsHex(hashPart)) return false;
             }
 
             //Validate prefix
             if (info.Prefix != null && info.Prefix.Length > 0)
             {
-                if (!hash.StartsWith(info.Prefix)) return false;
+                if (!fullHash.StartsWith(info.Prefix)) return false;
             }
 
             //Validate iterations
@@ -176,12 +176,12 @@ namespace Metacrack
             {
                 if (info.Mode == 10000)
                 {
-                    var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
+                    var splits = fullHash.Split('$', StringSplitOptions.RemoveEmptyEntries);
                     if (splits[1] != iteration.ToString()) return false;
                 }
                 else if (info.Mode == 3200 || info.Mode == 25600)
                 {
-                    var splits = hash.Split('$', StringSplitOptions.RemoveEmptyEntries);
+                    var splits = fullHash.Split('$', StringSplitOptions.RemoveEmptyEntries);
                     var iterationString = (iteration < 10) ? $"0{iteration}" : iteration.ToString();
                     if (splits[1] != iterationString) return false;
                 }
@@ -285,6 +285,9 @@ namespace Metacrack
             if (mode == 11900) return new HashInfo(11900, 3, 0, false, "md5");
             if (mode == 12000) return new HashInfo(12000, 3, 0, false, "sha1");
             if (mode == 12100) return new HashInfo(12100, 3, 0, false, "sha512");
+
+            //19500 | Ruby on Rails Restful-Authentication    d7d5ea3e09391da412b653ae6c8d7431ec273ea2:238769868762:8962783556527653675
+            if (mode == 19500) return new HashInfo(19500, 3, 0, false);
 
             //25600  $2a$05$/VT2Xs2dMd8GJKfrXhjYP.DkTjOVrY12yDN7/6I8ZV0q/1lEohLru  bcrypt(md5($pass))/bcryptmd5
             if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2");

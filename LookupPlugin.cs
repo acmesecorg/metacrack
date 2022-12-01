@@ -167,7 +167,7 @@ namespace Metacrack
                                 //Validate the hash
                                 if (!options.Export)
                                 {
-                                    if (!ValidateHash(line.HashPart, hashInfo)) continue;
+                                    if (!ValidateHash(line.FullHash, line.HashPart, hashInfo)) continue;
 
                                     //Salt validation
                                     if (hashInfo.Columns == 2 && !ValidateSalt(line.Salt, hashInfo)) continue;
