@@ -152,12 +152,12 @@ namespace Metacrack
 
         public static bool ValidateHash(string hash, HashInfo info, int iteration)
         {
-            //Unknown hash
-            if (info.Length == 0) return true;
-
             //Validate length
-            if (hash.Length < info.Length) return false;
-            if (hash.Length > info.MaxLength) return false;
+            if (info.Length > 0)
+            {
+                if (hash.Length < info.Length) return false;
+                if (hash.Length > info.MaxLength) return false;
+            }
 
             //Validate hex
             if (info.IsHex)
@@ -278,6 +278,13 @@ namespace Metacrack
             //10840 | sha384($salt.utf16le($pass))
             //10830 | sha384(utf16le($pass).$salt)
             if (mode == 10810 || mode == 10820 || mode == 10840 || mode == 10830) return new HashInfo(mode, 2, 96, true);
+
+            //11900 | PBKDF2-HMAC-MD5     md5:1000:MTg1MzA=:Lz84VOcrXd699Edsj34PP98+f4f3S0rTZ4kHAIHoAjs=
+            //12000 | PBKDF2-HMAC-SHA1    sha1:1000:MzU4NTA4MzIzNzA1MDQ=:19ofiY+ahBXhvkDsp0j2ww==
+            //12100 | PBKDF2-HMAC-SHA512  sha512:1000:ODQyMDEwNjQyODY=:MKaHNWXUsuJB3IEwBHbm3w==
+            if (mode == 11900) return new HashInfo(11900, 3, 0, false, "md5");
+            if (mode == 12000) return new HashInfo(12000, 3, 0, false, "sha1");
+            if (mode == 12100) return new HashInfo(12100, 3, 0, false, "sha512");
 
             //25600  $2a$05$/VT2Xs2dMd8GJKfrXhjYP.DkTjOVrY12yDN7/6I8ZV0q/1lEohLru  bcrypt(md5($pass))/bcryptmd5
             if (mode == 25600) return new HashInfo(mode, 1, 60, false, "$2");
