@@ -282,9 +282,9 @@ namespace Metacrack
             //11900 | PBKDF2-HMAC-MD5     md5:1000:MTg1MzA=:Lz84VOcrXd699Edsj34PP98+f4f3S0rTZ4kHAIHoAjs=
             //12000 | PBKDF2-HMAC-SHA1    sha1:1000:MzU4NTA4MzIzNzA1MDQ=:19ofiY+ahBXhvkDsp0j2ww==
             //12100 | PBKDF2-HMAC-SHA512  sha512:1000:ODQyMDEwNjQyODY=:MKaHNWXUsuJB3IEwBHbm3w==
-            if (mode == 11900) return new HashInfo(11900, 3, 0, false, "md5");
-            if (mode == 12000) return new HashInfo(12000, 3, 0, false, "sha1");
-            if (mode == 12100) return new HashInfo(12100, 3, 0, false, "sha512");
+            if (mode == 11900) return new HashInfo(11900, 4, 0, false, "md5");
+            if (mode == 12000) return new HashInfo(12000, 4, 0, false, "sha1");
+            if (mode == 12100) return new HashInfo(12100, 4, 0, false, "sha512");
 
             //19500 | Ruby on Rails Restful-Authentication    d7d5ea3e09391da412b653ae6c8d7431ec273ea2:238769868762:8962783556527653675
             if (mode == 19500) return new HashInfo(19500, 3, 0, false);
