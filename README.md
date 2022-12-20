@@ -39,11 +39,6 @@ By providing a file containing a list of *email:hash* combinations, it is possib
 
 ## Plugins 
 
-The following plugins are documented in the order that they might be used to create a new attack. 
- 
-| Verb | Description |
-| --- | --- |
-| [catalog](https://github.com/metacrackorg/metacrack/wiki/Catalog) | Add contents of files to a data catalog.|
-|  | |
+Please see more comprehensive documentation taking shape in the https://github.com/acmesecorg/metacrack/tree/rocksdb branch
  
 
