@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,10 +14,23 @@ namespace Metacrack
 
         public static void Process(CatalogOptions options)
         {
-            //Validate and display arguments
             var currentDirectory = Directory.GetCurrentDirectory();
-            var fileEntries = Directory.GetFiles(currentDirectory, options.InputPath, SearchOption.AllDirectories);
+            string[] fileEntries = { };
 
+            //Absolute path
+            if (Path.IsPathFullyQualified(options.InputPath))
+            {
+                string path = options.InputPath.Replace("/", "\\");
+                int pos = path.LastIndexOf('\\');
+
+                if (File.Exists(options.InputPath) || Directory.Exists(options.InputPath))
+                    fileEntries = Directory.GetFiles(path[..pos], path[(pos + 1)..], SearchOption.AllDirectories);
+            }
+            //Relative path
+            else
+                fileEntries = Directory.GetFiles(currentDirectory, options.InputPath, SearchOption.AllDirectories);
+                
+            //Validate and display arguments
             if (fileEntries.Length == 0)
             {
                 WriteError($"No .txt files found for {options.InputPath}");
