@@ -4,7 +4,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>Validate</ActiveDebugProfile>
+    <ActiveDebugProfile>Export</ActiveDebugProfile>
     <_LastSelectedProfileId>D:\Github\metacrack\Properties\PublishProfiles\FolderProfile1.pubxml</_LastSelectedProfileId>
   </PropertyGroup>
 </Project>

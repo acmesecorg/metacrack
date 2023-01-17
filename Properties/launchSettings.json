@@ -11,8 +11,8 @@
     },
     "Export": {
       "commandName": "Project",
-      "commandLineArgs": "export onrpg.data.txt 769.2611.found",
-      "workingDirectory": "D:\\OnRPG (2611)\\Run1"
+      "commandLineArgs": "export 110.txt *output.txt --source ..\\hashes.source.txt",
+      "workingDirectory": "C:\\breach\\Lloyds\\110"
     },
     "Lookup": {
       "commandName": "Project",
