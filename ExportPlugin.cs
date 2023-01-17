@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -70,6 +71,39 @@ namespace Metacrack
                 WriteMessage($"Created {shucks.Count()} shuck pairs for {options.ShuckPath}.");
             }
 
+            var outputs = new Dictionary<string, List<string>>();
+            var sources = new Dictionary<string, string>();
+            var hasSources = false;
+
+            //Add default output
+            outputs.Add("", new List<string>());
+
+            //Load source information
+            if (options.SourcePath.Length > 0)
+            {
+                WriteMessage($"Reading source information for {options.SourcePath}.");
+
+                using (var reader = new StreamReader(options.SourcePath))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        var splits = line.Split(new[] {':'}, 2);
+                        var source = splits[0];
+
+                        if (!outputs.ContainsKey(source))
+                        {
+                            outputs[source] = new List<string>();
+                            hasSources = true;
+                        }
+
+                        sources[splits[1]] = source;
+                    }
+                }
+
+                WriteMessage($"Got {outputs.Keys.Count() - 1} sources for {options.SourcePath}.");
+            }
+
             //Load lookups into memory
             var lookups = new Dictionary<string, string>();
             var lineCount = 0;
@@ -120,7 +154,6 @@ namespace Metacrack
              
             WriteMessage($"Loaded {lookups.Keys.Count} lookups from {lineCount} lines ({errorCount} errors) in {lookupFileEntries.Count()} files.");
 
-            var output = new List<string>();
             var found = new List<string>();
             var left = new List<string>();
 
@@ -143,11 +176,29 @@ namespace Metacrack
                 //Check that there are no output files
                 if (!CheckForFiles(new string[] { plainsPath, foundPath, leftPath}))
                 {
-                    WriteHighlight($"Skipping {hashesPath}.");
+                    WriteHighlight($"One or more output files exist. Skipping {hashesPath}.");
                     continue;
                 }
 
-                output.Clear();
+                //Check outputs from sources paths
+                if (hasSources)
+                {
+                    var paths = new List<string>();
+                    foreach (var key in outputs.Keys)
+                    {
+                        if (key == "") continue;
+                        paths.Add($"{currentDirectory}\\{key}.{fileName}.plains.txt");
+                    }
+
+                    if (!CheckForFiles(paths.ToArray()))
+                    {
+                        WriteHighlight($"One or more source output files exist. Skipping {hashesPath}.");
+                        continue;
+                    }
+                }
+
+                //Clear
+                foreach (var output in outputs.Values) output.Clear();
                 found.Clear();
                 left.Clear();
 
@@ -175,7 +226,16 @@ namespace Metacrack
                             if (lookups.TryGetValue(line.FullHash, out string plain))
                             {
                                 founds++;
-                                output.Add($"{line.Email}:{plain}");
+
+                                //Look to see if we need to get a source
+                                if (hasSources && sources.TryGetValue($"{line.Email}:{line.FullHash}", out var source))
+                                {
+                                    outputs[source].Add($"{line.Email}:{plain}");
+                                }
+                                else
+                                {
+                                    outputs[""].Add($"{line.Email}:{plain}");
+                                }
 
                                 //Write out the founds on a per file basis
                                 found.Add($"{line.FullHash}:{plain}");
@@ -207,11 +267,23 @@ namespace Metacrack
                         if (counter > 1000000)
                         {
                             counter = 0;
-                            File.AppendAllLines(plainsPath, output);
-                            File.AppendAllLines(foundPath, found);
-                            File.AppendAllLines(leftPath, left);
+                            if (outputs[""].Count() > 0) File.AppendAllLines(plainsPath, outputs[""]);
+                            if (found.Count() > 0) File.AppendAllLines(foundPath, found);
+                            if (left.Count() > 0) File.AppendAllLines(leftPath, left);
 
-                            output.Clear();
+                            if (hasSources)
+                            {
+                                foreach (var de in outputs)
+                                {
+                                    if (de.Key == "") continue;
+                                    if (de.Value.Count() == 0) continue;
+                                    
+                                    var sourcePlainsPath = $"{currentDirectory}\\{de.Key}.{fileName}.plains.txt";
+                                    File.AppendAllLines(sourcePlainsPath, de.Value);
+                                }
+                            }
+
+                            foreach (var output in outputs.Values) output.Clear();
                             found.Clear();
                             left.Clear();
                         }
@@ -225,9 +297,21 @@ namespace Metacrack
                 //Write out file
                 if (found.Count > 0)
                 {
-                    File.AppendAllLines(plainsPath, output);
-                    File.AppendAllLines(foundPath, found);
-                    File.AppendAllLines(leftPath, left);
+                    if (outputs[""].Count() > 0) File.AppendAllLines(plainsPath, outputs[""]);
+                    if (found.Count() > 0) File.AppendAllLines(foundPath, found);
+                    if (left.Count() > 0) File.AppendAllLines(leftPath, left);
+
+                    if (hasSources)
+                    {
+                        foreach (var de in outputs)
+                        {
+                            if (de.Key == "") continue;
+                            if (de.Value.Count() == 0) continue;
+
+                            var sourcePlainsPath = $"{currentDirectory}\\{de.Key}.{fileName}.plains.txt";
+                            File.AppendAllLines(sourcePlainsPath, de.Value);
+                        }
+                    }
 
                     //Write out the removed hashes and words as a new file
                     if (removeHashes.Count > 0)

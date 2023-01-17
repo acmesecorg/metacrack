@@ -30,5 +30,7 @@ namespace Metacrack
         [Option("shuck", Default = "", HelpText = "The path to the word file that will be used to calculate shuck pairs to convert founds back to plains.")]
         public string ShuckPath { get; set; }
 
+        [Option("source", Default = "", HelpText = "The path to the file containing hash source information in source:email:hash format, to determine output file name(s).")]
+        public string SourcePath { get; set; }
     }
 }
