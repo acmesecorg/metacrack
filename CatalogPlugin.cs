@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,10 +14,23 @@ namespace Metacrack
 
         public static void Process(CatalogOptions options)
         {
-            //Validate and display arguments
             var currentDirectory = Directory.GetCurrentDirectory();
-            var fileEntries = Directory.GetFiles(currentDirectory, options.InputPath, SearchOption.AllDirectories);
+            string[] fileEntries = { };
 
+            //Absolute path
+            if (Path.IsPathFullyQualified(options.InputPath))
+            {
+                string path = options.InputPath.Replace("\\", "/");
+                int pos = path.LastIndexOf('/');
+
+                if (File.Exists(options.InputPath) || Directory.Exists(options.InputPath))
+                    fileEntries = Directory.GetFiles(path[..pos], path[(pos + 1)..], SearchOption.AllDirectories);
+            }
+            //Relative path
+            else
+                fileEntries = Directory.GetFiles(currentDirectory, options.InputPath, SearchOption.AllDirectories);
+
+            //Validate and display arguments
             if (fileEntries.Length == 0)
             {
                 WriteError($"No .txt files found for {options.InputPath}");
@@ -124,7 +137,7 @@ namespace Metacrack
                     }
                 }
 
-                #pragma warning disable SYSLIB0021
+#pragma warning disable SYSLIB0021
                 //We keep using Sha1Managed for performance reasons
                 using (var sha1 = new SHA1Managed())
                 {
@@ -268,7 +281,7 @@ namespace Metacrack
                 {
                     //Create a new lock object for this hex key
                     _locks.Add($"{hex1}{hex2}", new SemaphoreSlim(1, 1));
-                }                
+                }
             }
 
             //Loop through each file with this prefix in the output folder
@@ -300,7 +313,7 @@ namespace Metacrack
                     tasks.Remove(completedTask);
                 }
             }
-            
+
             //We now have 256 files full of associated words, a word can appear multiple times, but only in one file
             //Loop through each file, combine entries, then optimise the file            
             bucketCount = 0;
@@ -328,7 +341,7 @@ namespace Metacrack
                     WriteProgress($"Optimising files", bucketCount, 256);
 
                     tasks.Remove(completedTask);
-                }                
+                }
             }
         }
 
@@ -436,7 +449,7 @@ namespace Metacrack
         {
             var output = new Dictionary<string, List<string>>();
 
-            #pragma warning disable SYSLIB0021
+#pragma warning disable SYSLIB0021
             //We keep using Sha1Managed for performance reasons
             using (var sha1 = new SHA1Managed())
             {
@@ -509,7 +522,7 @@ namespace Metacrack
                     //When the task is ready, always release the semaphore. 
                     _locks[de.Key].Release();
                 }
-            }            
+            }
         }
 
         //Sort by key, and optimise key/words
